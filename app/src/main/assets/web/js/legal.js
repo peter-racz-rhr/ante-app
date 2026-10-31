@@ -1,10 +1,9 @@
 /* Ante's legal documents, shown in the app (Profile → Legal) and exported to docs/legal/.
-   Drafts written from how the app actually works. Have them reviewed by a lawyer before publishing.
-   TODO(owner): add the postcode and town to ADDRESS. */
+   Drafts written from how the app actually works. Have them reviewed by a lawyer before publishing. */
 (function () {
   "use strict";
   const OWNER = "Péter Rácz";
-  const ADDRESS = "Kálti Márk u. 2/B, Hungary";
+  const ADDRESS = "Kálti Márk u. 2/B, 1035 Budapest, Hungary";
   const EMAIL = "peter.racz.rhr@gmail.com";
   const PHONE = "+36 50 104 5007";
   const UPDATED = "31 October 2026";

@@ -8,7 +8,7 @@ Ante is made and run by Péter Rácz, a private individual.
 
 ## Address
 
-Kálti Márk u. 2/B, Hungary
+Kálti Márk u. 2/B, 1035 Budapest, Hungary
 
 ## Contact
 

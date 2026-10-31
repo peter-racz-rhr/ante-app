@@ -19,7 +19,7 @@ Do these once, in order. Details for each are further down.
    **Run**. Installing over USB avoids the Play Protect block on sideloaded apps.
 4. **On the phone.** Go through onboarding, turn on Ante under Settings → Accessibility, and allow it
    to ignore battery optimisation (Profile shows any missing step).
-5. **Legal.** Put your postcode and town into `ADDRESS` in `app/src/main/assets/web/js/legal.js`.
+5. **Legal.** Have the Terms, Privacy Policy and Imprint (`app/src/main/assets/web/js/legal.js`) reviewed by a lawyer before publishing.
 
 After that, changes to the UI arrive on the phone by themselves. Only Kotlin changes need step 3 again.
 Every push to `main` also builds the app and runs all tests (*Build and test* in the Actions tab);
@@ -190,7 +190,7 @@ browser, picture-in-picture video and background audio.
 
 Terms of Service, Privacy Policy and Imprint are in the app (Profile → Legal) and in `docs/legal/`.
 Regenerate the Markdown copies with `node scripts/export-legal.js` after editing `js/legal.js`.
-**Add the postcode and town** to `ADDRESS` in `js/legal.js`, and have the texts reviewed by a lawyer before publishing.
+Have the texts reviewed by a lawyer before publishing.
 
 ## Sounds
 
