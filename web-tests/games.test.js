@@ -1,4 +1,4 @@
-// Run with: node --test ante-android/web-tests
+// Run with: node --test web-tests
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const G = require("../app/src/main/assets/web/js/games.js");

@@ -24,7 +24,7 @@ object Ota {
     /** Bump whenever the bridge (AnteBridge) changes in a way the page depends on. */
     const val NATIVE_API = 1
 
-    private const val BASE = "https://github.com/peter-racz-rhr/lwk/releases/download/web-latest/"
+    private const val BASE = "https://github.com/peter-racz-rhr/ante-app/releases/download/web-latest/"
     private const val MANIFEST_URL = BASE + "manifest.json"
 
     /** Public half of the signing key (X.509 SubjectPublicKeyInfo, base64). The private half is the ANTE_OTA_KEY secret. */

@@ -6,9 +6,28 @@ or stake some of those minutes at a casino table. You can play roulette, blackja
 coin flip. Wins go back to that app's budget, and losses are gone for the day. Every table has a small house
 edge, so playing tends to cut screen time. No real money is involved.
 
+## Setup checklist
+
+Do these once, in order. Details for each are further down.
+
+1. **Update key.** GitHub → this repo → Settings → Secrets and variables → Actions → New repository
+   secret. Name `ANTE_OTA_KEY`, value: the whole `ante-ota-private.pem` file. Then Actions → *Ante UI
+   update* → re-run it. Afterwards, **Releases** shows `web-latest` with `manifest.json` and a `web-….zip`.
+2. **Google sign-in.** Follow *Google sign-in* below and paste the **Web** client ID into
+   `app/src/main/res/values/google.xml`.
+3. **Install.** Open this folder in Android Studio, plug in the phone (USB debugging on) and press
+   **Run**. Installing over USB avoids the Play Protect block on sideloaded apps.
+4. **On the phone.** Go through onboarding, turn on Ante under Settings → Accessibility, and allow it
+   to ignore battery optimisation (Profile shows any missing step).
+5. **Legal.** Put your postcode and town into `ADDRESS` in `app/src/main/assets/web/js/legal.js`.
+
+After that, changes to the UI arrive on the phone by themselves. Only Kotlin changes need step 3 again.
+Every push to `main` also builds the app and runs all tests (*Build and test* in the Actions tab);
+the debug APK is attached to each run.
+
 ## Build the APK in Android Studio
 
-1. Open Android Studio (Ladybug 2024.2 or newer) and choose **File → Open**, then pick this `ante-android` folder.
+1. Open Android Studio (Ladybug 2024.2 or newer) and choose **File → Open**, then pick this repository's folder (the one with `settings.gradle.kts`).
 2. Let Gradle sync finish. The first sync downloads Gradle 8.11.1, Android Gradle Plugin 8.7.3 and SDK 35.
    If Studio asks to install SDK Platform 35, accept.
 3. **Debug APK:** use **Build → Build App Bundle(s) / APK(s) → Build APK(s)**. The file lands in

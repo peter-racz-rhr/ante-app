@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # Builds and signs an over-the-air UI bundle for Ante.
-# Usage: ANTE_OTA_KEY="$(cat ante-ota-private.pem)" ante-android/scripts/ota-publish.sh <out-dir> <owner/repo>
+# Usage: ANTE_OTA_KEY="$(cat ante-ota-private.pem)" scripts/ota-publish.sh <out-dir> <owner/repo>
 # Writes <out-dir>/web-<version>.zip and <out-dir>/manifest.json. The app only installs a bundle
 # whose manifest is signed by the key whose public half is in Ota.kt.
 set -euo pipefail
 OUT=${1:?out dir}
 REPO=${2:?owner/repo}
 ROOT=$(git rev-parse --show-toplevel)
-WEB="$ROOT/ante-android/app/src/main/assets/web"
-OTA_KT="$ROOT/ante-android/app/src/main/java/com/ante/app/Ota.kt"
+WEB="$ROOT/app/src/main/assets/web"
+OTA_KT="$ROOT/app/src/main/java/com/ante/app/Ota.kt"
 
 if [ -z "${ANTE_OTA_KEY:-}" ]; then
   echo "ANTE_OTA_KEY is not set. Add the private key as a repository secret named ANTE_OTA_KEY." >&2

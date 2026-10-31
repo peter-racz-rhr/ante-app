@@ -1,5 +1,5 @@
 // End-to-end check of the bundled UI in Chromium, using the browser mock bridge.
-// Usage: node ante-android/web-tests/e2e.js [screenshot-dir]
+// Usage: node web-tests/e2e.js [screenshot-dir]
 // Exits non-zero on any console error, failed check or horizontal overflow.
 const { chromium } = require("playwright");
 const path = require("path");
