@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <!-- Only for downloading signed UI updates from the project's GitHub releases. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- In-app vibration (games, buttons). Off with the Vibration switch in Profile. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <!-- Package visibility (Android 11+): list launchable apps for the limit picker, and see the home screen. -->
     <queries>

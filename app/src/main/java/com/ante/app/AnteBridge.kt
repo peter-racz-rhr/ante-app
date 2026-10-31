@@ -264,13 +264,16 @@ class AnteBridge(
 
     @JavascriptInterface
     fun haptic(kind: String) {
-        val constant = when (kind) {
+        val k = if (kind in HAPTIC_KINDS) kind else "tap"
+        if (Haptics.play(ctx, k)) return
+        // No vibrator service: fall back to the view's haptics, which some tablets still have.
+        val constant = when (k) {
             "win" -> if (Build.VERSION.SDK_INT >= 30) HapticFeedbackConstants.CONFIRM else HapticFeedbackConstants.LONG_PRESS
             "loss" -> if (Build.VERSION.SDK_INT >= 30) HapticFeedbackConstants.REJECT else HapticFeedbackConstants.LONG_PRESS
             "tick" -> HapticFeedbackConstants.CLOCK_TICK
             else -> HapticFeedbackConstants.KEYBOARD_TAP
         }
-        webView.post { webView.performHapticFeedback(constant) }
+        webView.post { webView.performHapticFeedback(constant, HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING) }
     }
 
     private fun isIgnoringBatteryOptimizations(): Boolean {
@@ -287,6 +290,7 @@ class AnteBridge(
     private fun validPkg(pkg: String?): Boolean = isValidPackage(pkg)
 
     companion object {
+        private val HAPTIC_KINDS = setOf("tap", "tick", "win", "loss")
         private val OUTSIDE_LINKS = setOf("https://ko-fi.com/peteracz", "mailto:peter.racz.rhr@gmail.com")
         private const val WAIT_MS = 30_000L
         private const val WAIT_VALID_MS = 10 * 60_000L

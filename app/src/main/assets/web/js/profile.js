@@ -132,7 +132,7 @@
   Object.assign(App.act, {
     theme(d) { App.P.set({ theme: d.v }); App.SFX.play("tap"); App.render(); },
     accent(d) { App.P.set({ accent: d.v }); App.SFX.play("tap"); App.render(); },
-    haptics() { App.P.set({ haptics: !App.P.get().haptics }); App.haptic("tap"); App.render(); },
+    haptics() { App.P.set({ haptics: !App.P.get().haptics }); App.haptic("win"); /* a clear buzz confirms it works */ App.render(); },
     sound() {
       App.SFX.toggle();
       if (ui.view === "profile") { App.render(); return; }
