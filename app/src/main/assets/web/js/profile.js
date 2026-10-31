@@ -48,7 +48,7 @@
   }
 
   /** The native part (APK) is older than this UI needs for full screen and vibration. */
-  const NATIVE_WANTED = [0, 2, 0];
+  const NATIVE_WANTED = [0, 3, 0];
   function nativeOutdated() {
     if (!A.native) return false;
     const v = (A.versions && A.versions()) || {};
@@ -77,13 +77,13 @@
       <section class="update-note" role="status">
         <span class="sicon" style="--ic:var(--warn)" aria-hidden="true">${App.ICON.info}</span>
         <div><p class="sitem-title">Install the new app version once</p>
-        <p class="sitem-sub">This phone runs Ante ${esc((A.versions().app) || "")}. Full screen at the top and vibration need 0.2.0. Open the <b>ante-app</b> project in Android Studio and press Run.</p></div>
+        <p class="sitem-sub">This phone runs Ante ${esc((A.versions().app) || "")}. Full screen at the top, vibration and profile pictures need 0.3.0. Open the <b>ante-app</b> project in Android Studio and press Run.</p></div>
       </section>` : "";
     return `<div class="screen settings" id="screen">
       <header><h1 class="h1">Profile</h1></header>
       ${notice}
       <section class="me">
-        <span class="avatar lg" aria-hidden="true">${esc(App.initials(name))}</span>
+        <button class="me-photo" data-a="photoPick" aria-label="${ACC.photo ? "Change profile picture" : "Add a profile picture"}">${App.avatar("lg", 'aria-hidden="true"')}<span class="cam" aria-hidden="true">${App.ICON.camera}</span></button>
         <div class="me-t"><p class="me-name">${esc(name || "Your name")}</p><p class="sitem-sub">${ACC.signedIn ? esc(ACC.email) : "Not signed in · limits work without an account"}</p></div>
       </section>
 
@@ -91,6 +91,8 @@
         <label class="sitem field-row"><span class="sicon" style="--ic:var(--info)" aria-hidden="true">${App.ICON.user}</span>
           <span class="sitem-t"><span class="sitem-title">Display name</span></span>
           <input id="name-input" class="inline-input" type="text" maxlength="40" autocomplete="nickname" placeholder="${esc(ACC.name || "Add a name")}" value="${esc(prefs.name)}"></label>
+        ${item({ icon: "camera", tone: "var(--accent)", title: "Profile picture", sub: ACC.photo ? (ACC.customPhoto ? "Your photo" : "From Google") : "None yet",
+          trail: `<span class="btn-pair">${ACC.customPhoto ? `<button class="btn-sm ghost" data-a="photoRemove">Remove</button>` : ""}<button class="btn-sm" data-a="photoPick">${ACC.photo ? "Change" : "Add"}</button></span>` })}
         ${ACC.signedIn
           ? item({ icon: "google", tone: "#ffffff", title: "Google", sub: esc(ACC.email), trail: `<button class="btn-sm" data-a="signOut">Sign out</button>` })
           : item({ icon: "google", tone: "#ffffff", title: "Sign in with Google", sub: "Puts your name on Ante", action: "google" }) + `<p class="auth-msg" id="auth-msg" role="status"></p>`}`)}
@@ -153,6 +155,10 @@
 
   Object.assign(App.act, {
     theme(d) { App.P.set({ theme: d.v }); App.SFX.play("tap"); App.render(); },
+    photoPick() {
+      if (!A.pickPhoto || A.pickPhoto() === false) App.toast("Install the new app version (0.3.0) to add a photo.");
+    },
+    photoRemove() { A.removePhoto(); App.refresh(); App.render(); App.toast("Photo removed."); },
     clock(d) {
       if (!App.P.CLOCKS[d.v]) return;
       App.P.set({ clock: d.v }); App.SFX.play("tap"); App.haptic("tap"); App.render();
@@ -207,7 +213,7 @@
   document.addEventListener("input", e => {
     if (e.target.id !== "name-input") return;
     App.P.set({ name: e.target.value });
-    const h = document.querySelector(".me-name"), av = document.querySelector(".me .avatar");
+    const h = document.querySelector(".me-name"), av = document.querySelector(".me span.avatar");
     if (h) h.textContent = App.displayName() || "Your name";
     if (av) av.textContent = App.initials(App.displayName());
   });

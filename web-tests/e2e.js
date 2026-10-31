@@ -365,6 +365,19 @@ async function noOverflow(p, label) {
   await shot(st, "24b-profile-mocha");
   await st.click('[data-a="theme"][data-v="latte"]');
   await shot(st, "24c-profile-latte");
+  {
+    // Profile picture: pick a file, it shows as a round photo on Profile and Home, and can be removed.
+    const pic = path.join(OUT, "_avatar-src.png");
+    await st.screenshot({ path: pic, clip: { x: 0, y: 0, width: 300, height: 200 } });
+    const [chooser] = await Promise.all([st.waitForEvent("filechooser"), st.click('.me [data-a="photoPick"]')]);
+    await chooser.setFiles(pic);
+    await st.waitForSelector(".me img.avatar", { timeout: 4000 });
+    const sz = await st.evaluate(() => { const i = document.querySelector(".me img.avatar"); return [i.naturalWidth, i.naturalHeight]; });
+    check(sz[0] === 256 && sz[1] === 256, `picked photo becomes a 256px square (${sz})`);
+    check(await st.isVisible("text=Your photo"), "profile says a photo is set");
+    await st.click('[data-a="photoRemove"]'); await st.waitForTimeout(200);
+    check(!(await st.$(".me img.avatar")), "removing the photo goes back to initials");
+  }
   await st.fill("#name-input", "Péter");
   check((await st.textContent(".me .avatar")).trim() === "P", "display name updates the avatar");
   check(await st.isVisible("text=Tip on Ko-fi"), "Ko-fi support card is there");

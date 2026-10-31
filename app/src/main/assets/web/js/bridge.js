@@ -27,6 +27,8 @@
       account: () => parse(N.account(), { signedIn: false, onboarded: true }),
       signInWithGoogle: () => N.signInWithGoogle(),
       signOut: () => N.signOut(),
+      pickPhoto: () => { try { return N.pickPhoto(); } catch (e) { return false; } }, // false on apps older than 0.3.0
+      removePhoto: () => { try { N.removePhoto(); } catch (e) { /* older app */ } },
       finishOnboarding: () => N.finishOnboarding(),
       openLink: url => N.openLink(url),
       startWait: () => N.startWait(),
@@ -184,6 +186,31 @@
       }, 500);
     },
     signOut() { Object.assign(ACCT, { signedIn: false, name: "", email: "" }); saveAcct(); },
+    pickPhoto() {
+      const input = document.createElement("input");
+      input.type = "file"; input.accept = "image/*";
+      input.onchange = () => {
+        const f = input.files && input.files[0]; if (!f) return;
+        const img = new Image();
+        img.onload = () => {
+          const side = Math.min(img.width, img.height), c = document.createElement("canvas");
+          c.width = c.height = 256;
+          c.getContext("2d").drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, 256, 256);
+          ACCT.photo = c.toDataURL("image/jpeg", 0.86); ACCT.customPhoto = true; saveAcct();
+          window.anteAccountChanged && window.anteAccountChanged(null);
+        };
+        const fail = () => window.anteAccountChanged && window.anteAccountChanged("Couldn't read that picture. Try another one.");
+        img.onerror = fail;
+        // A data: URL, because the page's CSP allows data: images but not blob: ones.
+        const reader = new FileReader();
+        reader.onload = () => { img.src = reader.result; };
+        reader.onerror = fail;
+        reader.readAsDataURL(f);
+      };
+      input.click();
+      return true;
+    },
+    removePhoto() { ACCT.photo = ""; ACCT.customPhoto = false; saveAcct(); },
     finishOnboarding() { ACCT.onboarded = true; saveAcct(); },
     ready() {},
     versions: () => ({ app: "web demo", native: 0, web: 0 }),

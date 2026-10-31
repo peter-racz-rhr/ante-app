@@ -134,6 +134,18 @@ class AnteBridge(
     @JavascriptInterface
     fun finishOnboarding() = Account.setOnboarded(ctx)
 
+    /** Opens Android's photo picker. The result arrives as window.anteAccountChanged(). Ante's own screen only. */
+    @JavascriptInterface
+    fun pickPhoto(): Boolean {
+        val main = activity as? MainActivity ?: return false
+        main.runOnUiThread { main.pickPhoto() }
+        return true
+    }
+
+    /** Removes the user's own picture (the Google one, if any, shows again). */
+    @JavascriptInterface
+    fun removePhoto() = Account.setPhoto(ctx, null)
+
     /** Installed apps without icons (fast); the page fetches icons one by one with [icon]. */
     @JavascriptInterface
     fun apps(): String = AppCatalog.launchableApps(ctx).toString()

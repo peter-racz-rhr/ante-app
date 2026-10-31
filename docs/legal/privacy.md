@@ -8,7 +8,7 @@ Péter Rácz, Kálti Márk u. 2/B, 1035 Budapest, Hungary. Email: peter.racz.rhr
 
 ## What stays on your phone
 
-Your limits, the time left and used per app, your daily history (about six months), your table results, your settings and your theme. This is stored only on your device and is never sent anywhere.
+Your limits, the time left and used per app, your daily history (about six months), your table results, your settings, your theme and, if you add one, your profile picture (a small copy made from the photo you pick). This is stored only on your device and is never sent anywhere.
 
 ## App updates
 
@@ -20,7 +20,7 @@ With the accessibility permission on, Android tells Ante the name of the app tha
 
 ## Google sign-in (optional)
 
-If you sign in with Google, Google shows its own sign-in screen and gives Ante your name and email address, which are saved on your phone. Google processes this sign-in under its own privacy policy (policies.google.com/privacy). Ante does not keep the Google sign-in token. Legal basis: your consent (GDPR Art. 6(1)(a)), which you can withdraw by signing out.
+If you sign in with Google, Google shows its own sign-in screen and gives Ante your name, email address and account picture. Ante downloads the picture once from Google's image server and saves a small copy, with your name and email, on your phone. Google processes this sign-in under its own privacy policy (policies.google.com/privacy). Ante does not keep the Google sign-in token. Legal basis: your consent (GDPR Art. 6(1)(a)), which you can withdraw by signing out.
 
 ## The app list
 

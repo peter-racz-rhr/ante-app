@@ -107,13 +107,13 @@
     const status = S.accessibility && S.watching ? `<span class="pill good"><i></i>Blocking on${S.strict ? " · Strict" : ""}</span>` : "";
     const name = App.displayName();
     return `<div class="screen" id="screen">
-      <header class="masthead"><span class="mark">${App.ICON.logo}Ante</span><button class="avatar" data-a="tab" data-t="profile" aria-label="Profile">${esc(App.initials(name))}</button></header>
+      <header class="masthead"><span class="mark">${App.ICON.logo}Ante</span><button class="avatar-btn" data-a="tab" data-t="profile" aria-label="Profile">${App.avatar("", 'aria-hidden="true"')}</button></header>
       <section class="hero" aria-label="${fmt(total)} left today">
         <p class="muted">${esc(date)}</p>
         <div class="dotclock-box"><p class="dotclock" data-fit="150" aria-hidden="true">${fmt(total)}</p></div>
         <div class="hero-row"><span class="muted">${S.limits.length ? `left across ${S.limits.length} ${S.limits.length === 1 ? "app" : "apps"} · resets in ${resetsIn()}` : "Add an app to give it a daily budget."}</span>${status}</div>
       </section>
-      ${App.nativeOutdated && App.nativeOutdated() ? `<button class="update-note slim" data-a="tab" data-t="profile"><span class="sicon" style="--ic:var(--warn)" aria-hidden="true">${App.ICON.info}</span><span class="sitem-t"><span class="sitem-title">Install the new app version once</span><span class="sitem-sub">Needed for full screen and vibration. Tap for how.</span></span></button>` : ""}
+      ${App.nativeOutdated && App.nativeOutdated() ? `<button class="update-note slim" data-a="tab" data-t="profile"><span class="sicon" style="--ic:var(--warn)" aria-hidden="true">${App.ICON.info}</span><span class="sitem-t"><span class="sitem-title">Install the new app version once</span><span class="sitem-sub">Needed for full screen, vibration and photos. Tap for how.</span></span></button>` : ""}
       ${App.healthBlock()}
       <section class="panel card-chart tap" role="button" tabindex="0" data-a="tab" data-t="screentime" aria-label="Screen time this week. Open the breakdown by app">
         <div class="panel-head"><div><h2 class="h3">Screen time</h2><p class="muted">Last 7 days, by app</p></div><span class="chev">${App.ICON.chev}</span></div>

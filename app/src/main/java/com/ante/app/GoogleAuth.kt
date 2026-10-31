@@ -28,6 +28,9 @@ import java.util.concurrent.Executor
  * res/values/google.xml (see README, "Google sign-in").
  */
 object GoogleAuth {
+    /** Called (from a background thread) when the Google picture has been saved. */
+    @Volatile var onPhoto: (() -> Unit)? = null
+
     private val main = Executor { Handler(Looper.getMainLooper()).post(it) }
 
     /** The configured Web client ID, or null while the placeholder is still in place. */
@@ -67,6 +70,15 @@ object GoogleAuth {
                     // A future server must verify google.idToken before trusting this account.
                     Account.save(activity, google.id, name, google.id)
                     done(JSONObject().put("ok", true).put("name", name).put("email", google.id))
+                    // Fetch the Google picture in the background; the page refreshes when it arrives.
+                    google.profilePictureUri?.toString()?.let { url ->
+                        val app = activity.applicationContext
+                        Thread({
+                            val photo = Photo.fromGoogle(url) ?: return@Thread
+                            Account.setGooglePhoto(app, photo)
+                            onPhoto?.invoke()
+                        }, "ante-google-photo").start()
+                    }
                 } catch (e: Exception) {
                     done(fail("parse", "Couldn't read the Google account. Try again."))
                 }

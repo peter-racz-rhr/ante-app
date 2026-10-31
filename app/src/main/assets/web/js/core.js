@@ -40,6 +40,13 @@
   App.lim = pkg => App.S.limits.find(l => l.pkg === pkg);
   App.labelOf = pkg => (App.lim(pkg) || {}).label || (pkg === CTX.pkg ? CTX.label : pkg);
   App.displayName = () => App.P.get().name || App.ACC.name || "";
+  /** The profile picture if there is one, else initials. Only data: images (made by the app) are used. */
+  App.avatar = (cls, extra) => {
+    const p = App.ACC && App.ACC.photo, name = App.displayName ? App.displayName() : "";
+    return /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(p || "")
+      ? `<img class="avatar ${cls || ""}" src="${p}" alt="" ${extra || ""}>`
+      : `<span class="avatar ${cls || ""}" ${extra || ""}>${App.esc(App.initials(name))}</span>`;
+  };
   App.initials = n => (n || "").split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join("") || "A";
 
   const icons = App.iconCache = {};
@@ -95,6 +102,7 @@
     lock: ic('<rect x="5" y="10.5" width="14" height="10" rx="3"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/>', 18),
     coffee: ic('<path d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16M8 3.5v2M12 3.5v2"/>', 20),
     doc: ic('<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h5M10 16h5"/>', 20),
+    camera: ic('<path d="M4 8.5A2 2 0 0 1 6 6.5h2l1.5-2h5l1.5 2h2a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.5" r="3.5"/>'),
     vibrate: ic('<rect x="8" y="4" width="8" height="16" rx="2"/><path d="M4.5 8.5v7M19.5 8.5v7M2 10.5v3M22 10.5v3"/>'),
     shield: ic('<path d="M12 3.5 5 6.3v5.4c0 4.3 3 7.4 7 8.8 4-1.4 7-4.5 7-8.8V6.3z"/><path d="m9 12 2.2 2.2L15.3 10"/>'),
     battery: ic('<rect x="3" y="7.5" width="16" height="9" rx="2.2"/><path d="M21 10.5v3M6.5 10.5v3M9.5 10.5v3"/>'),

@@ -268,6 +268,13 @@
     return false;
   };
   /** Result of Google sign-in from the native side (a JSON string). */
+  /** Native: the account changed (new photo, Google picture arrived). `error` is a message, or null. */
+  window.anteAccountChanged = function (error) {
+    if (error) { App.toast(error); return; }
+    App.refresh();
+    if (ui.view === "profile" || ui.view === "home") App.render();
+  };
+
   window.anteAuth = function (raw) {
     let r; try { r = typeof raw === "string" ? JSON.parse(raw) : raw; } catch (e) { r = { ok: false, message: "Sign-in failed." }; }
     App.refresh();

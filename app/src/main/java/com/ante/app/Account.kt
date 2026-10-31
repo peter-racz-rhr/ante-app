@@ -4,7 +4,8 @@ import android.content.Context
 import org.json.JSONObject
 
 /**
- * The signed-in Google account (name and email only) and whether onboarding is done.
+ * The signed-in Google account (name, email, picture), the user's own profile picture, and
+ * whether onboarding is done.
  * Stored on the device. Ante has no server: the account is used to greet the user and is the
  * hook for a future backup/sync service.
  */
@@ -22,6 +23,8 @@ object Account {
             .put("email", email ?: "")
             .put("onboarded", p.getBoolean("onboarded", false))
             .put("googleConfigured", GoogleAuth.webClientId(c) != null)
+            .put("photo", p.getString("photo", null) ?: p.getString("googlePhoto", null) ?: "")
+            .put("customPhoto", p.getString("photo", null) != null)
     }
 
     fun save(c: Context, id: String, name: String, email: String) {
@@ -34,7 +37,17 @@ object Account {
     }
 
     fun clear(c: Context) {
-        prefs(c).edit().remove("id").remove("name").remove("email").remove("signedInAt").apply()
+        prefs(c).edit().remove("id").remove("name").remove("email").remove("signedInAt").remove("googlePhoto").apply()
+    }
+
+    /** The user's own picture (data URL), or null to remove it. Wins over the Google photo. */
+    fun setPhoto(c: Context, dataUrl: String?) {
+        prefs(c).edit().apply { if (dataUrl == null) remove("photo") else putString("photo", dataUrl) }.apply()
+    }
+
+    /** The Google account picture, kept separately so removing your own photo falls back to it. */
+    fun setGooglePhoto(c: Context, dataUrl: String?) {
+        prefs(c).edit().apply { if (dataUrl == null) remove("googlePhoto") else putString("googlePhoto", dataUrl) }.apply()
     }
 
     fun setOnboarded(c: Context) {
