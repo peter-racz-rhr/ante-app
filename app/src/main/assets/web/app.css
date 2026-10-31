@@ -459,10 +459,12 @@ a { color: inherit; }
 .game-screen.focus .rstake-row { grid-template-columns: 1fr; }
 
 /* ---------- appearance: mini app previews + flavour switch ---------- */
-.tcards { display: flex; gap: var(--s3); overflow-x: auto; scroll-snap-type: x mandatory; margin-inline: calc(var(--s4) * -1); padding: 8px var(--s4) 4px; scrollbar-width: none; }
-.tcard { flex: 0 0 112px; scroll-snap-align: center; display: flex; flex-direction: column; align-items: center; gap: var(--s2); font-size: var(--t-sm); font-weight: 600; color: var(--ivory-3); transition: color .2s ease; }
+.tcards { display: flex; gap: var(--s3); overflow-x: auto; scroll-snap-type: x proximity; scroll-padding-inline: 4px; padding: 8px 4px 4px; margin: -8px -4px 0; scrollbar-width: none;
+  /* stays inside the card; a soft fade at the edges hints there are more colours */
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 26px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 26px), transparent); }
+.tcard { flex: 0 0 96px; scroll-snap-align: start; display: flex; flex-direction: column; align-items: center; gap: var(--s2); font-size: var(--t-sm); font-weight: 600; color: var(--ivory-3); transition: color .2s ease; }
 .tcard[aria-checked="true"] { color: var(--ivory); }
-.mini { position: relative; width: 112px; height: 150px; border-radius: 22px; padding: 12px 10px 10px; background: var(--m-bg); display: flex; flex-direction: column; gap: 8px;
+.mini { position: relative; width: 96px; height: 128px; border-radius: 20px; padding: 10px 8px 8px; background: var(--m-bg); display: flex; flex-direction: column; gap: 8px;
   box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--m-text) 12%, transparent); transition: box-shadow .25s ease, transform .3s var(--spring); }
 .tcard[aria-checked="true"] .mini { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--m-text); transform: translateY(-2px); }
 :where(.mini i, .mini b) { display: block; }
@@ -482,12 +484,16 @@ a { color: inherit; }
 .m-nav b.on { width: 22px; height: 14px; border-radius: 7px; background: var(--m-line); }
 .flavour { display: flex; flex-direction: column; gap: var(--s3); padding: var(--s3); border-radius: var(--r-in); background: var(--surface-2); }
 .flavour-h { display: flex; align-items: center; gap: var(--s3); font-weight: 600; }
+.ftiles { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--s1); }
+.ftile { min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 2px; border-radius: var(--r-in); color: var(--ivory-3); transition: background .2s ease, color .2s ease; }
+.ftile[aria-checked="true"] { background: var(--surface-3); color: var(--ivory); }
+.fsw { width: 34px; height: 34px; border-radius: 50%; background: var(--f-bg); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--f-t) 22%, transparent); display: grid; place-items: center; transition: box-shadow .2s ease, transform .3s var(--spring); }
+.fsw i { width: 14px; height: 14px; border-radius: 50%; background: var(--f-t); box-shadow: 6px 6px 0 -2px var(--f-s); }
+.ftile[aria-checked="true"] .fsw { box-shadow: 0 0 0 2px var(--surface-3), 0 0 0 4px var(--accent); transform: scale(1.04); }
+.fname { max-width: 100%; font-size: 11px; font-weight: 600; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 400px) { .flavour { padding: var(--s2); } .ftiles { gap: 2px; } .fname { font-size: 10.5px; letter-spacing: -.02em; } }
 .flavour-ic { width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; background: var(--accent); color: var(--on-accent); }
 .flavour-ic svg { width: 20px; height: 20px; }
-.fsegs { display: flex; gap: 0; padding: 4px; border-radius: 999px; background: var(--bg); }
-.fseg { flex: 1 1 auto; height: 36px; padding-inline: 6px; border-radius: 999px; font-size: 12.5px; letter-spacing: -.01em; font-weight: 600; color: var(--ivory-3); white-space: nowrap; transition: background .25s ease, color .2s ease; }
-.fseg[aria-checked="true"] { background: var(--ivory); color: var(--bg); }
-@media (max-width: 380px) { .flavour { padding: var(--s2); } .fsegs { padding: 3px; } .fseg { padding-inline: 4px; font-size: 11.5px; letter-spacing: -.02em; } }
 
 /* ---------- slots ---------- */
 .cabinet { position: relative; width: 100%; max-width: 330px; padding: 18px 14px 14px; border-radius: var(--r-out); background: linear-gradient(180deg, var(--surface-3), var(--surface-2)); box-shadow: inset 0 0 0 1px var(--line-2), inset 0 2px 0 rgba(255, 255, 255, .06), 0 20px 34px -18px rgba(0, 0, 0, .8); transition: max-width .4s var(--ease); }

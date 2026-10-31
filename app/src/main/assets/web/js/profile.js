@@ -23,16 +23,20 @@
       <button class="tcard" role="radio" aria-checked="${cur.accent === id}" data-a="accent" data-v="${id}">
         ${miniApp(f.c, hex)}<span class="t-name">${esc(cap(id))}</span></button>`).join("");
     const flavours = Object.entries(P.FLAVORS).map(([id, fl]) =>
-      `<button role="radio" class="fseg" aria-checked="${cur.theme === id}" data-a="theme" data-v="${id}">${esc(fl.name)}</button>`).join("");
+      `<button role="radio" class="ftile" aria-checked="${cur.theme === id}" data-a="theme" data-v="${id}">
+        <span class="fsw" aria-hidden="true" style="--f-bg:${fl.c.base};--f-s:${fl.c.s1};--f-t:${fl.c.text}"><i></i></span><span class="fname">${esc(fl.name)}</span></button>`).join("");
     return `<div class="tcards" role="radiogroup" aria-label="Colour" id="tcards">${colours}</div>
       <div class="flavour">
         <div class="flavour-h"><span class="flavour-ic" aria-hidden="true">${App.ICON[FLAVOR_ICON[cur.theme]] || ""}</span><span>Flavour</span></div>
-        <div class="fsegs" role="radiogroup" aria-label="Flavour">${flavours}</div></div>`;
+        <div class="ftiles" role="radiogroup" aria-label="Flavour">${flavours}</div></div>`;
   }
   /** Keeps the chosen colour in view after a re-render. */
   App.afterProfile = () => {
     const row = document.getElementById("tcards"), on = row && row.querySelector('[aria-checked="true"]');
-    if (on) row.scrollLeft = Math.max(0, on.offsetLeft - (row.clientWidth - on.offsetWidth) / 2);
+    if (!on) return;
+    // Only scroll when the chosen colour would be hidden, and then just enough to show it whole.
+    const left = on.offsetLeft - row.offsetLeft, right = left + on.offsetWidth;
+    if (left < row.scrollLeft || right > row.scrollLeft + row.clientWidth) row.scrollLeft = Math.max(0, left - 4);
   };
 
   App.views.profile = function () {

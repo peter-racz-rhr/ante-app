@@ -137,7 +137,6 @@
           <div class="lrow"><span>Lost at the tables</span><span class="num">${t.lost ? signed(-t.lost) : signed(0)}</span></div>
           <div class="lrow total"><span>Net today</span><span class="num">${signed(net)}</span></div>
         </div>
-        <p class="card-note">Wins go back to the app you staked from. Every table keeps a small edge, so over time the house wins and you scroll less.</p>
       </section>
     </div>`;
   };
