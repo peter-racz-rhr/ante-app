@@ -2,6 +2,9 @@
    Every colour is a token; themes.js swaps the tokens for Neutral or a Catppuccin flavour.
    Radius rule: outer containers 24, inner elements 16. Spacing on a 4px scale. */
 :root {
+  /* Top margin: the header shares the camera band instead of sitting below it. The camera is a
+     small hole in the middle, so the title (left) and avatar (right) can rise into that band. */
+  --top-pad: max(var(--s4), calc(var(--safe-top, 0px) * .55));
   --bg: #0a0a0a; --bg-2: #0a0a0a; --surface: #141414; --surface-2: #1c1c1c; --surface-3: #262626;
   --line: #262626; --line-2: #333333;
   --ivory: #fafafa; --ivory-2: #a3a3a3; --ivory-3: #737373; --bar: #6b6b6b;
@@ -46,7 +49,7 @@ a { color: inherit; }
 
 /* ---------- frame ---------- */
 #app { height: 100%; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; position: relative; }
-.screen { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: calc(var(--s5) + var(--safe-top, 0px)) var(--s4) 124px; display: flex; flex-direction: column; gap: var(--s4); scrollbar-width: none; }
+.screen { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: var(--top-pad) var(--s4) 124px; display: flex; flex-direction: column; gap: var(--s4); scrollbar-width: none; }
 .screen::-webkit-scrollbar { display: none; }
 .screen > * { flex-shrink: 0; }
 .screen.enter > * { animation: rise .42s var(--ease) both; }
@@ -349,7 +352,7 @@ img.avatar { object-fit: cover; background: var(--surface-3); }
 .game-screen.focus { overflow: hidden; }
 .game-screen.focus .felt { position: fixed; inset: 0; z-index: 15; border-radius: 0; min-height: 100%; padding: calc(64px + var(--safe-top, 0px)) var(--s4) 180px; justify-content: center; }
 .game-screen.focus .topbar { opacity: 0; pointer-events: none; }
-.game-screen.focus .result { position: fixed; z-index: 16; top: calc(var(--s5) + var(--safe-top, 0px)); left: var(--s4); right: var(--s4); font-size: var(--t-lg); }
+.game-screen.focus .result { position: fixed; z-index: 16; top: var(--top-pad); left: var(--s4); right: var(--s4); font-size: var(--t-lg); }
 .game-screen.focus .controls { position: fixed; z-index: 16; left: var(--s4); right: var(--s4); margin-inline: auto; bottom: max(var(--s4), env(safe-area-inset-bottom, 0px)); max-width: 448px; background: color-mix(in oklab, var(--surface) 88%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); animation: rise .35s var(--ease) both; }
 .game-screen.focus .controls .rstake, .game-screen.focus .controls .stakebox, .game-screen.focus .controls .bets, .game-screen.focus .controls .rgrid, .game-screen.focus .controls .rtop, .game-screen.focus .controls .rtabs, .game-screen.focus .controls .rstake, .game-screen.focus .controls .rgrid-toggle, .game-screen.focus .controls .bets-head, .game-screen.focus .controls .seg2, .game-screen.focus .controls .history { display: none; }
 .game-screen.focus .wheel-wrap { max-width: min(440px, 92vw); }
@@ -427,7 +430,7 @@ img.avatar { object-fit: cover; background: var(--surface-3); }
 
 /* Every table fits one screen and never scrolls: the felt takes whatever height is left
    (its contents zoom down to fit, see fitFelt), and the controls keep their size. */
-.game-screen { overflow: hidden; gap: var(--s3); padding-top: calc(var(--s4) + var(--safe-top, 0px)); }
+.game-screen { overflow: hidden; gap: var(--s3); padding-top: var(--top-pad); }
 .game-screen .felt { flex: 1 1 0; min-height: 120px; padding: var(--s3); }
 .game-screen .felt > :not(.fx-canvas) { zoom: var(--fit, 1); }
 .game-screen .felt:has(.bj) { min-height: 120px; justify-content: center; }
@@ -573,7 +576,7 @@ img.avatar { object-fit: cover; background: var(--surface-3); }
 .lockicon svg { width: 34px; height: 34px; }
 
 /* ---------- onboarding ---------- */
-.welcome { padding-top: calc(var(--s5) + var(--safe-top, 0px)); padding-bottom: var(--s6); gap: var(--s5); }
+.welcome { padding-top: var(--top-pad); padding-bottom: var(--s6); gap: var(--s5); }
 .ob-top { display: flex; align-items: center; justify-content: space-between; min-height: 40px; }
 .ob-dots { display: flex; gap: 6px; }
 .ob-dots i { width: 8px; height: 4px; border-radius: 2px; background: var(--surface-3); transition: width .35s var(--spring), background .3s ease; }
