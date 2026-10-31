@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="512" height="512">
+  <title>Ante</title>
+  <rect width="108" height="108" rx="24" fill="#1E1E2E"/>
+  <path d="M54,26.5a27.5,27.5 0,1 1,0,55a27.5,27.5 0,1 1,0,-55" fill="none" stroke="#CDD6F4" stroke-width="4.95"/>
+  <path d="M44.375,41.625L63.625,41.625L63.625,44.925L56.75,54L63.625,63.075L63.625,66.375L44.375,66.375L44.375,63.075L51.25,54L44.375,44.925z" fill="#CDD6F4"/>
+</svg>

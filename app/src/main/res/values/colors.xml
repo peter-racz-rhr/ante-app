@@ -2,4 +2,6 @@
 <resources>
     <color name="ante_bg">#0A0A0A</color>
     <color name="ante_brass">#D9B56E</color>
+    <!-- launcher icon background: Catppuccin Mocha base -->
+    <color name="ante_icon_bg">#1E1E2E</color>
 </resources>

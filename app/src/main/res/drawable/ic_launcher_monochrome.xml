@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Themed (Android 13+) icon: Android recolours it. The Ante mark (hourglass in a ring), scaled from the 24-unit UI logo into the
+     66dp safe zone of a 108dp adaptive icon, so no launcher mask can clip it. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path android:fillColor="#FFFFFF" android:pathData="M44,42h20v3l-7,9l7,9v3h-20v-3l7,-9l-7,-9z" />
-    <path android:fillColor="#FFFFFF" android:fillType="evenOdd" android:pathData="M54,24a30,30 0,1 1,0 60a30,30 0,1 1,0 -60z M54,30a24,24 0,1 0,0 48a24,24 0,1 0,0 -48z" />
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="4.95" android:fillColor="#00000000" android:pathData="M54,26.5a27.5,27.5 0,1 1,0,55a27.5,27.5 0,1 1,0,-55" />
+    <path android:fillColor="#FFFFFF" android:pathData="M44.375,41.625L63.625,41.625L63.625,44.925L56.75,54L63.625,63.075L63.625,66.375L44.375,66.375L44.375,63.075L51.25,54L44.375,44.925z" />
 </vector>
