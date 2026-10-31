@@ -21,10 +21,26 @@
   ACCENTS.neutral = { white: "#fafafa", blue: "#60a5fa", violet: "#a78bfa", rose: "#fb7185", amber: "#fbbf24", emerald: "#34d399" };
   const DEFAULT_ACCENT = { neutral: "white", latte: "mauve", frappe: "mauve", macchiato: "mauve", mocha: "mauve" };
 
-  let prefs = { theme: "neutral", accent: "white", name: "", sound: true, haptics: true };
+  /* Clock fonts for the big numbers. lg/sm are the weights for large and small sizes; vary is
+     font-variation-settings ("ELSH" 0 gives Bitcount its round dots). */
+  const CLOCKS = {
+    bitcount: { name: "Bitcount", family: "Bitcount Grid Double", lg: 330, sm: 430, vary: '"ELSH" 0' },
+    bitsingle: { name: "Bitcount Single", family: "Bitcount Single", lg: 400, sm: 500, vary: '"ELSH" 0' },
+    doto: { name: "Doto", family: "Doto", lg: 800, sm: 900, vary: "normal" },
+    dotgothic: { name: "DotGothic", family: "DotGothic16", lg: 400, sm: 400, vary: "normal" },
+    handjet: { name: "Handjet", family: "Handjet", lg: 500, sm: 600, vary: "normal" },
+    workbench: { name: "Workbench", family: "Workbench", lg: 400, sm: 400, vary: "normal" },
+    sixtyfour: { name: "Sixtyfour", family: "Sixtyfour", lg: 400, sm: 400, vary: "normal" },
+    silkscreen: { name: "Silkscreen", family: "Silkscreen", lg: 400, sm: 400, vary: "normal" },
+    pixelify: { name: "Pixelify", family: "Pixelify Sans", lg: 500, sm: 600, vary: "normal" },
+    vt323: { name: "VT323", family: "VT323", lg: 400, sm: 400, vary: "normal" },
+  };
+
+  let prefs = { theme: "neutral", accent: "white", clock: "bitcount", name: "", sound: true, haptics: true };
   try { prefs = Object.assign(prefs, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) { /* storage blocked */ }
   if (!FLAVORS[prefs.theme]) prefs.theme = "neutral";
   if (!ACCENTS[prefs.theme][prefs.accent]) prefs.accent = DEFAULT_ACCENT[prefs.theme];
+  if (!CLOCKS[prefs.clock]) prefs.clock = "bitcount";
 
   /** Text colour for the accent: whichever of dark ink or white has the higher WCAG contrast. */
   function luminance(hex) {
@@ -52,17 +68,22 @@
     root.dataset.light = String(f.light);
     root.style.colorScheme = f.light ? "light" : "dark";
     const meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.content = c.mantle;
+    const k = CLOCKS[prefs.clock];
+    set("--f-dot", `"${k.family}", "Geist", monospace`); set("--dot-lg", k.lg); set("--dot-sm", k.sm); set("--dot-vary", k.vary);
+    // The native window behind the page takes the same colour, so no edge ever shows a different one.
+    try { if (window.AnteNative && window.AnteNative.setBackground) window.AnteNative.setBackground(c.mantle); } catch (e) { /* older app */ }
   }
 
   function save() { try { localStorage.setItem(KEY, JSON.stringify(prefs)); } catch (e) { /* storage blocked */ } }
 
   window.AntePrefs = {
-    FLAVORS, ACCENTS,
+    FLAVORS, ACCENTS, CLOCKS,
     get: () => Object.assign({}, prefs),
     isLight: () => FLAVORS[prefs.theme].light,
     set(patch) {
       Object.assign(prefs, patch);
       if (patch.theme && !ACCENTS[prefs.theme][prefs.accent]) prefs.accent = DEFAULT_ACCENT[prefs.theme];
+      if (!CLOCKS[prefs.clock]) prefs.clock = "bitcount";
       prefs.name = String(prefs.name || "").slice(0, 40);
       save(); apply();
       return Object.assign({}, prefs);

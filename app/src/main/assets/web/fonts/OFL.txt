@@ -1,4 +1,12 @@
 Geist — Copyright 2024 The Geist Project Authors (https://github.com/vercel/geist-font)
 Bitcount — Copyright 2024 The Bitcount Project Authors (https://github.com/petrvanblokland/TYPETR-Bitcount)
+Doto — Copyright 2024 The Doto Project Authors (https://github.com/oliverlalan/Doto)
+DotGothic16 — Copyright 2020 The DotGothic16 Project Authors (https://github.com/fontworks-fonts/DotGothic16)
+Handjet — Copyright 2023 The Handjet Project Authors (https://github.com/rosettatype/handjet)
+Workbench — Copyright 2023 The Workbench Project Authors (https://github.com/jenskutilek/workbench)
+Sixtyfour — Copyright 2023 The Sixtyfour Project Authors (https://github.com/jenskutilek/sixtyfour)
+Silkscreen — Copyright 2001 The Silkscreen Project Authors (https://github.com/googlefonts/silkscreen)
+Pixelify Sans — Copyright 2021 The Pixelify Sans Project Authors (https://github.com/eifetx/Pixelify-Sans)
+VT323 — Copyright 2011 The VT323 Project Authors (peter.hull@oikoi.com)
 
-Both licensed under the SIL Open Font License, Version 1.1: https://openfontlicense.org
+All licensed under the SIL Open Font License, Version 1.1: https://openfontlicense.org

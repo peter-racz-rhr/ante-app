@@ -343,7 +343,7 @@ async function noOverflow(p, label) {
   check(await st.isVisible("text=Blocking on"), "status shows blocking is on");
   check(await st.isVisible(".navpill .ndot"), "profile tab gets a dot when something needs care");
   await st.click('[data-t="profile"]');
-  check(await st.isVisible("text=Restricted"), "profile flags restricted background use");
+  check(await st.isVisible('[data-a="settingsGo"][data-go="battery"]'), "profile flags restricted background use with an Allow button");
   await st.click('[data-a="strictOn"]');
   await st.click('[data-a="agreeStrict"]');
   await st.waitForTimeout(150);
@@ -366,7 +366,7 @@ async function noOverflow(p, label) {
   await st.click('[data-a="theme"][data-v="latte"]');
   await shot(st, "24c-profile-latte");
   await st.fill("#name-input", "Péter");
-  check((await st.textContent(".profile-card .avatar")).trim() === "P", "display name updates the avatar");
+  check((await st.textContent(".me .avatar")).trim() === "P", "display name updates the avatar");
   check(await st.isVisible("text=Tip on Ko-fi"), "Ko-fi support card is there");
   await st.click('[data-a="doc"][data-v="imprint"]');
   check(await st.isVisible("text=Péter Rácz"), "imprint shows the provider");

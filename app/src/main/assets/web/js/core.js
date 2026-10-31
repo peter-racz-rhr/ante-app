@@ -84,8 +84,8 @@
     close: ic('<path d="M6 6l12 12M18 6L6 18"/>', 20),
     plus: ic('<path d="M12 5v14M5 12h14"/>', 18),
     home: ic('<path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/>'),
-    // two playing cards, fanned
-    play: ic('<rect x="3.2" y="5.2" width="10.5" height="14.6" rx="2.2" transform="rotate(-10 8.4 12.5)"/><rect x="10" y="4" width="10.5" height="14.6" rx="2.2" transform="rotate(8 15.2 11.3)"/><path d="M15.4 9.6c-.9-1-2.6-.4-2.6 1 0 1.6 2.6 3 2.6 3s2.6-1.4 2.6-3c0-1.4-1.7-2-2.6-1z" transform="rotate(8 15.2 11.3)"/>'),
+    // two cards: the back one shows only its edge, so no lines cross the front card
+    play: ic('<rect x="9" y="3.5" width="11" height="16" rx="2.4"/><path d="M9 6.3 5.6 7.2a2 2 0 0 0-1.4 2.4l2.9 10.6a2 2 0 0 0 2.4 1.4l3.3-.9"/><path d="M14.5 8.6 12.3 11.5l2.2 2.9 2.2-2.9z"/>'),
     sun: ic('<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/>'),
     moon: ic('<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>'),
     half: ic('<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17" /><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/>'),
@@ -95,6 +95,12 @@
     lock: ic('<rect x="5" y="10.5" width="14" height="10" rx="3"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/>', 18),
     coffee: ic('<path d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16M8 3.5v2M12 3.5v2"/>', 20),
     doc: ic('<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h5M10 16h5"/>', 20),
+    vibrate: ic('<rect x="8" y="4" width="8" height="16" rx="2"/><path d="M4.5 8.5v7M19.5 8.5v7M2 10.5v3M22 10.5v3"/>'),
+    shield: ic('<path d="M12 3.5 5 6.3v5.4c0 4.3 3 7.4 7 8.8 4-1.4 7-4.5 7-8.8V6.3z"/><path d="m9 12 2.2 2.2L15.3 10"/>'),
+    battery: ic('<rect x="3" y="7.5" width="16" height="9" rx="2.2"/><path d="M21 10.5v3M6.5 10.5v3M9.5 10.5v3"/>'),
+    clock: ic('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>'),
+    type: ic('<path d="M5 7V5h14v2M12 5v14M9 19h6"/>'),
+    info: ic('<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8v.2"/>'),
     palette: ic('<path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.6-.9 1.2-1.8-.5-1-.1-2.2 1.2-2.2H17a4 4 0 0 0 4-4c0-5.5-4-10-9-10z"/><circle cx="7.5" cy="11" r="1.2" fill="currentColor"/><circle cx="10.5" cy="7.5" r="1.2" fill="currentColor"/><circle cx="15" cy="7.5" r="1.2" fill="currentColor"/>', 20),
     logo: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 7.5h7v1.2L13 12l2.5 3.3v1.2h-7v-1.2L11 12 8.5 8.7z" fill="currentColor"/></svg>',
     google: '<svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>',

@@ -67,6 +67,18 @@ class AnteBridge(
         return true
     }
 
+    /** Paints the window and WebView behind the page in the theme's background (#RRGGBB only). */
+    @JavascriptInterface
+    fun setBackground(hex: String) {
+        if (!HEX_COLOR.matches(hex)) return
+        val color = android.graphics.Color.parseColor(hex)
+        activity.runOnUiThread {
+            webView.setBackgroundColor(color)
+            (webView.parent as? android.view.View)?.setBackgroundColor(color)
+            activity.window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(color))
+        }
+    }
+
     /* ---- Over-the-air UI updates ---- */
 
     /** The page has drawn: this UI version starts fine. */
@@ -291,6 +303,7 @@ class AnteBridge(
 
     companion object {
         private val HAPTIC_KINDS = setOf("tap", "tick", "win", "loss")
+        private val HEX_COLOR = Regex("^#[0-9a-fA-F]{6}$")
         private val OUTSIDE_LINKS = setOf("https://ko-fi.com/peteracz", "mailto:peter.racz.rhr@gmail.com")
         private const val WAIT_MS = 30_000L
         private const val WAIT_VALID_MS = 10 * 60_000L
