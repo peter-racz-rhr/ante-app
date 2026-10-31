@@ -24,6 +24,12 @@ async function page(browser, query, opts = {}) {
   await p.waitForTimeout(300);
   return p;
 }
+/** Polls a condition with evaluate(). Some Playwright versions run waitForFunction through eval, which the app's CSP rightly forbids. */
+async function waitUntil(p, fn, timeout) {
+  const end = Date.now() + timeout;
+  while (Date.now() < end) { if (await p.evaluate(fn)) return; await p.waitForTimeout(50); }
+  throw new Error("timed out waiting for " + fn.toString().slice(0, 80));
+}
 const shot = (p, name) => p.screenshot({ path: path.join(OUT, name + ".png") });
 const leftOf = (p, pkg) => p.evaluate(k => window.Ante.state().limits.find(l => l.pkg === k).leftSec, pkg);
 async function noOverflow(p, label) {
@@ -172,7 +178,7 @@ async function noOverflow(p, label) {
   }
   check(await p.isVisible(".wheel-result.show"), "winning number shows in the wheel");
   await shot(p, "10-roulette-done");
-  await p.waitForFunction(() => !document.getElementById("screen").classList.contains("focus"), null, { timeout: 4000 });
+  await waitUntil(p, () => !!(() => !document.getElementById("screen").classList.contains("focus"))(), 4000);
   check(true, "the table snaps back after the round");
   await noOverflow(p, "roulette");
   await p.click('[data-a="leave"]');
@@ -214,7 +220,7 @@ async function noOverflow(p, label) {
   await p.waitForTimeout(200);
   await p.click('[data-a="stakeSet"][data-v="60"]');
   await p.click('[data-a="bjDeal"]');
-  await p.waitForFunction(() => document.querySelector('[data-a="bjStand"]') || document.querySelector('[data-a="bjDeal"]:not([disabled])'), null, { timeout: 6000 });
+  await waitUntil(p, () => !!(() => document.querySelector('[data-a="bjStand"]') || document.querySelector('[data-a="bjDeal"]:not([disabled])'))(), 6000);
   await shot(p, "13-blackjack-dealt");
   check(!(await p.$('[data-a="leave"]:not([disabled])')) || !(await p.$('[data-a="bjStand"]')), "back button locked while a hand is open");
   if (await p.$('[data-a="bjStand"]')) await p.click('[data-a="bjStand"]');

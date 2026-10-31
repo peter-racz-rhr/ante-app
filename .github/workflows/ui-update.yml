@@ -8,7 +8,8 @@ on:
     paths:
       - "app/src/main/assets/web/**"
       - "app/src/main/java/com/ante/app/Ota.kt"
-      - ".github/workflows/ante-web-update.yml"
+      - ".github/workflows/ui-update.yml"
+      - "scripts/ota-publish.sh"
   workflow_dispatch:
 
 permissions:

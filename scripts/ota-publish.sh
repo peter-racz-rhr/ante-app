@@ -20,6 +20,7 @@ MIN_NATIVE=$(sed -n 's/.*const val NATIVE_API = \([0-9]*\).*/\1/p' "$OTA_KT")
 [ -n "$MIN_NATIVE" ] || { echo "NATIVE_API not found in Ota.kt" >&2; exit 1; }
 
 mkdir -p "$OUT"
+OUT=$(cd "$OUT" && pwd)   # absolute, because the zip step below runs inside the web folder
 ZIP="$OUT/web-$VERSION.zip"
 rm -f "$ZIP"
 (cd "$WEB" && zip -qrX "$ZIP" .)
