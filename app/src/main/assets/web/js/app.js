@@ -201,6 +201,7 @@
     if (ui.view === "game") { App.mountGame(); App.renderControls(); }
     if (ui.view === "tables") App.afterTables();
     if (ui.view === "welcome") App.afterWelcome();
+    if (ui.view === "profile" && App.afterProfile) App.afterProfile();
     App.paintOverlay();
     if (App.afterRender) App.afterRender();
   };
@@ -248,7 +249,6 @@
   App.$app.addEventListener("keydown", e => { // role="button" cards
     if ((e.key === "Enter" || e.key === " ") && e.target.matches('[role="button"][data-a]')) { e.preventDefault(); onClick(e); }
   });
-  App.$app.addEventListener("input", e => { if (e.target.id === "stake-slider") App.onStakeSlider(e.target); });
   App.$overlay.addEventListener("input", e => { if (e.target.id === "app-search" && ui.sheet) { ui.sheet.q = e.target.value; App.paintOverlay(); } });
   document.addEventListener("keydown", e => { if (e.key === "Escape") window.anteBack(); });
   window.addEventListener("resize", () => { App.fitText(); placeNav(); });

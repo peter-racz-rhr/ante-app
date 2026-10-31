@@ -84,7 +84,11 @@
     close: ic('<path d="M6 6l12 12M18 6L6 18"/>', 20),
     plus: ic('<path d="M12 5v14M5 12h14"/>', 18),
     home: ic('<path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/>'),
-    play: ic('<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3"/>'),
+    // two playing cards, fanned
+    play: ic('<rect x="3.2" y="5.2" width="10.5" height="14.6" rx="2.2" transform="rotate(-10 8.4 12.5)"/><rect x="10" y="4" width="10.5" height="14.6" rx="2.2" transform="rotate(8 15.2 11.3)"/><path d="M15.4 9.6c-.9-1-2.6-.4-2.6 1 0 1.6 2.6 3 2.6 3s2.6-1.4 2.6-3c0-1.4-1.7-2-2.6-1z" transform="rotate(8 15.2 11.3)"/>'),
+    sun: ic('<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/>'),
+    moon: ic('<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>'),
+    half: ic('<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17" /><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/>'),
     user: ic('<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>'),
     soundOn: ic('<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>', 20),
     soundOff: ic('<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>', 20),

@@ -30,8 +30,20 @@ async function waitUntil(p, fn, timeout) {
   while (Date.now() < end) { if (await p.evaluate(fn)) return; await p.waitForTimeout(50); }
   throw new Error("timed out waiting for " + fn.toString().slice(0, 80));
 }
+/** Inside a game: tap the stake until it draws on `pkg`'s minutes. */
+async function stakeFrom(p, pkg) {
+  for (let k = 0; k < 6 && (await p.evaluate(() => window.App.ui.stakePkg)) !== pkg; k++) await p.click('[data-a="stakeCycle"]');
+}
+/** Inside a game: step the stake down to one minute. */
+async function stakeMin(p) {
+  while (await p.$('[data-a="stake"][data-d="-1"]:not([disabled])')) await p.click('[data-a="stake"][data-d="-1"]');
+}
 const shot = (p, name) => p.screenshot({ path: path.join(OUT, name + ".png") });
 const leftOf = (p, pkg) => p.evaluate(k => window.Ante.state().limits.find(l => l.pkg === k).leftSec, pkg);
+async function noScroll(p, label) {
+  const f = await p.evaluate(() => { const sc = document.getElementById("screen"); return [sc.scrollHeight, sc.clientHeight]; });
+  check(f[0] <= f[1] + 1, `${label} fits one screen (${f[0]} <= ${f[1]})`);
+}
 async function noOverflow(p, label) {
   const w = await p.evaluate(() => [document.documentElement.scrollWidth, window.innerWidth]);
   check(w[0] <= w[1], `${label}: no horizontal overflow (${w[0]} <= ${w[1]})`);
@@ -100,8 +112,11 @@ async function noOverflow(p, label) {
 
   /* Coin */
   const ig = "com.instagram.android";
-  await p.click('[data-a="stakeApp"][data-pkg="' + ig + '"]');
+  check(!(await p.$("#stake-val")), "the Play tab shows only the games, no stake panel");
   await p.click('[data-a="game"][data-id="coin"]');
+  await p.waitForTimeout(250); await noScroll(p, "coin");
+  await stakeFrom(p, ig);
+  check(await p.evaluate(() => window.App.ui.stakePkg) === "com.instagram.android", "tapping the stake switches which app's time is staked");
   let before = await leftOf(p, ig);
   await p.click('[data-a="coinFlip"]');
   await p.waitForTimeout(600);
@@ -139,14 +154,17 @@ async function noOverflow(p, label) {
   }
   await p.setViewportSize({ width: 390, height: 844 }); await p.waitForTimeout(250);
   // 3 bets × 1:00 always fits after the coin round.
-  while (await p.$('[data-a="stake"][data-d="-60"]:not([disabled])')) await p.click('[data-a="stake"][data-d="-60"]');
+  await stakeMin(p);
   await p.click('[data-a="rClear"]');
   await p.click('[data-a="rToggle"][data-v="black"]');
   await p.click('[data-a="rToggle"][data-v="odd"]');
   await p.click('[data-a="rTab"][data-v="numbers"]');
   await p.click('[data-a="rToggle"][data-v="n:17"]');
   await shot(p, "08c-roulette-numbers");
-  check(await p.isVisible("text=3 bets"), "three bets show on the spin button");
+  {
+    const t = await p.evaluate(() => { const b = document.querySelector("#controls .rgo"); return (b ? b.textContent : "none") + " | stake " + window.App.ui.stake + " from " + window.App.ui.stakePkg + " left " + JSON.stringify(window.Ante.state().limits.map(l => [l.pkg.split(".")[1], l.leftSec])); });
+    check(/3 bets/.test(t), "three bets show on the spin button (" + t + ")");
+  }
   await p.click('[data-a="rTab"][data-v="outside"]');
   await p.click('[data-a="rToggle"][data-v="odd"]');
   await p.click('[data-a="rToggle"][data-v="odd"]');
@@ -185,8 +203,10 @@ async function noOverflow(p, label) {
 
   /* Slots */
   await p.click('[data-a="game"][data-id="slots"]');
+  await p.waitForTimeout(250); await noScroll(p, "slots");
   await p.waitForTimeout(200);
-  await p.click('[data-a="stakeSet"][data-v="60"]');
+  await stakeFrom(p, ig);
+  await stakeMin(p);
   {
     // Pull the lever: drag the knob down past the catch.
     const lv = await p.$(".lever"); const b = await lv.boundingBox();
@@ -215,10 +235,11 @@ async function noOverflow(p, label) {
   await p.click('[data-a="leave"]');
 
   /* Blackjack (from TikTok's untouched budget, so earlier losing streaks can't starve it) */
-  await p.click('[data-a="stakeApp"][data-pkg="com.zhiliaoapp.musically"]');
   await p.click('[data-a="game"][data-id="blackjack"]');
+  await p.waitForTimeout(250); await noScroll(p, "blackjack");
   await p.waitForTimeout(200);
-  await p.click('[data-a="stakeSet"][data-v="60"]');
+  await stakeFrom(p, "com.zhiliaoapp.musically");
+  await stakeMin(p);
   await p.click('[data-a="bjDeal"]');
   await waitUntil(p, () => !!(() => document.querySelector('[data-a="bjStand"]') || document.querySelector('[data-a="bjDeal"]:not([disabled])'))(), 6000);
   await shot(p, "13-blackjack-dealt");
@@ -232,6 +253,7 @@ async function noOverflow(p, label) {
 
   /* Poker */
   await p.click('[data-a="game"][data-id="poker"]');
+  await p.waitForTimeout(250); await noScroll(p, "poker");
   await p.waitForTimeout(200);
   await p.click('[data-a="pDeal"]');
   await p.waitForSelector('[data-a="pDraw"]', { timeout: 6000 });
@@ -283,7 +305,9 @@ async function noOverflow(p, label) {
   check((await b.textContent('[data-a="openApp"]')).includes("10:00"), "open button follows the chosen time");
   await b.click('[data-a="toTables"]');
   await b.waitForTimeout(200);
-  check(!(await b.$(".from")), "block tables are locked to the blocked app");
+  await b.click('[data-a="game"][data-id="coin"]'); await b.waitForTimeout(150);
+  check(await b.evaluate(() => document.getElementById("stake-val").disabled), "block tables are locked to the blocked app");
+  await b.click('[data-a="leave"]'); await b.waitForTimeout(150);
   await shot(b, "19-block-tables");
   check(await b.evaluate(() => window.anteBack()) === true, "back from block tables returns to the block screen");
   await b.click('[data-a="openApp"]');
@@ -418,6 +442,7 @@ async function noOverflow(p, label) {
   await noOverflow(s, "tables at 340px");
   await shot(s, "21-small-tables");
   await s.click('[data-a="game"][data-id="poker"]');
+  await noScroll(s, "poker at 340px");
   await s.click('[data-a="pDeal"]');
   await s.waitForSelector('[data-a="pDraw"]', { timeout: 4000 });
   await noOverflow(s, "poker at 340px");

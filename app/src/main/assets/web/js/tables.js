@@ -21,34 +21,36 @@
   }
   const canStake = extra => { const l = stakeLimit(); return !!l && l.leftSec >= (extra || ui.stake) && ui.stake >= 60; };
 
-  /** Stake readout with −/+, a slider and quick picks. */
-  function stakeBox(locked) {
+  /** Stake steps: a minute at a time, five once the stake reaches ten minutes. */
+  const stepUp = () => (ui.stake >= 600 ? 300 : 60);
+  const stepDown = () => (ui.stake > 600 ? 300 : 60);
+  /** Apps whose minutes can be staked right now. */
+  const stakeable = () => App.S.limits.filter(l => l.leftSec >= 60);
+
+  /**
+   * The one stake control every table uses: − stake + and the play button, in one row.
+   * Tapping the stake switches which app's minutes are on the line. `count` is the number
+   * of bets the stake is multiplied by (roulette).
+   */
+  function stakeRow(locked, action, opts) {
+    const o = Object.assign({ count: 1, perBet: false, label: "Play", empty: "" }, opts);
     const l = stakeLimit(); if (!l) return "";
     clampStake();
-    const maxMin = Math.max(1, Math.floor(l.leftSec / 60)), allIn = maxMin * 60;
-    const presets = [[60, "1 min"], [300, "5 min"], [600, "10 min"], [allIn, "All in"]];
-    const dis = locked ? "disabled" : "";
-    const pct = maxMin > 1 ? ((ui.stake / 60 - 1) / (maxMin - 1)) * 100 : 100;
-    return `<div class="stakebox">
-      <div class="stake-head"><span class="eyebrow">Stake</span><span class="muted">from ${esc(l.label)} · <span class="num">${fmt(l.leftSec)}</span> left</span></div>
-      <div class="stake-row">
-        <button class="step" data-a="stake" data-d="-60" aria-label="One minute less" ${dis || (ui.stake <= 60 ? "disabled" : "")}>−</button>
-        <output class="stake-val" id="stake-val" aria-live="polite"><span class="dotnum">${fmt(ui.stake)}</span></output>
-        <button class="step" data-a="stake" data-d="60" aria-label="One minute more" ${dis || (ui.stake + 60 > l.leftSec ? "disabled" : "")}>+</button>
-      </div>
-      <input class="slider" id="stake-slider" type="range" min="1" max="${maxMin}" step="1" value="${ui.stake / 60}" style="--p:${pct.toFixed(1)}%" aria-label="Stake in minutes" ${dis}>
-      <div class="chips">${presets.map(([v, t]) => `<button class="chip" data-a="stakeSet" data-v="${v}" aria-pressed="${ui.stake === v && v > 0}" ${dis || (v < 60 || v > l.leftSec ? "disabled" : "")}>${t}</button>`).join("")}</div>
-    </div>`;
+    const dis = locked ? "disabled" : "", n = Math.max(1, o.count), total = ui.stake * o.count;
+    const canSwitch = !App.BLOCK && stakeable().length > 1 && !locked;
+    let btn;
+    if (o.empty) btn = `<button class="btn primary big rgo" disabled>${esc(o.empty)}</button>`;
+    else if (canStake(total) || locked) btn = `<button class="btn primary big rgo" data-a="${action}" ${ui.busy ? "disabled" : ""}><span>${esc(o.label)}</span><small>${o.count > 1 ? `${o.count} bets · ` : ""}${esc(fmt(total))}</small></button>`;
+    else btn = `<button class="btn primary big rgo" disabled><span>Not enough</span><small>${esc(fmt(l.leftSec))} left</small></button>`;
+    return `<div class="rstake-row">
+      <div class="rstake" role="group" aria-label="${o.perBet ? "Stake per bet" : "Stake"}">
+        <button class="step" data-a="stake" data-d="-1" aria-label="Less" ${dis || (ui.stake <= 60 ? "disabled" : "")}>−</button>
+        <button class="rstake-val" id="stake-val" data-a="stakeCycle" ${canSwitch ? "" : "disabled"} aria-label="Stake ${esc(fmt(ui.stake))}${o.perBet ? " per bet" : ""} from ${esc(l.label)}, ${esc(fmt(l.leftSec))} left${canSwitch ? ". Tap to stake another app" : ""}">
+          <span class="dotnum">${fmt(ui.stake)}</span>
+          <small>${App.appIcon(l.pkg, "xs")}<span class="num">${esc(fmt(l.leftSec))}</span></small></button>
+        <button class="step" data-a="stake" data-d="1" aria-label="More" ${dis || ((ui.stake + stepUp()) * n > l.leftSec ? "disabled" : "")}>+</button>
+      </div>${btn}</div>`;
   }
-  App.onStakeSlider = function (el) {
-    ui.stake = Number(el.value) * 60; clampStake();
-    const v = document.getElementById("stake-val"); if (v) v.innerHTML = `<span class="dotnum">${fmt(ui.stake)}</span>`;
-    const max = Number(el.max), pct = max > 1 ? ((Number(el.value) - 1) / (max - 1)) * 100 : 100;
-    el.style.setProperty("--p", pct.toFixed(1) + "%");
-    document.querySelectorAll('[data-a="stakeSet"]').forEach(b => b.setAttribute("aria-pressed", String(Number(b.dataset.v) === ui.stake)));
-    const go = document.querySelector("#controls .btn.primary[data-go]"); if (go) go.textContent = go.dataset.go.replace("{s}", fmt(ui.stake));
-    App.haptic("tick");
-  };
 
   /* ---------- list ---------- */
   App.views.tables = function () {
@@ -60,13 +62,11 @@
     if (!l || l.leftSec < 60) {
       return `<div class="screen" id="screen">${head}<section class="panel"><h2 class="h3">Nothing to stake</h2><p class="muted">${S.limits.length ? "Every limited app is under a minute for today. Budgets reset at midnight." : "Add a limit on Home first. Its minutes are your chips."}</p></section></div>`;
     }
-    const from = App.BLOCK ? "" : `<div class="from" role="group" aria-label="Stake from">${S.limits.map(x => `<button class="from-chip" data-a="stakeApp" data-pkg="${esc(x.pkg)}" aria-pressed="${ui.stakePkg === x.pkg}" ${x.leftSec < 60 ? "disabled" : ""}>${App.appIcon(x.pkg, "sm")}<span>${esc(x.label)}</span><span class="num">${fmt(x.leftSec)}</span></button>`).join("")}</div>`;
     const games = G.GAMES.map((g, i) => `<button class="game ${i === 0 ? "feature" : ""} g-${g.id}" data-a="game" data-id="${g.id}">
         <span class="art" aria-hidden="true">${FX.GAME_ART[g.id]()}</span>
         <span class="gtext"><span class="gname">${g.name}</span><span class="grule">${g.rule}</span></span>
         <span class="rtp"><span class="num">${g.rtp}</span> back</span></button>`).join("");
     return `<div class="screen" id="screen">${head}
-      <section class="panel">${from}${stakeBox(false)}</section>
       <section class="games" aria-label="Tables">${games}</section>
       <p class="fine">No real money. "Back" is the average share of a stake each table returns, so the house keeps a little every round.</p>
     </div>`;
@@ -103,8 +103,42 @@
         if (ui.round && ui.round.phase === "dealt" && !ui.busy) { ui.round.held[i] = !ui.round.held[i]; table.setHold(i, ui.round.held[i]); App.haptic("tap"); App.SFX.play("chip"); }
       });
     }
+    watchFit();
   };
-  App.unmountGame = () => { if (table && table.destroy) table.destroy(); table = null; };
+  App.unmountGame = () => { if (table && table.destroy) table.destroy(); table = null; if (fitRo) { fitRo.disconnect(); fitRo = null; } if (fitMo) { fitMo.disconnect(); fitMo = null; } };
+
+  /* Every table fits one screen: the felt gets whatever height is left, and its contents are
+     zoomed down (never up) to fit it. Roulette sizes its own wheel, so it is left alone. */
+  const MIN_FIT = 0.55;
+  let fitRo = null, fitMo = null, fitRaf = 0;
+  function fitFelt() {
+    const felt = document.getElementById("table");
+    if (!felt || ui.game === "roulette") return;
+    const kids = [...felt.children].filter(k => getComputedStyle(k).position !== "absolute");
+    if (!kids.length) return;
+    const cs = getComputedStyle(felt);
+    const gap = parseFloat(cs.rowGap || cs.gap || 0) || 0;
+    const room = felt.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - gap * (kids.length - 1);
+    const z = parseFloat(felt.style.getPropertyValue("--fit")) || 1;
+    const natural = kids.reduce((a, k) => a + k.getBoundingClientRect().height, 0) / z;
+    if (natural <= 0 || room <= 0) return;
+    const next = Math.max(MIN_FIT, Math.min(1, room / natural));
+    if (Math.abs(next - z) > 0.01) felt.style.setProperty("--fit", next.toFixed(3));
+  }
+  App.fitFelt = () => { cancelAnimationFrame(fitRaf); fitRaf = requestAnimationFrame(fitFelt); };
+  function watchFit() {
+    const felt = document.getElementById("table"); if (!felt || !window.ResizeObserver) return;
+    if (fitRo) fitRo.disconnect();
+    if (fitMo) fitMo.disconnect();
+    fitRo = new ResizeObserver(App.fitFelt);
+    fitRo.observe(felt);
+    [...felt.children].forEach(k => fitRo.observe(k));
+    if (window.MutationObserver) {
+      fitMo = new MutationObserver(() => { [...felt.children].forEach(k => fitRo && fitRo.observe(k)); App.fitFelt(); });
+      fitMo.observe(felt, { childList: true, subtree: true });
+    }
+    App.fitFelt();
+  }
   function paytableSlots(el) {
     const rows = [["seven", "100×"], ["bar", "40×"], ["bell", "20×"], ["diamond", "10×"], ["cherry", "5×"]];
     const div = document.createElement("div");
@@ -119,41 +153,29 @@
     const r = document.getElementById("result");
     if (r) { r.className = "result " + (ui.res ? ui.res.tone : ""); if (!ui.res) r.textContent = ""; }
     const locked = ui.busy || !!ui.round;
-    const go = (label, action) => canStake() || locked
-      ? `<button class="btn primary big" data-a="${action}" data-go="${esc(label)}" ${ui.busy ? "disabled" : ""}>${esc(label.replace("{s}", fmt(ui.stake)))}</button>`
-      : `<p class="muted center">Not enough ${esc(App.labelOf(ui.stakePkg))} time for this stake.</p>`;
     let html = "";
     if (ui.game === "coin") {
       html = `<div class="seg2" role="group" aria-label="Your call">
           <button class="chip" data-a="coinPick" data-v="H" aria-pressed="${ui.pick === "H"}" ${locked ? "disabled" : ""}>Heads</button>
           <button class="chip" data-a="coinPick" data-v="T" aria-pressed="${ui.pick === "T"}" ${locked ? "disabled" : ""}>Tails</button></div>
-        ${stakeBox(locked)}${go("Flip for {s}", "coinFlip")}`;
+        ${stakeRow(locked, "coinFlip", { label: "Flip" })}`;
     } else if (ui.game === "roulette") {
       const bets = ui.rbets || [], n = bets.length, total = ui.stake * n, dis = locked ? "disabled" : "";
       const on = id => bets.includes(id);
       const nums = bets.filter(b => b.startsWith("n:")).length, outs = n - nums;
-      const l = stakeLimit();
       const cell = k => `<button class="rnum ${G.pocketColor(k)}" data-a="rToggle" data-v="n:${k}" aria-pressed="${on("n:" + k)}" aria-label="Number ${k}" ${dis}>${k}</button>`;
       const tab = (id, label, count) => `<button role="tab" class="rtab" data-a="rTab" data-v="${id}" aria-selected="${ui.rTab === id}" ${dis}>${label}${count ? ` <span class="rcount">${count}</span>` : ""}</button>`;
       const board = ui.rTab === "numbers"
         ? `<div class="rboard rgrid" role="group" aria-label="Single numbers, ${G.STRAIGHT_MULTIPLE}× each">${cell(0)}${Array.from({ length: 36 }, (_, i) => cell(i + 1)).join("")}</div>`
         : `<div class="rboard bets" role="group" aria-label="Outside bets">${Object.entries(G.ROULETTE_BETS).map(([id, b]) => `<button class="chip bet-${id}" data-a="rToggle" data-v="${id}" aria-pressed="${on(id)}" ${dis}><span>${b.label}</span><span class="pays">${b.multiple}×</span></button>`).join("")}</div>`;
-      const spin = n === 0 ? `<button class="btn primary big rgo" disabled>Pick a bet</button>`
-        : canStake(total) || locked ? `<button class="btn primary big rgo" data-a="rSpin" ${ui.busy ? "disabled" : ""}><span>Spin ${esc(fmt(total))}</span><small>${n} ${n === 1 ? "bet" : "bets"}</small></button>`
-        : `<button class="btn primary big rgo" disabled><span>Too much</span><small>${esc(fmt(total))} of ${esc(fmt(l ? l.leftSec : 0))}</small></button>`;
       html = `<div class="rtop"><div class="history" aria-label="Last numbers">${(ui.hist || []).slice(0, 6).map(k => `<span class="${G.pocketColor(k)}">${k}</span>`).join("") || `<span class="none">Flick the wheel or press Spin</span>`}</div>
-          ${l ? `<span class="rfrom">${App.appIcon(l.pkg, "sm")}<span class="num">${esc(fmt(l.leftSec))}</span></span>` : ""}</div>
+</div>
         <div class="rtabs" role="tablist" aria-label="Bets">${tab("outside", "Outside", outs)}${tab("numbers", `Numbers <span class="pays">${G.STRAIGHT_MULTIPLE}×</span>`, nums)}
           <button class="rclear" data-a="rClear" aria-label="Clear all bets" ${n && !locked ? "" : "disabled"}>Clear</button></div>
         ${board}
-        <div class="rstake-row">
-          <div class="rstake" role="group" aria-label="Stake per bet">
-            <button class="step" data-a="stake" data-d="-60" aria-label="One minute less per bet" ${dis || (ui.stake <= 60 ? "disabled" : "")}>−</button>
-            <output class="rstake-val" id="stake-val" aria-live="polite"><span class="dotnum">${fmt(ui.stake)}</span><small>per bet</small></output>
-            <button class="step" data-a="stake" data-d="60" aria-label="One minute more per bet" ${dis || (!l || (ui.stake + 60) * Math.max(1, n) > l.leftSec ? "disabled" : "")}>+</button>
-          </div>${spin}</div>`;
+        ${stakeRow(locked, "rSpin", { count: n, perBet: true, label: "Spin", empty: n ? "" : "Pick a bet" })}`;
     } else if (ui.game === "slots") {
-      html = `${stakeBox(locked)}${go("Spin for {s}", "sSpin")}`;
+      html = stakeRow(locked, "sSpin", { label: "Spin" });
     } else if (ui.game === "blackjack") {
       const R = ui.round;
       if (R && R.phase === "play") {
@@ -162,13 +184,13 @@
           <button class="btn primary" data-a="bjStand" ${ui.busy ? "disabled" : ""}>Stand</button>
           <button class="btn quiet" data-a="bjDouble" ${ui.busy || !canDouble ? "disabled" : ""}>Double</button></div>
           <p class="stake-from center">Stake <span class="num">${fmt(R.stake)}</span> on the table</p>`;
-      } else html = `${stakeBox(locked)}${go("Deal for {s}", "bjDeal")}`;
+      } else html = stakeRow(locked, "bjDeal", { label: "Deal" });
     } else if (ui.game === "poker") {
       const R = ui.round;
       if (R && R.phase === "dealt") {
         html = `<p class="muted center">Tap the cards you want to keep, then draw.</p><button class="btn primary big" data-a="pDraw" ${ui.busy ? "disabled" : ""}>Draw</button>
           <p class="stake-from center">Stake <span class="num">${fmt(R.stake)}</span> in play</p>`;
-      } else html = `${stakeBox(locked)}${go("Deal for {s}", "pDeal")}`;
+      } else html = stakeRow(locked, "pDeal", { label: "Deal" });
     }
     c.innerHTML = html;
     App.renderNav();
@@ -414,9 +436,18 @@
   };
 
   Object.assign(App.act, {
-    stakeApp(d) { ui.stakePkg = d.pkg; clampStake(); App.chipFx(); App.render(); },
-    stake(d) { ui.stake += Number(d.d); clampStake(); App.chipFx(); ui.view === "game" ? App.renderControls() : App.render(); },
-    stakeSet(d) { ui.stake = Number(d.v); clampStake(); App.chipFx(); ui.view === "game" ? App.renderControls() : App.render(); },
+    stake(d) {
+      const n = ui.game === "roulette" ? Math.max(1, (ui.rbets || []).length) : 1, l = stakeLimit();
+      const next = Number(d.d) > 0 ? ui.stake + stepUp() : ui.stake - stepDown();
+      if (Number(d.d) > 0 && l && next * n > l.leftSec) return;
+      ui.stake = next; clampStake(); App.chipFx(); App.renderControls();
+    },
+    stakeCycle() {
+      const apps = stakeable(); if (apps.length < 2 || ui.busy || ui.round) return;
+      const i = apps.findIndex(a => a.pkg === ui.stakePkg);
+      ui.stakePkg = apps[(i + 1) % apps.length].pkg; clampStake();
+      App.chipFx(); App.renderControls(); App.toast(`Staking ${App.labelOf(ui.stakePkg)} time.`);
+    },
     game(d) { ui.game = d.id; ui.view = "game"; App.render(); },
     leave() { if (ui.busy || ui.round) return; ui.view = "tables"; ui.game = null; App.render(); },
     coinPick(d) { ui.pick = d.v; App.chipFx(); App.renderControls(); },

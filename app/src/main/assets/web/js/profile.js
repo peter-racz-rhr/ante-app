@@ -6,14 +6,34 @@
   const ui = App.ui;
   const KOFI = "https://ko-fi.com/peteracz";
 
-  function themeCards() {
-    const P = App.P, cur = P.get();
-    return `<div class="themes" role="radiogroup" aria-label="Theme">${Object.entries(P.FLAVORS).map(([id, f]) => `
-      <button class="theme" role="radio" aria-checked="${cur.theme === id}" data-a="theme" data-v="${id}" style="--t-bg:${f.c.mantle};--t-s:${f.c.base};--t-l:${f.c.s1};--t-x:${f.c.text}">
-        <span class="t-prev" aria-hidden="true"><i></i><i></i><i></i></span><span class="t-name">${esc(f.name)}</span></button>`).join("")}</div>
-      <div class="accents" role="radiogroup" aria-label="Accent colour">${Object.entries(P.ACCENTS[cur.theme]).map(([id, hex]) => `
-        <button class="accent" role="radio" aria-checked="${cur.accent === id}" aria-label="${esc(id)}" data-a="accent" data-v="${id}" style="--a:${hex}"></button>`).join("")}</div>`;
+  /* Appearance: a row of tiny app previews (one per accent, drawn in the current flavour's real
+     colours), then a switch for the flavour itself. */
+  const FLAVOR_ICON = { neutral: "half", latte: "sun", frappe: "moon", macchiato: "moon", mocha: "moon" };
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  function miniApp(c, accent) {
+    return `<span class="mini" aria-hidden="true" style="--m-bg:${c.mantle};--m-card:${c.base};--m-line:${c.s1};--m-text:${c.text};--m-sub:${c.o1};--m-acc:${accent};--m-g:${c.green};--m-y:${c.yellow};--m-r:${c.red}">
+      <i class="m-title"></i>
+      <i class="m-card"><i class="m-row"><b class="m-sq"></b><b class="m-line"></b><b class="m-sw"></b></i><i class="m-row"><b class="m-sq dim"></b><b class="m-line short"></b></i></i>
+      <i class="m-dots"><b></b><b></b><b></b></i>
+      <i class="m-nav"><b class="on"></b><b></b><b></b></i></span>`;
   }
+  function themeCards() {
+    const P = App.P, cur = P.get(), f = P.FLAVORS[cur.theme];
+    const colours = Object.entries(P.ACCENTS[cur.theme]).map(([id, hex]) => `
+      <button class="tcard" role="radio" aria-checked="${cur.accent === id}" data-a="accent" data-v="${id}">
+        ${miniApp(f.c, hex)}<span class="t-name">${esc(cap(id))}</span></button>`).join("");
+    const flavours = Object.entries(P.FLAVORS).map(([id, fl]) =>
+      `<button role="radio" class="fseg" aria-checked="${cur.theme === id}" data-a="theme" data-v="${id}">${esc(fl.name)}</button>`).join("");
+    return `<div class="tcards" role="radiogroup" aria-label="Colour" id="tcards">${colours}</div>
+      <div class="flavour">
+        <div class="flavour-h"><span class="flavour-ic" aria-hidden="true">${App.ICON[FLAVOR_ICON[cur.theme]] || ""}</span><span>Flavour</span></div>
+        <div class="fsegs" role="radiogroup" aria-label="Flavour">${flavours}</div></div>`;
+  }
+  /** Keeps the chosen colour in view after a re-render. */
+  App.afterProfile = () => {
+    const row = document.getElementById("tcards"), on = row && row.querySelector('[aria-checked="true"]');
+    if (on) row.scrollLeft = Math.max(0, on.offsetLeft - (row.clientWidth - on.offsetWidth) / 2);
+  };
 
   App.views.profile = function () {
     const S = App.S, ACC = App.ACC, prefs = App.P.get(), name = App.displayName();
@@ -29,7 +49,7 @@
       </section>
 
       <section class="panel" aria-labelledby="ap-h">
-        <div><h2 class="h3" id="ap-h">Appearance</h2><p class="muted">Neutral, or one of the four Catppuccin flavours.</p></div>
+        <div><h2 class="h3" id="ap-h">Colours</h2><p class="muted">Pick a colour, then a flavour: Neutral or one of the four Catppuccin ones.</p></div>
         ${themeCards()}
       </section>
 

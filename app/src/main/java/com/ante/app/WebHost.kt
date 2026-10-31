@@ -24,7 +24,7 @@ object WebHost {
     /** The page lives on a private https origin that never reaches the network: every request is answered below. */
     private const val HOST = "appassets.androidplatform.net"
     const val START_URL = "https://$HOST/web/index.html"
-    private const val BG = "#0E1A18"
+    private const val BG = "#0A0A0A" // matches the default (Neutral) theme while the page loads
 
     @SuppressLint("SetJavaScriptEnabled")
     fun attach(
@@ -54,29 +54,39 @@ object WebHost {
                 override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean =
                     !(request.url.scheme == "https" && request.url.host == HOST)
 
+                override fun onPageFinished(view: WebView, url: String?) {
+                    val src = view.tag as? Source ?: return
+                    view.evaluateJavascript(safeAreaJs(src.safeTop, src.safeBottom), null)
+                }
+
                 override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
                     if (request.url.scheme == "data") return null
                     return serve(activity, request.url, (view.tag as? Source)?.root)
                 }
             }
         }
+        web.tag = Source(null) // holds the safe area until the first load replaces it
         web.addJavascriptInterface(AnteBridge(activity, web, mode, blockedPkg, blockNote), "AnteNative")
         root.addView(web, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
 
-        // Full screen: the bars are hidden (immersive), so only the camera cutout and the keyboard
-        // need room. A swipe from the edge shows the bars over the page for a moment.
+        // Full screen: the bars are hidden (immersive) and the page draws behind the camera
+        // cutout too. Only the keyboard pushes the page up; the cutout's height goes to the page
+        // as --safe-top so text stays clear of the camera while the background fills the edge.
         root.setOnApplyWindowInsetsListener { v, insets ->
+            val density = v.resources.displayMetrics.density
             if (Build.VERSION.SDK_INT >= 30) {
                 val cut = insets.getInsets(WindowInsets.Type.displayCutout())
                 val ime = insets.getInsets(WindowInsets.Type.ime())
-                v.setPadding(cut.left, cut.top, cut.right, maxOf(cut.bottom, ime.bottom))
+                v.setPadding(cut.left, 0, cut.right, ime.bottom)
+                pushSafeArea(web, cut.top / density, cut.bottom / density)
             } else {
                 // Below API 30 the keyboard only shows up as a system window inset taller than the
                 // stable one (the hidden navigation bar). getDisplayCutout() exists from API 28.
                 @Suppress("DEPRECATION")
                 val ime = if (insets.systemWindowInsetBottom > insets.stableInsetBottom) insets.systemWindowInsetBottom else 0
                 val cut = if (Build.VERSION.SDK_INT >= 28) insets.displayCutout else null
-                v.setPadding(cut?.safeInsetLeft ?: 0, cut?.safeInsetTop ?: 0, cut?.safeInsetRight ?: 0, maxOf(cut?.safeInsetBottom ?: 0, ime))
+                v.setPadding(cut?.safeInsetLeft ?: 0, 0, cut?.safeInsetRight ?: 0, ime)
+                pushSafeArea(web, (cut?.safeInsetTop ?: 0) / density, (cut?.safeInsetBottom ?: 0) / density)
             }
             insets
         }
@@ -87,11 +97,25 @@ object WebHost {
     }
 
     /** Which files a page load uses: a downloaded update, or null for the ones in the APK. */
-    private class Source(val root: File?)
+    private class Source(val root: File?) {
+        @Volatile var safeTop = 0f
+        @Volatile var safeBottom = 0f
+    }
+
+    private fun safeAreaJs(top: Float, bottom: Float) =
+        "document.documentElement.style.setProperty('--safe-top','${top}px');" +
+            "document.documentElement.style.setProperty('--safe-bottom','${bottom}px');"
+
+    private fun pushSafeArea(web: WebView, top: Float, bottom: Float) {
+        val src = web.tag as? Source ?: return
+        src.safeTop = top; src.safeBottom = bottom
+        web.evaluateJavascript(safeAreaJs(top, bottom), null)
+    }
 
     /** (Re)loads the page from the newest installed UI. */
     fun load(activity: Activity, web: WebView) {
-        web.tag = Source(Ota.rootForLoad(activity))
+        val old = web.tag as? Source
+        web.tag = Source(Ota.rootForLoad(activity)).apply { safeTop = old?.safeTop ?: 0f; safeBottom = old?.safeBottom ?: 0f }
         web.loadUrl(START_URL)
     }
 
