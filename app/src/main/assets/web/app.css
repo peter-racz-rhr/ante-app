@@ -709,7 +709,8 @@ img.avatar { object-fit: cover; background: var(--surface-3); }
 .ex-dots { display: flex; gap: 6px; justify-content: center; margin: -4px 0 var(--s2); }
 .ex-dots i { width: 8px; height: 4px; border-radius: 2px; background: var(--surface-3); transition: width .35s var(--spring), background .3s ease; }
 .ex-dots i.on { width: 26px; background: var(--accent); } .ex-dots i.done { background: var(--ivory-3); }
-.ex-step { display: flex; flex-direction: column; gap: var(--s3); min-height: 330px; }
+.ex-step { display: flex; flex-direction: column; gap: var(--s3); }
+.ex-step:has(.ex-art), .ex-step:has(.ex-list) { min-height: 330px; } /* the slides keep one height; "How long?" sits tight */
 .ex-step > * { animation: blur-rise .5s var(--ease) both; }
 .ex-step > :nth-child(2) { animation-delay: .06s; } .ex-step > :nth-child(3) { animation-delay: .12s; } .ex-step > :nth-child(n+4) { animation-delay: .18s; }
 .ex-title { margin: 0; }
@@ -764,7 +765,7 @@ img.avatar { object-fit: cover; background: var(--surface-3); }
 .profile2 { gap: var(--s4); }
 .prof-top { display: flex; align-items: center; justify-content: space-between; }
 .prof-top .iconbtn svg { width: 22px; height: 22px; }
-.me-card { flex-direction: row; align-items: center; gap: var(--s4); padding: var(--s5) var(--s4); }
+.me-card { display: flex; flex-direction: row; align-items: center; gap: var(--s4); padding: var(--s2) var(--s1) var(--s3); }
 .avatar.xl { width: 88px; height: 88px; font-size: 26px; }
 .me-card .me-photo .cam { right: 0; bottom: 0; }
 .me-card .me-name { font-size: 32px; }
@@ -795,3 +796,7 @@ img.avatar { object-fit: cover; background: var(--surface-3); }
 .focus-card.on { background: color-mix(in oklab, #a78bfa 10%, var(--surface)); box-shadow: inset 0 0 0 1px color-mix(in oklab, #a78bfa 35%, transparent); }
 .focus-card .dotclock { color: var(--ivory); }
 .fc-note { margin: 0; font-size: var(--t-sm); }
+/* sheet buttons stay on one line */
+.sheet .btn-row .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-inline: var(--s3); }
+.ex-replay { align-self: flex-start; gap: 6px; color: var(--ivory-2); margin-top: calc(var(--s2) * -1); }
+.ex-replay svg { width: 16px; height: 16px; }

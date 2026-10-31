@@ -36,7 +36,7 @@
     vt323: { name: "VT323", family: "VT323", lg: 400, sm: 400, vary: "normal" },
   };
 
-  let prefs = { theme: "neutral", accent: "white", clock: "bitcount", name: "", sound: true, haptics: true };
+  let prefs = { theme: "neutral", accent: "white", clock: "bitcount", name: "", sound: true, haptics: true, seenIntro: {} };
   try { prefs = Object.assign(prefs, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) { /* storage blocked */ }
   if (!FLAVORS[prefs.theme]) prefs.theme = "neutral";
   if (!ACCENTS[prefs.theme][prefs.accent]) prefs.accent = DEFAULT_ACCENT[prefs.theme];

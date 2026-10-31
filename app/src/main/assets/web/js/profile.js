@@ -123,7 +123,7 @@
     return `<div class="screen profile2" id="screen">
       <header class="prof-top"><h1 class="h1">Profile</h1><button class="iconbtn" data-a="openSettings" aria-label="Settings">${App.ICON.gear}</button></header>
       ${outdatedNote()}
-      <section class="panel me me-card">
+      <section class="me me-card">
         <button class="me-photo" data-a="photoPick" aria-label="${ACC.photo ? "Change profile picture" : "Add a profile picture"}">${App.avatar("xl", 'aria-hidden="true"')}<span class="cam" aria-hidden="true">${App.ICON.camera}</span></button>
         <div class="me-t"><p class="me-name">${esc(name || "Your name")}</p>
           <p class="me-stat"><span class="dotnum">${hText}</span><span>${h === 1 ? "hour" : "hours"}</span></p>

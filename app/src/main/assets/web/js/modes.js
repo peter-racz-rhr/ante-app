@@ -101,9 +101,9 @@
     const steps = STEPS[sh.mode], i = sh.step || 0, s = steps[i], last = i === steps.length - 1;
     const strict = sh.mode === "strict";
     const v = sh.pick || (strict ? STRICT_CHOICES[2][0] : FOCUS_CHOICES[0][0]);
-    const label = strict ? `Lock for ${STRICT_CHOICES.find(c => c[0] === v)[1]}` : `Start Focus · ${FOCUS_CHOICES.find(c => c[0] === v)[1]}`;
+    const label = strict ? `Lock · ${STRICT_CHOICES.find(c => c[0] === v)[1]}` : `Start · ${FOCUS_CHOICES.find(c => c[0] === v)[1]}`;
     return sheet("", `${head(strict ? "Strict mode" : "Focus", "ex-h")}
-      <div class="ex-dots" aria-hidden="true">${steps.map((_, k) => `<i class="${k === i ? "on" : k < i ? "done" : ""}"></i>`).join("")}</div>
+      ${sh.quick ? "" : `<div class="ex-dots" aria-hidden="true">${steps.map((_, k) => `<i class="${k === i ? "on" : k < i ? "done" : ""}"></i>`).join("")}</div>`}
       <div class="ex-step" data-step="${i}">
         ${s.art ? `<div class="ex-art ${s.art}" aria-hidden="true">${ART[s.art]()}</div>` : ""}
         <h3 class="h2 ex-title">${esc(s.title)}</h3>
@@ -111,7 +111,8 @@
         ${s.list ? `<ul class="ex-list">${s.list.map((t, k) => `<li style="--k:${k}">${App.ICON.check}<span>${esc(t)}</span></li>`).join("")}</ul>` : ""}
         ${s.choose ? chooseStep(sh) : ""}
       </div>
-      <div class="btn-row">${i ? `<button class="btn quiet" data-a="exBack">Back</button>` : `<button class="btn quiet" data-a="closeSheet">Not now</button>`}
+      ${sh.quick ? `<button class="link ex-replay" data-a="exIntro">${App.ICON.info}How it works</button>` : ""}
+      <div class="btn-row">${sh.quick ? `<button class="btn quiet" data-a="closeSheet">Cancel</button>` : i ? `<button class="btn quiet" data-a="exBack">Back</button>` : `<button class="btn quiet" data-a="closeSheet">Not now</button>`}
         ${last ? `<button class="btn primary" data-a="exGo">${esc(label)}</button>` : `<button class="btn primary" data-a="exNext">Next</button>`}</div>`, "ex-h");
   };
 
@@ -181,9 +182,18 @@
   Object.assign(App.act, {
     explain(d) {
       if (d.v !== "strict" && d.v !== "focus") return;
-      ui.sheet = { type: "explain", mode: d.v, step: 0, pick: null }; App.SFX.play("tap"); App.paintOverlay();
+      // The intro slides show once; after that the sheet opens straight on "How long?".
+      const seen = !!(App.P.get().seenIntro || {})[d.v];
+      ui.sheet = { type: "explain", mode: d.v, step: seen ? STEPS[d.v].length - 1 : 0, pick: null, quick: seen };
+      App.SFX.play("tap"); App.paintOverlay();
     },
-    exNext() { const sh = ui.sheet; if (!sh || sh.type !== "explain") return; sh.step = Math.min(STEPS[sh.mode].length - 1, (sh.step || 0) + 1); App.haptic("tap"); App.paintOverlay(); },
+    exIntro() { const sh = ui.sheet; if (!sh || sh.type !== "explain") return; sh.quick = false; sh.step = 0; App.paintOverlay(); },
+    exNext() {
+      const sh = ui.sheet; if (!sh || sh.type !== "explain") return;
+      sh.step = Math.min(STEPS[sh.mode].length - 1, (sh.step || 0) + 1);
+      if (sh.step === STEPS[sh.mode].length - 1) App.P.set({ seenIntro: Object.assign({}, App.P.get().seenIntro, { [sh.mode]: true }) });
+      App.haptic("tap"); App.paintOverlay();
+    },
     exBack() { const sh = ui.sheet; if (!sh || sh.type !== "explain") return; sh.step = Math.max(0, (sh.step || 0) - 1); App.paintOverlay(); },
     exPick(d) { const sh = ui.sheet; if (!sh) return; sh.pick = Number(d.v); App.chipFx(); App.paintOverlay(); },
     exGo() {

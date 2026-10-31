@@ -375,7 +375,7 @@ async function noOverflow(p, label) {
     await md.click('[data-a="exNext"]');
     check((await md.$$('[data-a="exPick"]')).length === 4, "last step offers 1 day, 3 days, 1 week, 1 month");
     await md.click('[data-a="exPick"][data-v="3"]');
-    check(await md.isVisible("text=Lock for 3 days"), "the button names the chosen length");
+    check(await md.isVisible("text=Lock · 3 days"), "the button names the chosen length");
     await shot(md, "25b-strict-explain-3");
     await md.click('[data-a="exGo"]'); await md.waitForTimeout(200);
     check(await md.isVisible("text=Locked until"), "profile shows the strict lock and its end");
@@ -383,6 +383,12 @@ async function noOverflow(p, label) {
     check(await md.evaluate(() => window.Ante.setStrict(false)) === false, "the bridge refuses to end a timed lock early");
     await md.waitForTimeout(3600); await md.evaluate(() => { window.App.refresh(); window.App.render(); }); await md.waitForTimeout(150);
     check(await md.isVisible('[data-a="explain"][data-v="strict"]'), "strict mode ends by itself when the time is up");
+    await md.click('[data-a="explain"][data-v="strict"]'); await md.waitForTimeout(200);
+    check(!(await md.$(".ex-art")) && (await md.$$('[data-a="exPick"]')).length === 4, "the second time, the intro is skipped and it asks how long right away");
+    check(await md.isVisible('[data-a="exIntro"]'), "the intro can still be replayed");
+    const fits = await md.evaluate(() => [...document.querySelectorAll(".sheet .btn-row .btn")].every(b => b.scrollHeight <= b.clientHeight + 1 && b.scrollWidth <= b.clientWidth + 1));
+    check(fits, "sheet button labels fit on one line");
+    await md.click('.sheet [data-a="closeSheet"].btn'); await md.waitForTimeout(150);
 
     await md.click('[data-t="home"]'); await md.waitForTimeout(200);
     await md.click('.focus-card [data-a="explain"][data-v="focus"]');
