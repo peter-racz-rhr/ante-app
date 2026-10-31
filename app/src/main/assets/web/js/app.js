@@ -102,7 +102,7 @@
 
   /* ---------- navigation: three tabs, with an indicator that glides to the active one ---------- */
   const TABS = [["home", "Home", "home"], ["tables", "Play", "play"], ["profile", "Profile", "user"]];
-  const TAB_OF = { home: "home", screentime: "home", results: "home", tables: "tables", game: "tables", profile: "profile", legal: "profile" };
+  const TAB_OF = { home: "home", screentime: "home", results: "home", tables: "tables", game: "tables", profile: "profile", settings: "profile", legal: "profile" };
   let indX = null;
   function navbar() {
     if (App.BLOCK || ui.view === "welcome" || (ui.view === "legal" && ui.back === "welcome")) return "";
@@ -202,7 +202,7 @@
     if (ui.view === "game") { App.mountGame(); App.renderControls(); }
     if (ui.view === "tables") App.afterTables();
     if (ui.view === "welcome") App.afterWelcome();
-    if (ui.view === "profile" && App.afterProfile) App.afterProfile();
+    if (ui.view === "settings" && App.afterProfile) App.afterProfile();
     App.paintOverlay();
     if (App.afterRender) App.afterRender();
   };
@@ -259,6 +259,7 @@
     if (ui.sheet) { ui.sheet = null; App.paintOverlay(); return true; }
     if (ui.view === "game") { if (!ui.busy && !ui.round) { ui.view = "tables"; ui.game = null; App.render(); } return true; }
     if (ui.view === "legal") { App.act.legalBack(); return true; }
+    if (ui.view === "settings") { ui.view = "profile"; App.render(); return true; }
     if (ui.view === "screentime" || ui.view === "results") { ui.view = "home"; App.render(); return true; }
     if (App.BLOCK && ui.view === "tables") { ui.view = "block"; App.render(); return true; }
     if (!App.BLOCK && (ui.view === "tables" || ui.view === "profile")) { ui.view = "home"; App.render(); return true; }
@@ -273,7 +274,7 @@
   window.anteAccountChanged = function (error) {
     if (error) { App.toast(error); return; }
     App.refresh();
-    if (ui.view === "profile" || ui.view === "home") App.render();
+    if (ui.view === "profile" || ui.view === "settings" || ui.view === "home") App.render();
   };
 
   window.anteAuth = function (raw) {

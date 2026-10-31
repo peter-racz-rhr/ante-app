@@ -31,6 +31,8 @@
     return `${h} h${m % 60 ? ` ${m % 60} min` : ""}`;
   }
 
+  App.modeWhen = when;
+
   /** Mode flags from the latest state (the native side computes them; older apps don't). */
   App.modes = () => {
     const S = App.S, now = S.now || Date.now();
@@ -134,6 +136,18 @@
       <span class="sicon" style="--ic:#a78bfa" aria-hidden="true">${App.ICON.moon}</span>
       <div class="sitem-t"><span class="sitem-title">Focus</span><span class="sitem-sub"><span data-until="${m.focusUntil}">${esc(span(m.focusUntil - m.now))}</span> left · ends ${esc(when(m.focusUntil))}</span></div>
       <button class="btn-sm ghost" data-a="focusEnd" ${m.strict ? "disabled" : ""}>End</button></section>`;
+  };
+  /** The Focus card on Home: start it, or watch it count down. */
+  App.focusCard = () => {
+    const m = App.modes();
+    if (m.focus) return `<section class="panel focus-card on" aria-live="polite" aria-labelledby="focus-h">
+      <div class="panel-head"><div class="fc-h"><span class="sicon" style="--ic:#a78bfa" aria-hidden="true">${App.ICON.moon}</span><div><h2 class="h3" id="focus-h">Focus</h2><p class="muted">Ends ${esc(when(m.focusUntil))}</p></div></div>
+        <button class="btn-sm ghost" data-a="focusEnd" ${m.strict ? "disabled" : ""}>End</button></div>
+      <div class="dotclock-box"><p class="dotclock" data-fit="96" data-until-clock="${m.focusUntil}">${App.fmt(Math.max(0, Math.round((m.focusUntil - Date.now()) / 1000)))}</p></div>
+      <p class="muted fc-note">Every limited app stays covered until then.</p></section>`;
+    return `<section class="panel focus-card" aria-labelledby="focus-h">
+      <div class="panel-head"><div class="fc-h"><span class="sicon" style="--ic:#a78bfa" aria-hidden="true">${App.ICON.moon}</span><div><h2 class="h3" id="focus-h">Focus</h2><p class="muted">Cover every limited app for a while</p></div></div>
+        <button class="btn-sm" data-a="explain" data-v="focus">Start</button></div></section>`;
   };
   App.focusChip = () => App.modes().focus ? "" : `<button class="chip-sm" data-a="explain" data-v="focus">${App.ICON.moon}Focus</button>`;
 

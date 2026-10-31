@@ -343,6 +343,11 @@ async function noOverflow(p, label) {
   check(await st.isVisible("text=Blocking on"), "status shows blocking is on");
   check(await st.isVisible(".navpill .ndot"), "profile tab gets a dot when something needs care");
   await st.click('[data-t="profile"]');
+  check(await st.isVisible(".me-card") && await st.isVisible("text=added to your real life"), "profile shows you, hours added, strict, week and donate");
+  check(await st.isVisible(".week-dots") && await st.isVisible('[data-a="kofi"]'), "profile has the week and donate boxes");
+  await shot(st, "22b-profile-summary");
+  await st.click('[data-a="openSettings"]'); await st.waitForTimeout(150);
+  check(await st.isVisible("text=Settings"), "the gear opens Settings");
   check(await st.isVisible('[data-a="settingsGo"][data-go="battery"]'), "profile flags restricted background use with an Allow button");
   // Untimed strict mode from older versions still works (turned on directly through the bridge).
   await st.evaluate(() => { window.Ante.setStrict(true); window.App.refresh(); window.App.render(); });
@@ -380,19 +385,19 @@ async function noOverflow(p, label) {
     check(await md.isVisible('[data-a="explain"][data-v="strict"]'), "strict mode ends by itself when the time is up");
 
     await md.click('[data-t="home"]'); await md.waitForTimeout(200);
-    await md.click('.quick-row [data-a="explain"][data-v="focus"]');
+    await md.click('.focus-card [data-a="explain"][data-v="focus"]');
     check(await md.isVisible(".ex-art.focus1"), "focus explainer opens from Home");
     await md.click('[data-a="exNext"]'); await md.click('[data-a="exNext"]');
     await md.click('[data-a="exPick"][data-v="60"]');
     await md.click('[data-a="exGo"]'); await md.waitForTimeout(200);
-    check(await md.isVisible(".focus-banner"), "Home shows Focus with a countdown");
+    check(await md.isVisible(".focus-card.on"), "Home shows Focus with a countdown");
     await shot(md, "25c-focus-home");
     check(await md.evaluate(() => window.Ante.open("com.instagram.android", 300)) === false, "no app can be opened during Focus, even with time left");
-    await md.click('.focus-banner [data-a="focusEnd"]');
+    await md.click('.focus-card [data-a="focusEnd"]');
     check(await md.isDisabled("#wait-go"), "ending Focus early starts behind a wait");
     await md.waitForSelector("#wait-go:not([disabled])", { timeout: 3000 });
     await md.click("#wait-go"); await md.waitForTimeout(200);
-    check(!(await md.$(".focus-banner")), "Focus ends after the wait");
+    check(!(await md.$(".focus-card.on")), "Focus ends after the wait");
     check(md.errors.length === 0, "no console errors in Focus and Strict: " + md.errors.join(" | "));
   }
   /* Themes, legal, support */
@@ -407,18 +412,24 @@ async function noOverflow(p, label) {
     // Profile picture: pick a file, it shows as a round photo on Profile and Home, and can be removed.
     const pic = path.join(OUT, "_avatar-src.png");
     await st.screenshot({ path: pic, clip: { x: 0, y: 0, width: 300, height: 200 } });
+    await st.click('[data-a="closeSettings"]'); await st.waitForTimeout(150);
     const [chooser] = await Promise.all([st.waitForEvent("filechooser"), st.click('.me [data-a="photoPick"]')]);
     await chooser.setFiles(pic);
     await st.waitForSelector(".me img.avatar", { timeout: 4000 });
     const sz = await st.evaluate(() => { const i = document.querySelector(".me img.avatar"); return [i.naturalWidth, i.naturalHeight]; });
     check(sz[0] === 256 && sz[1] === 256, `picked photo becomes a 256px square (${sz})`);
-    check(await st.isVisible("text=Your photo"), "profile says a photo is set");
+    await st.click('[data-a="openSettings"]'); await st.waitForTimeout(150);
+    check(await st.isVisible("text=Your photo"), "settings says a photo is set");
     await st.click('[data-a="photoRemove"]'); await st.waitForTimeout(200);
+    await st.click('[data-a="closeSettings"]'); await st.waitForTimeout(150);
     check(!(await st.$(".me img.avatar")), "removing the photo goes back to initials");
+    await st.click('[data-a="openSettings"]'); await st.waitForTimeout(150);
   }
   await st.fill("#name-input", "Péter");
+  await st.click('[data-a="closeSettings"]'); await st.waitForTimeout(150);
   check((await st.textContent(".me .avatar")).trim() === "P", "display name updates the avatar");
-  check(await st.isVisible("text=Tip on Ko-fi"), "Ko-fi support card is there");
+  check(await st.isVisible("text=Donate"), "Ko-fi support card is there");
+  await st.click('[data-a="openSettings"]'); await st.waitForTimeout(150);
   await st.click('[data-a="doc"][data-v="imprint"]');
   check(await st.isVisible("text=Péter Rácz"), "imprint shows the provider");
   await shot(st, "24d-imprint");
@@ -472,10 +483,11 @@ async function noOverflow(p, label) {
   await ob.waitForTimeout(200);
   check(await ob.isVisible(".navpill"), "finishing onboarding lands on Today");
   await ob.click('[data-t="profile"]');
-  check(await ob.isVisible("text=demo@example.com"), "profile shows the signed-in account");
+  await ob.click('[data-a="openSettings"]'); await ob.waitForTimeout(150);
+  check(await ob.isVisible("text=demo@example.com"), "settings shows the signed-in account");
   await shot(ob, "29-profile");
   await ob.click('[data-a="signOut"]'); await ob.waitForTimeout(150);
-  check(await ob.isVisible("text=Not signed in"), "sign out works");
+  check(await ob.isVisible('[data-a="google"]') && !(await ob.isVisible("text=demo@example.com")), "sign out works");
   await ob.goto(INDEX + "?acc=1"); await ob.waitForSelector(".screen");
   check(!(await ob.$(".w-title")) && !(await ob.$(".ob-title")), "onboarding does not come back after finishing");
   check(ob.errors.length === 0, "no console errors in onboarding: " + ob.errors.join(" | "));
@@ -515,6 +527,7 @@ async function noOverflow(p, label) {
   check(reloads.length === 1, "the update applies once the table is closed");
   check(await u.isVisible("text=Ante just updated itself."), "after an update, a short note says so");
   await u.click('[data-t="profile"]'); await u.waitForTimeout(200);
+  await u.click('[data-a="openSettings"]'); await u.waitForTimeout(150);
   check(await u.isVisible("text=built-in UI") || await u.isVisible("text=web demo"), "profile shows which UI version runs");
   check(u.errors.length === 0, "no console errors around updates: " + u.errors.join(" | "));
 

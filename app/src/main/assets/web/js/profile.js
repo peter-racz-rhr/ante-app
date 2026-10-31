@@ -70,23 +70,97 @@
   const group = (label, body, foot) => `<section class="sgroup-wrap">${label ? `<h2 class="sgroup-label">${label}</h2>` : ""}<div class="sgroup">${body}</div>${foot ? `<p class="sgroup-foot">${foot}</p>` : ""}</section>`;
   const status = (tone, text) => `<span class="pill ${tone}"><i></i>${text}</span>`;
 
-  App.views.profile = function () {
-    const S = App.S, ACC = App.ACC, prefs = App.P.get(), name = App.displayName();
-    const ok = S.accessibility && S.watching;
-    const notice = nativeOutdated() ? `
+  /** Banner for phones still on an older native build. */
+  function outdatedNote() {
+    return nativeOutdated() ? `
       <section class="update-note" role="status">
         <span class="sicon" style="--ic:var(--warn)" aria-hidden="true">${App.ICON.info}</span>
         <div><p class="sitem-title">Install the new app version once</p>
         <p class="sitem-sub">This phone runs Ante ${esc((A.versions().app) || "")}. Full screen, vibration, photos, Focus and timed Strict mode need 0.4.0. Open the <b>ante-app</b> project in Android Studio and press Run.</p></div>
       </section>` : "";
-    return `<div class="screen settings" id="screen">
-      <header><h1 class="h1">Profile</h1></header>
-      ${notice}
-      <section class="me">
-        <button class="me-photo" data-a="photoPick" aria-label="${ACC.photo ? "Change profile picture" : "Add a profile picture"}">${App.avatar("lg", 'aria-hidden="true"')}<span class="cam" aria-hidden="true">${App.ICON.camera}</span></button>
-        <div class="me-t"><p class="me-name">${esc(name || "Your name")}</p><p class="sitem-sub">${ACC.signedIn ? esc(ACC.email) : "Not signed in · limits work without an account"}</p></div>
+  }
+
+  /* ---------- Profile: you, Strict mode, your weeks, support ---------- */
+  const DAY = 86400000;
+  const dayKey = d => `${d.getFullYear()}-${App.pad(d.getMonth() + 1)}-${App.pad(d.getDate())}`;
+  /** Screen time per day for the last [n] days (oldest first), and the total daily budget. */
+  function recentDays(n) {
+    const S = App.S, byDay = new Map((S.history || []).map(h => [h.day, h.usedSec || 0]));
+    const out = [];
+    for (let k = n - 1; k >= 0; k--) {
+      const d = new Date(Date.now() - k * DAY), key = dayKey(d), today = k === 0;
+      out.push({ key, d, today, used: today ? (S.usedTodaySec || 0) : byDay.get(key), known: today || byDay.has(key) });
+    }
+    return out;
+  }
+  /**
+   * "Hours added to your real life": the budgeted screen time you didn't use, summed over every
+   * finished day Ante has on record. An estimate against today's limits, never below zero.
+   */
+  function hoursAdded() {
+    const S = App.S, budget = S.limits.reduce((a, l) => a + l.limitSec, 0);
+    if (!budget) return 0;
+    return (S.history || []).reduce((a, h) => a + Math.max(0, budget - (h.usedSec || 0)), 0) / 3600;
+  }
+  /** Days in a row (ending today) spent within the daily budget. */
+  function streak() {
+    const S = App.S, budget = S.limits.reduce((a, l) => a + l.limitSec, 0);
+    if (!budget) return 0;
+    let n = 0;
+    for (const d of recentDays(186).reverse()) { if (!d.known || d.used > budget) break; n++; }
+    return n;
+  }
+
+  App.views.profile = function () {
+    const S = App.S, ACC = App.ACC, name = App.displayName(), m = App.modes();
+    const budget = S.limits.reduce((a, l) => a + l.limitSec, 0);
+    const h = hoursAdded(), hText = h >= 10 ? Math.round(h) : Math.round(h * 10) / 10;
+    const week = recentDays(7), st = streak();
+    const strictBody = m.strict && m.strictUntil
+      ? `<p class="pc-state on">${App.ICON.lock}<span>Locked until <b>${esc(App.modeWhen(m.strictUntil))}</b></span></p>`
+      : m.strict ? `<p class="pc-state on">${App.ICON.lock}<span>On, with no end set</span></p>`
+      : `<p class="muted">Lock blocking for a day, a week or a month. No way out until it ends.</p>`;
+    return `<div class="screen profile2" id="screen">
+      <header class="prof-top"><h1 class="h1">Profile</h1><button class="iconbtn" data-a="openSettings" aria-label="Settings">${App.ICON.gear}</button></header>
+      ${outdatedNote()}
+      <section class="panel me me-card">
+        <button class="me-photo" data-a="photoPick" aria-label="${ACC.photo ? "Change profile picture" : "Add a profile picture"}">${App.avatar("xl", 'aria-hidden="true"')}<span class="cam" aria-hidden="true">${App.ICON.camera}</span></button>
+        <div class="me-t"><p class="me-name">${esc(name || "Your name")}</p>
+          <p class="me-stat"><span class="dotnum">${hText}</span><span>${h === 1 ? "hour" : "hours"}</span></p>
+          <p class="sitem-sub">added to your real life</p></div>
       </section>
 
+      <section class="panel pcard" aria-labelledby="ps-h">
+        <div class="panel-head"><div class="fc-h"><span class="sicon" style="--ic:#f59e0b" aria-hidden="true">${App.ICON.lock}</span><h2 class="h3" id="ps-h">Strict mode</h2></div>
+          ${m.strict ? "" : `<button class="btn-sm" data-a="explain" data-v="strict" ${S.accessibility ? "" : "disabled"}>Turn on</button>`}</div>
+        ${strictBody}
+        ${S.accessibility ? "" : `<p class="sitem-sub">Turn on blocking first (Settings → Blocking).</p>`}
+      </section>
+
+      <section class="panel pcard" aria-labelledby="pw-h">
+        <div class="panel-head"><div class="fc-h"><span class="sicon" style="--ic:var(--win)" aria-hidden="true">${App.ICON.clock}</span><h2 class="h3" id="pw-h">Your week</h2></div>
+          <span class="streak"><span class="dotnum">${st}</span> ${st === 1 ? "day" : "days"} in a row</span></div>
+        <div class="week-dots" role="img" aria-label="Days within your budget this week: ${week.filter(d => d.known && budget && d.used <= budget).length} of 7">${week.map(d => {
+          const ok = d.known && budget && d.used <= budget, over = d.known && budget && d.used > budget;
+          return `<span class="wd ${ok ? "ok" : over ? "over" : ""} ${d.today ? "today" : ""}"><i></i><b>${esc(d.d.toLocaleDateString(undefined, { weekday: "narrow" }))}</b></span>`;
+        }).join("")}</div>
+        <p class="sitem-sub">${budget ? "A filled dot is a day you stayed within your limits." : "Add a limit on Home to start counting."}</p>
+      </section>
+
+      <section class="panel pcard donate" aria-labelledby="pd-h">
+        <div class="panel-head"><div class="fc-h"><span class="sicon" style="--ic:#fb923c" aria-hidden="true">${App.ICON.coffee}</span><h2 class="h3" id="pd-h">Donate</h2></div>
+          <button class="btn-sm" data-a="kofi">Ko-fi</button></div>
+        <p class="muted">Ante is free and has no ads. If it gives you time back, you can buy me a coffee.</p>
+      </section>
+    </div>`;
+  };
+
+  App.views.settings = function () {
+    const S = App.S, ACC = App.ACC, prefs = App.P.get(), name = App.displayName();
+    const ok = S.accessibility && S.watching;
+    return `<div class="screen settings" id="screen">
+      <header class="topbar">${App.backBtn("closeSettings", "Back to profile")}<div class="grow"><h1 class="h2">Settings</h1></div></header>
+      ${outdatedNote()}
       ${group("Account", `
         <label class="sitem field-row"><span class="sicon" style="--ic:var(--info)" aria-hidden="true">${App.ICON.user}</span>
           <span class="sitem-t"><span class="sitem-title">Name</span></span>
@@ -112,7 +186,6 @@
         ${S.accessibility ? App.modeItems(item, status) : ""}`,
         App.modes().strict ? "Settings opens after a 30-second wait while Strict mode is on." : "")}
 
-      ${group("Support", item({ icon: "coffee", tone: "#fb923c", title: "Tip on Ko-fi", sub: "Ante is free and has no ads", action: "kofi" }))}
 
       ${group("About", `
         ${item({ icon: "doc", title: "Terms of Service", action: "doc", v: "terms" })}
@@ -159,6 +232,8 @@
       if (!A.pickPhoto || A.pickPhoto() === false) App.toast("Install the new app version (0.3.0) to add a photo.");
     },
     photoRemove() { A.removePhoto(); App.refresh(); App.render(); App.toast("Photo removed."); },
+    openSettings() { ui.view = "settings"; App.render(); },
+    closeSettings() { ui.view = "profile"; App.render(); },
     clock(d) {
       if (!App.P.CLOCKS[d.v]) return;
       App.P.set({ clock: d.v }); App.SFX.play("tap"); App.haptic("tap"); App.render();

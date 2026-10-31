@@ -759,3 +759,39 @@ img.avatar { object-fit: cover; background: var(--surface-3); }
 .chip-sm svg { width: 16px; height: 16px; color: #a78bfa; }
 .pill.lockd { color: #f59e0b; }
 .pill.lockd i { -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round'%3E%3Crect x='5' y='10.5' width='14' height='10' rx='2.5'/%3E%3Cpath d='M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round'%3E%3Crect x='5' y='10.5' width='14' height='10' rx='2.5'/%3E%3Cpath d='M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5'/%3E%3C/svg%3E"); }
+
+/* ---------- Profile summary: you, Strict, your week, donate ---------- */
+.profile2 { gap: var(--s4); }
+.prof-top { display: flex; align-items: center; justify-content: space-between; }
+.prof-top .iconbtn svg { width: 22px; height: 22px; }
+.me-card { flex-direction: row; align-items: center; gap: var(--s4); padding: var(--s5) var(--s4); }
+.avatar.xl { width: 88px; height: 88px; font-size: 26px; }
+.me-card .me-photo .cam { right: 0; bottom: 0; }
+.me-card .me-name { font-size: 32px; }
+.me-stat { margin: 6px 0 0; display: flex; align-items: baseline; gap: 6px; font-weight: 600; color: var(--win); }
+.me-stat .dotnum { font-size: 28px; line-height: 1; }
+.me-card .sitem-sub { white-space: normal; }
+.pcard { gap: var(--s3); padding: var(--s4); }
+.pcard .panel-head { align-items: center; }
+.pcard .muted { margin: 0; }
+.fc-h { display: flex; align-items: center; gap: var(--s3); min-width: 0; }
+.fc-h h2 { margin: 0; } .fc-h .muted { margin: 0; font-size: var(--t-sm); }
+.pc-state { margin: 0; display: flex; align-items: center; gap: var(--s2); color: var(--ivory-2); }
+.pc-state svg { width: 18px; height: 18px; color: #f59e0b; flex: none; }
+.pc-state b { color: var(--ivory); }
+.streak { font-size: var(--t-sm); color: var(--ivory-2); display: inline-flex; align-items: baseline; gap: 5px; }
+.streak .dotnum { font-size: 22px; color: var(--ivory); }
+.week-dots { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--s2); }
+.wd { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.wd i { width: 30px; height: 30px; border-radius: 50%; background: var(--surface-2); box-shadow: inset 0 0 0 1.5px var(--line-2); }
+.wd.ok i { background: var(--win); box-shadow: none; }
+.wd.over i { background: color-mix(in oklab, var(--loss) 30%, var(--surface-2)); box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--loss) 60%, transparent); }
+.wd.today i { outline: 2px solid var(--ivory); outline-offset: 2px; }
+.wd b { font-size: 11px; font-weight: 600; color: var(--ivory-3); }
+.wd.today b { color: var(--ivory); }
+
+/* ---------- Focus card on Home ---------- */
+.focus-card { gap: var(--s3); }
+.focus-card.on { background: color-mix(in oklab, #a78bfa 10%, var(--surface)); box-shadow: inset 0 0 0 1px color-mix(in oklab, #a78bfa 35%, transparent); }
+.focus-card .dotclock { color: var(--ivory); }
+.fc-note { margin: 0; font-size: var(--t-sm); }

@@ -113,10 +113,8 @@
         <p class="muted">${esc(date)}</p>
         <div class="dotclock-box"><p class="dotclock" data-fit="150" aria-hidden="true">${fmt(total)}</p></div>
         <div class="hero-row"><span class="muted">${S.limits.length ? `left across ${S.limits.length} ${S.limits.length === 1 ? "app" : "apps"} · resets in ${resetsIn()}` : "Add an app to give it a daily budget."}</span>${status}</div>
-        ${S.accessibility && S.limits.length && App.focusChip ? `<div class="quick-row">${App.focusChip()}</div>` : ""}
       </section>
       ${App.nativeOutdated && App.nativeOutdated() ? `<button class="update-note slim" data-a="tab" data-t="profile"><span class="sicon" style="--ic:var(--warn)" aria-hidden="true">${App.ICON.info}</span><span class="sitem-t"><span class="sitem-title">Install the new app version once</span><span class="sitem-sub">Needed for full screen, vibration and photos. Tap for how.</span></span></button>` : ""}
-      ${App.focusBanner ? App.focusBanner() : ""}
       ${App.healthBlock()}
       <section class="panel card-chart tap" role="button" tabindex="0" data-a="tab" data-t="screentime" aria-label="Screen time this week. Open the breakdown by app">
         <div class="panel-head"><div><h2 class="h3">Screen time</h2><p class="muted">Last 7 days, by app</p></div><span class="chev">${App.ICON.chev}</span></div>
@@ -126,6 +124,7 @@
           <div class="tile-box"><p class="eyebrow">Daily average</p><p class="tile-v num">${fmtH(avg)}</p><p class="muted">this week</p></div>
         </div>
       </section>
+      ${S.limits.length && App.focusCard ? App.focusCard() : ""}
       <section class="panel" aria-labelledby="lim-h">
         <div class="panel-head"><div><h2 class="h3" id="lim-h">Limits</h2><p class="muted">Daily budgets for today</p></div><button class="btn-sm" data-a="add">${App.ICON.plus}Add app</button></div>
         ${S.limits.length ? `<div class="limits">${limitRows()}</div>` : `<div class="empty"><p class="muted">No limits yet. Pick an app you open too often and give it a daily budget.</p><button class="btn primary" data-a="add">Add an app</button></div>`}
