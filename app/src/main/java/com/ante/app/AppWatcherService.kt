@@ -83,7 +83,9 @@ class AppWatcherService : AccessibilityService() {
             handler.removeCallbacks(expiryCheck)
             val now = Bank.now()
             val (session, passUntil) = Bank.read { it.state.session to (if (it.state.strict) it.state.settingsPassUntilMs else 0L) }
-            val next = listOfNotNull(session?.endsAtMs, passUntil.takeIf { it > now }).minOrNull() ?: return@post
+            // Also wake when Focus or a strict lock ends, so the screen updates on time.
+            val (focusUntil, strictUntil) = Bank.read { it.state.focusUntilMs to it.state.strictUntilMs }
+            val next = listOfNotNull(session?.endsAtMs, passUntil.takeIf { it > now }, focusUntil.takeIf { it > now }, strictUntil.takeIf { it > now }).minOrNull() ?: return@post
             handler.postDelayed(expiryCheck, (next - now).coerceAtLeast(0) + 250)
         }
     }

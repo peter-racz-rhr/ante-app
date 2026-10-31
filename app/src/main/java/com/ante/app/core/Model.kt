@@ -39,6 +39,10 @@ data class BankState(
     val strict: Boolean = false,
     /** Until when Settings may be used despite strict mode. */
     val settingsPassUntilMs: Long = 0,
+    /** When a timed strict mode ends by itself (0 = no end set: turned off with the wait, as before). */
+    val strictUntilMs: Long = 0,
+    /** Focus: until then every limited app stays covered, whatever time it has left (0 = off). */
+    val focusUntilMs: Long = 0,
     /** Screen time actually spent in limited apps today (sessions only, not bets). */
     val usedTodaySec: Int = 0,
     val usedTodayByApp: Map<String, Int> = emptyMap(),

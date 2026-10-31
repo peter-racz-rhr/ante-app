@@ -48,7 +48,7 @@
   }
 
   /** The native part (APK) is older than this UI needs for full screen and vibration. */
-  const NATIVE_WANTED = [0, 3, 0];
+  const NATIVE_WANTED = [0, 4, 0];
   function nativeOutdated() {
     if (!A.native) return false;
     const v = (A.versions && A.versions()) || {};
@@ -77,7 +77,7 @@
       <section class="update-note" role="status">
         <span class="sicon" style="--ic:var(--warn)" aria-hidden="true">${App.ICON.info}</span>
         <div><p class="sitem-title">Install the new app version once</p>
-        <p class="sitem-sub">This phone runs Ante ${esc((A.versions().app) || "")}. Full screen at the top, vibration and profile pictures need 0.3.0. Open the <b>ante-app</b> project in Android Studio and press Run.</p></div>
+        <p class="sitem-sub">This phone runs Ante ${esc((A.versions().app) || "")}. Full screen, vibration, photos, Focus and timed Strict mode need 0.4.0. Open the <b>ante-app</b> project in Android Studio and press Run.</p></div>
       </section>` : "";
     return `<div class="screen settings" id="screen">
       <header><h1 class="h1">Profile</h1></header>
@@ -89,9 +89,9 @@
 
       ${group("Account", `
         <label class="sitem field-row"><span class="sicon" style="--ic:var(--info)" aria-hidden="true">${App.ICON.user}</span>
-          <span class="sitem-t"><span class="sitem-title">Display name</span></span>
+          <span class="sitem-t"><span class="sitem-title">Name</span></span>
           <input id="name-input" class="inline-input" type="text" maxlength="40" autocomplete="nickname" placeholder="${esc(ACC.name || "Add a name")}" value="${esc(prefs.name)}"></label>
-        ${item({ icon: "camera", tone: "var(--accent)", title: "Profile picture", sub: ACC.photo ? (ACC.customPhoto ? "Your photo" : "From Google") : "None yet",
+        ${item({ icon: "camera", tone: "var(--accent)", title: "Photo", sub: ACC.photo ? (ACC.customPhoto ? "Your photo" : "From Google") : "None yet",
           trail: `<span class="btn-pair">${ACC.customPhoto ? `<button class="btn-sm ghost" data-a="photoRemove">Remove</button>` : ""}<button class="btn-sm" data-a="photoPick">${ACC.photo ? "Change" : "Add"}</button></span>` })}
         ${ACC.signedIn
           ? item({ icon: "google", tone: "#ffffff", title: "Google", sub: esc(ACC.email), trail: `<button class="btn-sm" data-a="signOut">Sign out</button>` })
@@ -109,8 +109,8 @@
         ${item({ icon: "shield", tone: ok ? "var(--win)" : "var(--loss)", title: "Accessibility switch", trail: ok ? status("good", "Running") : `<button class="btn-sm" data-a="settingsGo" data-go="acc">${S.accessibility ? "Restart" : "Turn on"}</button>` })}
         ${item({ icon: "battery", tone: S.batteryOk === false ? "var(--warn)" : "#34d399", title: "Background use", trail: S.batteryOk === false ? `<button class="btn-sm" data-a="settingsGo" data-go="battery">Allow</button>` : status("good", "Allowed") })}
         ${item({ icon: "clock", tone: S.autoTime === false ? "var(--warn)" : "#60a5fa", title: "Date & time", trail: S.autoTime === false ? `<button class="btn-sm" data-a="settingsGo" data-go="date">Fix</button>` : status("good", "Automatic") })}
-        ${S.accessibility ? item({ icon: "lock", tone: "#f59e0b", title: "Strict mode", sub: S.strict ? "Settings and uninstalling are covered" : "Also covers Settings and uninstalling", trail: App.toggle(S.strict ? "strictOff" : "strictOn", S.strict, "Strict mode") }) : ""}`,
-        S.strict ? "Getting into Settings, or turning Strict mode off, takes a 30-second wait." : "")}
+        ${S.accessibility ? App.modeItems(item, status) : ""}`,
+        App.modes().strict ? "Settings opens after a 30-second wait while Strict mode is on." : "")}
 
       ${group("Support", item({ icon: "coffee", tone: "#fb923c", title: "Tip on Ko-fi", sub: "Ante is free and has no ads", action: "kofi" }))}
 
@@ -191,7 +191,7 @@
       setTimeout(() => { App.refresh(); App.render(); }, 300);
     },
     openInfo() { App.act.settingsGo({ go: "info" }); },
-    strictOn() { ui.sheet = { type: "strict" }; App.paintOverlay(); },
+    strictOn() { App.act.explain({ v: "strict" }); },
     agreeStrict() { A.setStrict(true); App.refresh(); ui.sheet = null; App.render(); App.toast("Strict mode is on."); },
     strictOff() { App.openWait({ title: "Turn off Strict mode", body: "Wait 30 seconds. If you still want to turn it off after that, you can.", cta: "Turn off Strict mode", then: "strictOffNow" }); },
     strictOffNow() { if (!A.setStrict(false)) { App.toast("The wait isn't over yet."); return; } App.refresh(); ui.sheet = null; App.render(); App.toast("Strict mode is off."); },

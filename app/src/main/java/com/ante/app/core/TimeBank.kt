@@ -62,7 +62,46 @@ class TimeBank(initial: BankState = BankState()) {
     }
 
     fun setStrict(on: Boolean) {
-        state = state.copy(strict = on, settingsPassUntilMs = if (on) state.settingsPassUntilMs else 0)
+        state = state.copy(strict = on, settingsPassUntilMs = if (on) state.settingsPassUntilMs else 0, strictUntilMs = if (on) state.strictUntilMs else 0)
+    }
+
+    /**
+     * Timed strict mode: on for [durationMs] and no way off until then. A new lock can only push
+     * the end further out, never pull it in.
+     */
+    fun startStrict(nowMs: Long, durationMs: Long): Boolean {
+        if (durationMs <= 0 || durationMs > STRICT_MAX_MS) return false
+        val end = maxOf(nowMs + durationMs, if (isStrict(nowMs)) state.strictUntilMs else 0L)
+        state = state.copy(strict = true, strictUntilMs = end)
+        return true
+    }
+
+    /** Strict mode is on now: untimed (legacy) or timed and not yet over. */
+    fun isStrict(nowMs: Long): Boolean = state.strict && (state.strictUntilMs == 0L || nowMs < state.strictUntilMs)
+
+    /** A timed lock can't be left before its end; the old untimed mode leaves after the wait. */
+    fun canLeaveStrict(nowMs: Long): Boolean = state.strictUntilMs == 0L || nowMs >= state.strictUntilMs
+
+    /** Focus for [durationMs]: ends any open session (refunding what's left) so the app is covered now. */
+    fun startFocus(nowMs: Long, durationMs: Long): Boolean {
+        if (durationMs <= 0 || durationMs > FOCUS_MAX_MS) return false
+        endSession(nowMs)
+        state = state.copy(focusUntilMs = nowMs + durationMs)
+        return true
+    }
+
+    fun endFocus() { state = state.copy(focusUntilMs = 0) }
+
+    fun isFocus(nowMs: Long): Boolean = nowMs < state.focusUntilMs
+
+    /** Clears modes whose time is up, so the stored state reads plainly. Returns true when something changed. */
+    fun expireModes(nowMs: Long): Boolean {
+        var s = state
+        if (s.strict && s.strictUntilMs > 0 && nowMs >= s.strictUntilMs) s = s.copy(strict = false, strictUntilMs = 0, settingsPassUntilMs = 0)
+        if (s.focusUntilMs > 0 && nowMs >= s.focusUntilMs) s = s.copy(focusUntilMs = 0)
+        if (s == state) return false
+        state = s
+        return true
     }
 
     /** Opens Settings for a short while in strict mode, after the user waited it out. */
@@ -70,7 +109,7 @@ class TimeBank(initial: BankState = BankState()) {
         state = state.copy(settingsPassUntilMs = nowMs + SETTINGS_PASS_MS)
     }
 
-    fun isGuardActive(nowMs: Long): Boolean = state.strict && nowMs >= state.settingsPassUntilMs
+    fun isGuardActive(nowMs: Long): Boolean = isStrict(nowMs) && nowMs >= state.settingsPassUntilMs
 
     fun setClock(anchor: ClockAnchor) {
         if (anchor != state.clock) state = state.copy(clock = anchor)
@@ -126,7 +165,7 @@ class TimeBank(initial: BankState = BankState()) {
     /** Reserves [seconds] from the app's budget. Ends any other session first. */
     fun startSession(pkg: String, seconds: Int, nowMs: Long): Boolean {
         val limit = limitFor(pkg) ?: return false
-        if (seconds <= 0 || seconds > limit.leftSec) return false
+        if (seconds <= 0 || seconds > limit.leftSec || isFocus(nowMs)) return false
         endSession(nowMs)
         adjustLeft(pkg, -seconds)
         state = state.copy(session = Session(pkg, nowMs, seconds))
@@ -224,6 +263,10 @@ class TimeBank(initial: BankState = BankState()) {
         const val HISTORY_MAX = 186
         const val MIN_DAY_MS = 23L * 60 * 60 * 1000
         const val SETTINGS_PASS_MS = 2L * 60 * 1000
+        /** Longest Focus session: 12 hours. */
+        const val FOCUS_MAX_MS = 12 * 60 * 60_000L
+        /** Longest strict lock: 31 days. */
+        const val STRICT_MAX_MS = 31 * 24 * 60 * 60_000L
 
         /** Returned by [settleBet] when there is no matching open stake. */
         const val INVALID_SETTLE = Int.MIN_VALUE

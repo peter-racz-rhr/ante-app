@@ -81,6 +81,17 @@ Strict mode and onboarding.
 To check a built copy, run `E2E_URL=http://localhost:8787/index.html node web-tests/e2e.js`
 against any local server.
 
+## Focus and Strict mode
+
+- **Focus** (Home → Focus, or Profile → Blocking): every limited app stays covered for 25 min to
+  4 h, even with time left. No "open for N minutes" session can start. Ending early takes the
+  30-second wait, and isn't possible while Strict mode is on.
+- **Strict mode** (Profile → Blocking): Ante also covers Settings (open after a 30-second wait for
+  2 minutes) and the uninstall screen, for 1 day, 3 days, 1 week or 1 month. There is no off switch
+  until the end; then it turns itself off. A new lock can only extend the current one.
+- Both are enforced natively (`TimeBank.startFocus/startStrict`, `AnteBridge`) and tested in
+  `ModesTest`; each opens with a short animated explainer first.
+
 ## Updates without rebuilding (over the air)
 
 The screens, games and animations are the web UI in `assets/web/`. After one build with this

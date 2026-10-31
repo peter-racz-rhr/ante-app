@@ -411,6 +411,7 @@
     const CTX = App.CTX;
     if (CTX.note === "strict") return vGuard();
     const l = App.lim(CTX.pkg), label = esc(CTX.label || (l && l.label) || "This app");
+    if (l && (CTX.note === "focus" || (App.modes && App.modes().focus))) return App.focusBlock(label);
     if (!l) return `<div class="screen block" id="screen"><div class="block-top">${App.appIcon(CTX.pkg, "xl")}<h1 class="h1">${label} has no limit</h1></div>
         <div class="grow"></div><button class="btn primary" data-a="closeBlock">Back to home screen</button></div>`;
     if (l.leftSec <= 0) return `<div class="screen block" id="screen">

@@ -33,6 +33,7 @@
 
   function vSheet() {
     const sh = ui.sheet; if (!sh) return "";
+    if (App.sheetViews && App.sheetViews[sh.type]) return App.sheetViews[sh.type](sh, sheet, head);
     if (sh.type === "wait") return sheet("", `${head(sh.title, "wait-h")}
         <div class="wait"><div class="wait-ring" id="wait-ring" style="--p:${1 - sh.left / 30000}"><span class="dotnum" id="wait-n">${Math.ceil(sh.left / 1000)}</span></div><p class="muted">${esc(sh.body)}</p></div>
         <button class="btn primary" id="wait-go" data-a="waitCta" ${sh.left > 0 ? "disabled" : ""}>${esc(sh.cta)}</button>`, "wait-h");
@@ -44,7 +45,7 @@
         <div class="btn-row"><button class="btn quiet" data-a="closeSheet">Not now</button><button class="btn primary" data-a="agreeStrict">Turn on</button></div>`, "strict-s");
     if (sh.type === "consent") return sheet("", `${head("Before you switch it on", "consent-h")}
         <p>Ante uses Android's Accessibility service to see <b>which app is in front</b>, so it can cover apps that are over their limit.</p>
-        <ul class="facts"><li>It only sees the name of the app you open.</li><li>It does not read what is on your screen, what you type or your notifications.</li><li>Nothing leaves your phone. Ante has no internet permission.</li></ul>
+        <ul class="facts"><li>It only sees the name of the app you open.</li><li>It does not read what is on your screen, what you type or your notifications.</li><li>None of this leaves your phone. Ante only goes online to check for app updates.</li></ul>
         <p class="muted">You can switch it off any time in Settings → Accessibility.</p>
         <div class="btn-row"><button class="btn quiet" data-a="closeSheet">Not now</button><button class="btn primary" data-a="agreeAcc">I agree, open Settings</button></div>`, "consent-h");
     if (sh.type === "pick") {

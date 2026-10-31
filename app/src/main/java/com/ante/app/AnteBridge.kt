@@ -27,8 +27,15 @@ class AnteBridge(
 
     @JavascriptInterface
     fun state(): String {
+        // Tidy away a Focus or Strict lock whose time is up before showing the state.
+        val now = Bank.now()
+        if (Bank.read { b -> (b.state.focusUntilMs in 1..now) || (b.state.strictUntilMs in 1..now) }) {
+            Bank.editAt { b, t -> b.expireModes(t) }
+        }
         val json = Bank.read { Codec.toJson(it.state) }
-        json.put("now", Bank.now())
+        json.put("now", now)
+        json.put("strictActive", Bank.read { it.isStrict(now) })
+        json.put("focusActive", Bank.read { it.isFocus(now) })
         json.put("accessibility", isWatcherEnabled())
         // Health checks shown on Today: is the watcher really running, can the clock be trusted,
         // and is Android allowed to kill Ante to save battery.
@@ -237,8 +244,37 @@ class AnteBridge(
 
     @JavascriptInterface
     fun setStrict(on: Boolean): Boolean {
+        // A timed lock has no early way out.
+        val now = Bank.now()
+        if (!on && !Bank.read { it.canLeaveStrict(now) }) return false
         if (!on && Bank.read { it.state.strict } && !waitDone()) return false
         Bank.edit { it.setStrict(on) }
+        waitStartedAt = 0
+        return true
+    }
+
+    /** Strict mode for a set number of days (1, 3, 7 or 30). It switches itself off at the end. */
+    @JavascriptInterface
+    fun startStrict(days: Int): Boolean {
+        if (days !in STRICT_DAYS) return false
+        return Bank.editAt { b, now -> b.startStrict(now, days * DAY_MS) }
+    }
+
+    /** Focus for [minutes] (5 to 720): every limited app stays covered, whatever time it has left. */
+    @JavascriptInterface
+    fun startFocus(minutes: Int): Boolean {
+        if (minutes !in 5..720) return false
+        val ok = Bank.editAt { b, now -> b.startFocus(now, minutes * 60_000L) }
+        AppWatcherService.instance?.scheduleExpiry()
+        return ok
+    }
+
+    /** Ends Focus early: after the 30-second wait, and never while Strict mode is on. */
+    @JavascriptInterface
+    fun endFocus(): Boolean {
+        val now = Bank.now()
+        if (!waitDone() || Bank.read { it.isStrict(now) }) return false
+        Bank.edit { it.endFocus() }
         waitStartedAt = 0
         return true
     }
@@ -316,6 +352,8 @@ class AnteBridge(
     companion object {
         private val HAPTIC_KINDS = setOf("tap", "tick", "win", "loss")
         private val HEX_COLOR = Regex("^#[0-9a-fA-F]{6}$")
+        private val STRICT_DAYS = setOf(1, 3, 7, 30)
+        private const val DAY_MS = 24 * 60 * 60_000L
         private val OUTSIDE_LINKS = setOf("https://ko-fi.com/peteracz", "mailto:peter.racz.rhr@gmail.com")
         private const val WAIT_MS = 30_000L
         private const val WAIT_VALID_MS = 10 * 60_000L

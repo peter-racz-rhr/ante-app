@@ -104,7 +104,8 @@
     const net = t.won - t.lost, bets = todaysBets();
     const tr = App.CH.trend(bets, { w: 160, h: 72, minSpan: 120, label: `Today's net at the tables, ${signed(net)}` });
     const pill = !bets.length ? `<span class="pill warn"><i></i>No bets yet</span>` : net > 0 ? `<span class="pill good"><i></i>Up today</span>` : net < 0 ? `<span class="pill bad"><i></i>Down today</span>` : `<span class="pill"><i></i>Even</span>`;
-    const status = S.accessibility && S.watching ? `<span class="pill good"><i></i>Blocking on${S.strict ? " · Strict" : ""}</span>` : "";
+    const M = App.modes ? App.modes() : { strict: S.strict, focus: false };
+    const status = S.accessibility && S.watching ? `<span class="pill good"><i></i>${M.focus ? "Focus on" : "Blocking on"}${M.strict ? " · Strict" : ""}</span>` : "";
     const name = App.displayName();
     return `<div class="screen" id="screen">
       <header class="masthead"><span class="mark">${App.ICON.logo}Ante</span><button class="avatar-btn" data-a="tab" data-t="profile" aria-label="Profile">${App.avatar("", 'aria-hidden="true"')}</button></header>
@@ -112,8 +113,10 @@
         <p class="muted">${esc(date)}</p>
         <div class="dotclock-box"><p class="dotclock" data-fit="150" aria-hidden="true">${fmt(total)}</p></div>
         <div class="hero-row"><span class="muted">${S.limits.length ? `left across ${S.limits.length} ${S.limits.length === 1 ? "app" : "apps"} · resets in ${resetsIn()}` : "Add an app to give it a daily budget."}</span>${status}</div>
+        ${S.accessibility && S.limits.length && App.focusChip ? `<div class="quick-row">${App.focusChip()}</div>` : ""}
       </section>
       ${App.nativeOutdated && App.nativeOutdated() ? `<button class="update-note slim" data-a="tab" data-t="profile"><span class="sicon" style="--ic:var(--warn)" aria-hidden="true">${App.ICON.info}</span><span class="sitem-t"><span class="sitem-title">Install the new app version once</span><span class="sitem-sub">Needed for full screen, vibration and photos. Tap for how.</span></span></button>` : ""}
+      ${App.focusBanner ? App.focusBanner() : ""}
       ${App.healthBlock()}
       <section class="panel card-chart tap" role="button" tabindex="0" data-a="tab" data-t="screentime" aria-label="Screen time this week. Open the breakdown by app">
         <div class="panel-head"><div><h2 class="h3">Screen time</h2><p class="muted">Last 7 days, by app</p></div><span class="chev">${App.ICON.chev}</span></div>

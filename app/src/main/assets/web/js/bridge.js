@@ -34,6 +34,9 @@
       startWait: () => N.startWait(),
       waitLeftMs: () => Number(N.waitLeftMs()),
       setStrict: on => N.setStrict(!!on),
+      startStrict: days => { try { return N.startStrict(days | 0); } catch (e) { return false; } }, // false on apps older than 0.4.0
+      startFocus: min => { try { return N.startFocus(min | 0); } catch (e) { return false; } },
+      endFocus: () => { try { return N.endFocus(); } catch (e) { return false; } },
       openGuarded: pkg => N.openGuarded(pkg),
       openBatterySettings: () => N.openBatterySettings(),
       openDateSettings: () => N.openDateSettings(),
@@ -120,7 +123,13 @@
   window.Ante = {
     native: false,
     resetMock: () => { S = fresh(); save(); },
-    state: () => JSON.parse(JSON.stringify(Object.assign({ watching: true, autoTime: true, batteryOk: q.get("battery") !== "0" }, S, { now: Date.now() }))),
+    state: () => {
+      const now = Date.now();
+      if (S.strictUntilMs && now >= S.strictUntilMs) { S.strict = false; S.strictUntilMs = 0; save(); }
+      if (S.focusUntilMs && now >= S.focusUntilMs) { S.focusUntilMs = 0; save(); }
+      const strictActive = !!S.strict && (!S.strictUntilMs || now < S.strictUntilMs), focusActive = now < (S.focusUntilMs || 0);
+      return JSON.parse(JSON.stringify(Object.assign({ watching: true, autoTime: true, batteryOk: q.get("battery") !== "0" }, S, { now, strictActive, focusActive })));
+    },
     context: () => {
       if (ctx.mode !== "block" || !ctx.pkg) return { mode: ctx.mode, platform: "browser" };
       const a = apps.find(x => x.pkg === ctx.pkg);
@@ -163,7 +172,7 @@
     },
     open(pkg, sec) {
       const l = lim(pkg); sec |= 0;
-      if (!l || sec <= 0 || sec > l.leftSec) return false;
+      if (!l || sec <= 0 || sec > l.leftSec || Date.now() < (S.focusUntilMs || 0)) return false;
       l.leftSec -= sec; save();
       say(`Opens ${l.label} for ${Math.round(sec / 60)} min`);
       return true;
@@ -220,8 +229,24 @@
     startWait: () => { waitStart = Date.now(); },
     waitLeftMs: () => (waitStart ? Math.max(0, waitStart + WAIT - Date.now()) : -1),
     setStrict(on) {
+      if (!on && S.strictUntilMs && Date.now() < S.strictUntilMs) return false; // a timed lock has no early exit
       if (!on && S.strict && !(waitStart && Date.now() - waitStart >= WAIT)) return false;
-      S.strict = !!on; waitStart = 0; save(); return true;
+      S.strict = !!on; if (!on) S.strictUntilMs = 0; waitStart = 0; save(); return true;
+    },
+    // ?unit=s makes "days" and "minutes" last seconds, so tests can watch locks end.
+    startStrict(days) {
+      if (![1, 3, 7, 30].includes(days)) return false;
+      const unit = q.get("unit") === "s" ? 1000 : 86400000, now = Date.now(), cur = S.strict && S.strictUntilMs > now ? S.strictUntilMs : 0;
+      S.strict = true; S.strictUntilMs = Math.max(now + days * unit, cur); save(); return true;
+    },
+    startFocus(min) {
+      if (!(min >= 5 && min <= 720)) return false;
+      S.focusUntilMs = Date.now() + min * (q.get("unit") === "s" ? 1000 : 60000); save(); return true;
+    },
+    endFocus() {
+      const now = Date.now();
+      if (!(waitStart && now - waitStart >= WAIT) || (S.strict && (!S.strictUntilMs || now < S.strictUntilMs))) return false;
+      S.focusUntilMs = 0; waitStart = 0; save(); return true;
     },
     openGuarded(pkg) { if (!(waitStart && Date.now() - waitStart >= WAIT)) return false; waitStart = 0; say("Opens Settings for 2 minutes"); return true; },
     openBatterySettings: () => { say("Opens battery optimization"); S.batteryOk = true; save(); return true; },

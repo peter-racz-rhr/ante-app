@@ -344,8 +344,8 @@ async function noOverflow(p, label) {
   check(await st.isVisible(".navpill .ndot"), "profile tab gets a dot when something needs care");
   await st.click('[data-t="profile"]');
   check(await st.isVisible('[data-a="settingsGo"][data-go="battery"]'), "profile flags restricted background use with an Allow button");
-  await st.click('[data-a="strictOn"]');
-  await st.click('[data-a="agreeStrict"]');
+  // Untimed strict mode from older versions still works (turned on directly through the bridge).
+  await st.evaluate(() => { window.Ante.setStrict(true); window.App.refresh(); window.App.render(); });
   await st.waitForTimeout(150);
   check(await st.isVisible('[data-a="strictOff"][aria-checked="true"]'), "strict mode turns on");
   await shot(st, "23-strict-on");
@@ -356,7 +356,45 @@ async function noOverflow(p, label) {
   await st.waitForSelector("#wait-go:not([disabled])", { timeout: 3000 });
   await st.click("#wait-go");
   await st.waitForTimeout(150);
-  check(await st.isVisible('[data-a="strictOn"][aria-checked="false"]'), "strict mode turns off after the wait");
+  check(await st.isVisible('[data-a="explain"][data-v="strict"]'), "strict mode turns off after the wait");
+
+  /* Timed strict mode and Focus (?unit=s: a "day" or "minute" lasts one second) */
+  {
+    const md = await page(browser, "?acc=1&wait=1&reset=1&unit=s");
+    await md.click('[data-t="profile"]'); await md.waitForTimeout(200);
+    await md.click('[data-a="explain"][data-v="strict"]');
+    check(await md.isVisible(".ex-art.strict1"), "strict explainer opens with an animation");
+    await shot(md, "25a-strict-explain-1");
+    await md.click('[data-a="exNext"]');
+    check((await md.$$(".ex-list li")).length === 4, "second step explains how strict mode works");
+    await md.click('[data-a="exNext"]');
+    check((await md.$$('[data-a="exPick"]')).length === 4, "last step offers 1 day, 3 days, 1 week, 1 month");
+    await md.click('[data-a="exPick"][data-v="3"]');
+    check(await md.isVisible("text=Lock for 3 days"), "the button names the chosen length");
+    await shot(md, "25b-strict-explain-3");
+    await md.click('[data-a="exGo"]'); await md.waitForTimeout(200);
+    check(await md.isVisible("text=Locked until"), "profile shows the strict lock and its end");
+    check(!(await md.$('[data-a="strictOff"]')), "a timed lock has no off switch");
+    check(await md.evaluate(() => window.Ante.setStrict(false)) === false, "the bridge refuses to end a timed lock early");
+    await md.waitForTimeout(3600); await md.evaluate(() => { window.App.refresh(); window.App.render(); }); await md.waitForTimeout(150);
+    check(await md.isVisible('[data-a="explain"][data-v="strict"]'), "strict mode ends by itself when the time is up");
+
+    await md.click('[data-t="home"]'); await md.waitForTimeout(200);
+    await md.click('.quick-row [data-a="explain"][data-v="focus"]');
+    check(await md.isVisible(".ex-art.focus1"), "focus explainer opens from Home");
+    await md.click('[data-a="exNext"]'); await md.click('[data-a="exNext"]');
+    await md.click('[data-a="exPick"][data-v="60"]');
+    await md.click('[data-a="exGo"]'); await md.waitForTimeout(200);
+    check(await md.isVisible(".focus-banner"), "Home shows Focus with a countdown");
+    await shot(md, "25c-focus-home");
+    check(await md.evaluate(() => window.Ante.open("com.instagram.android", 300)) === false, "no app can be opened during Focus, even with time left");
+    await md.click('.focus-banner [data-a="focusEnd"]');
+    check(await md.isDisabled("#wait-go"), "ending Focus early starts behind a wait");
+    await md.waitForSelector("#wait-go:not([disabled])", { timeout: 3000 });
+    await md.click("#wait-go"); await md.waitForTimeout(200);
+    check(!(await md.$(".focus-banner")), "Focus ends after the wait");
+    check(md.errors.length === 0, "no console errors in Focus and Strict: " + md.errors.join(" | "));
+  }
   /* Themes, legal, support */
   await st.click('[data-a="theme"][data-v="mocha"]');
   check(await st.evaluate(() => document.documentElement.dataset.theme) === "mocha", "Catppuccin Mocha theme applies");

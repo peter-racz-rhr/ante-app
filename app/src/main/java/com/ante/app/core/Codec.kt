@@ -30,6 +30,8 @@ object Codec {
         })
         put("strict", s.strict)
         put("settingsPassUntilMs", s.settingsPassUntilMs)
+        put("strictUntilMs", s.strictUntilMs)
+        put("focusUntilMs", s.focusUntilMs)
         put("clock", JSONObject().put("wallMs", s.clock.wallMs).put("elapsedMs", s.clock.elapsedMs).put("lastTrustedMs", s.clock.lastTrustedMs).put("bootCount", s.clock.bootCount))
         val session = s.session
         if (session != null) {
@@ -69,6 +71,8 @@ object Codec {
                 },
                 strict = o.optBoolean("strict", false),
                 settingsPassUntilMs = o.optLong("settingsPassUntilMs", 0),
+                strictUntilMs = o.optLong("strictUntilMs", 0),
+                focusUntilMs = o.optLong("focusUntilMs", 0),
                 clock = o.optJSONObject("clock")?.let { j ->
                     ClockAnchor(j.optLong("wallMs", 0), j.optLong("elapsedMs", 0), j.optLong("lastTrustedMs", 0), j.optInt("bootCount", -1))
                 } ?: ClockAnchor(),

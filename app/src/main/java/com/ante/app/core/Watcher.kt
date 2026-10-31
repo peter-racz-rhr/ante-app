@@ -21,7 +21,7 @@ class Watcher(
     var foreground: String? = null
         private set
 
-    private fun guarded(bank: TimeBank, pkg: String, nowMs: Long): Boolean = bank.state.strict &&
+    private fun guarded(bank: TimeBank, pkg: String, nowMs: Long): Boolean = bank.isStrict(nowMs) &&
         (pkg in locked || (pkg in passable && bank.isGuardActive(nowMs)))
 
     fun onWindow(bank: TimeBank, pkg: String, isActivity: Boolean, ignored: Boolean, isHome: Boolean, nowMs: Long): Action {
@@ -42,6 +42,7 @@ class Watcher(
 
         val decision = bank.onForeground(pkg, nowMs, isHome)
         if (decision == Decision.BLOCK && pkg != ownPkg) {
+            if (bank.isFocus(nowMs)) return Action.Block(pkg, FOCUS_NOTE)
             return if (expired is Action.Block && expired.pkg == pkg) expired else Action.Block(pkg, null)
         }
         return expired
@@ -63,5 +64,7 @@ class Watcher(
     companion object {
         /** Note on a block screen that covers Settings or the uninstaller in strict mode. */
         const val GUARD_NOTE = "strict"
+        /** Note on a block screen shown during Focus. */
+        const val FOCUS_NOTE = "focus"
     }
 }
