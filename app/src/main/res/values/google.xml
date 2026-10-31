@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Paste the WEB client ID from Google Cloud Console here (see README, "Google sign-in").
-         It ends in .apps.googleusercontent.com. Until then the Google button explains it isn't set up. -->
-    <string name="google_web_client_id" translatable="false">REPLACE_WITH_WEB_CLIENT_ID.apps.googleusercontent.com</string>
+    <!-- WEB client ID from Google Cloud (project "Ante", client "Ante web"). Not a secret; see README, "Google sign-in". -->
+    <string name="google_web_client_id" translatable="false">881119237074-6e9tf7mt7ebnpdtgag5re9he6rqlbtje.apps.googleusercontent.com</string>
 </resources>
