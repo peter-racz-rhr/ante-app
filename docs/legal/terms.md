@@ -1,6 +1,6 @@
 # Terms of Service
 
-These terms apply when you use the Ante app and its web demo. Last updated 31 October 2026.
+These terms apply when you use the Ante app and its web demo. Last updated 1 November 2026.
 
 ## 1. What Ante is
 
@@ -22,9 +22,9 @@ Blocking needs Android's accessibility permission, which you can turn on and off
 
 Signing in with Google is optional. It only puts your name and email on this phone. You can sign out at any time in Profile.
 
-## 6. Tips
+## 6. Ante Supporter and tips
 
-You can tip the developer through Ko-fi. Tips are voluntary gifts, are handled by Ko-fi under its own terms, and don't unlock anything in the app.
+Ante Supporter is an optional one-time purchase through Google Play that unlocks extra looks (themes, clock fonts, table felts, card backs and a badge). It never unlocks blocking features, minutes or better odds. Tips through Google Play or Ko-fi are voluntary gifts and unlock nothing. Google Play handles payments, refunds and taxes under its own terms. A Supporter purchase is linked to your Google account and can be restored on a new phone.
 
 ## 7. Use at your own risk
 

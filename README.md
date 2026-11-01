@@ -6,6 +6,13 @@ or stake some of those minutes at a casino table. You can play roulette, blackja
 coin flip. Wins go back to that app's budget, and losses are gone for the day. Every table has a small house
 edge, so playing tends to cut screen time. No real money is involved.
 
+## Guides
+
+- **Publishing on Google Play, closed testing and Ante Supporter purchases:** [`docs/PLAY-STORE.md`](docs/PLAY-STORE.md)
+- **Instagram account, first post and a two-week plan:** [`docs/INSTAGRAM.md`](docs/INSTAGRAM.md)
+- **Store and Instagram images**, made from the real app: `docs/store/`, `docs/instagram/` (rebuild with `node scripts/store-art.js`)
+- **Paywall options and feature ideas:** [`docs/IDEAS.md`](docs/IDEAS.md); full audit: [`docs/AUDIT.md`](docs/AUDIT.md)
+
 ## Setup checklist
 
 Do these once, in order. Details for each are further down.

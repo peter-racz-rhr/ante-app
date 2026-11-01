@@ -6,7 +6,7 @@
   const ADDRESS = "Kálti Márk u. 2/B, 1035 Budapest, Hungary";
   const EMAIL = "peter.racz.rhr@gmail.com";
   const PHONE = "+36 50 104 5007";
-  const UPDATED = "31 October 2026";
+  const UPDATED = "1 November 2026";
 
   const DOCS = {
     credits: {
@@ -41,7 +41,7 @@
         ["3. Who can use it", "You need to be at least 16 years old. If gambling-style games are a problem for you, or might become one, please don't use the tables. If gambling, even with time, starts to feel like a problem, talk to your doctor or a support service near you."],
         ["4. Your phone and its settings", "Blocking needs Android's accessibility permission, which you can turn on and off in Settings at any time. Ante can't guarantee that every app is blocked in every situation, for example web versions of apps or picture-in-picture video. Strict mode adds a 30-second wait before Settings and uninstalling; it is meant as friction, not as a lock you can't undo."],
         ["5. Your account", "Signing in with Google is optional. It only puts your name and email on this phone. You can sign out at any time in Profile."],
-        ["6. Tips", "You can tip the developer through Ko-fi. Tips are voluntary gifts, are handled by Ko-fi under its own terms, and don't unlock anything in the app."],
+        ["6. Ante Supporter and tips", "Ante Supporter is an optional one-time purchase through Google Play that unlocks extra looks (themes, clock fonts, table felts, card backs and a badge). It never unlocks blocking features, minutes or better odds. Tips through Google Play or Ko-fi are voluntary gifts and unlock nothing. Google Play handles payments, refunds and taxes under its own terms. A Supporter purchase is linked to your Google account and can be restored on a new phone."],
         ["7. Use at your own risk", "Ante is provided free of charge and \"as is\". To the extent the law allows, the provider is not liable for damage caused by using or not being able to use Ante, for example a missed message because an app was covered. Liability for intent and gross negligence, and for harm to life, body or health, is not excluded."],
         ["8. Changes", "These terms may change when the app changes. The date at the top shows the latest version. If you keep using Ante after a change, the new terms apply."],
         ["9. Law and contact", `Hungarian law applies. Questions: ${EMAIL}.`],
@@ -58,6 +58,7 @@
         ["Google sign-in (optional)", "If you sign in with Google, Google shows its own sign-in screen and gives Ante your name, email address and account picture. Ante downloads the picture once from Google's image server and saves a small copy, with your name and email, on your phone. Google processes this sign-in under its own privacy policy (policies.google.com/privacy). Ante does not keep the Google sign-in token. Legal basis: your consent (GDPR Art. 6(1)(a)), which you can withdraw by signing out."],
         ["The app list", "To let you pick apps, Ante reads the list of apps installed on your phone and their icons. This list stays on the phone."],
         ["Web demo", "The web demo runs in your browser with sample data and stores its state in your browser's local storage. The host (Netlify or Vercel) may keep standard server logs, such as IP addresses, under its own privacy policy."],
+        ["Purchases (optional)", "If you buy Ante Supporter or leave a tip, Google Play processes the payment under its own privacy policy. Ante only receives a confirmation that the purchase is valid, which it stores on your phone to keep the extra looks unlocked. Ante never sees your payment details. Legal basis: performance of a contract (GDPR Art. 6(1)(b))."],
         ["Ko-fi", "The Ko-fi link opens ko-fi.com in your browser. Anything you do there is handled by Ko-fi under its own privacy policy."],
         ["How long", "On-device data stays until you uninstall Ante or clear its data in Android settings. Daily history is limited to about six months. Signing out deletes your name and email right away."],
         ["Your rights", `Under the GDPR you have the right to access, correct and delete your data, to restrict or object to processing, to data portability and to withdraw consent. Because the data is on your phone, you can delete it yourself at any time. For anything else write to ${EMAIL}.`],

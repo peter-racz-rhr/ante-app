@@ -1,6 +1,6 @@
 # Privacy Policy
 
-How Ante handles your data. Last updated 31 October 2026. In short: everything stays on your phone, and Ante has no server.
+How Ante handles your data. Last updated 1 November 2026. In short: everything stays on your phone, and Ante has no server.
 
 ## Who is responsible
 
@@ -29,6 +29,10 @@ To let you pick apps, Ante reads the list of apps installed on your phone and th
 ## Web demo
 
 The web demo runs in your browser with sample data and stores its state in your browser's local storage. The host (Netlify or Vercel) may keep standard server logs, such as IP addresses, under its own privacy policy.
+
+## Purchases (optional)
+
+If you buy Ante Supporter or leave a tip, Google Play processes the payment under its own privacy policy. Ante only receives a confirmation that the purchase is valid, which it stores on your phone to keep the extra looks unlocked. Ante never sees your payment details. Legal basis: performance of a contract (GDPR Art. 6(1)(b)).
 
 ## Ko-fi
 

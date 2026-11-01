@@ -1,6 +1,9 @@
 # Ante: paywall options and feature ideas (1 November 2026)
 
-Nothing here is built. It is a menu to choose from.
+**Built since this list was written (0.6.0):** schedules (1), the home-screen widget (28), the
+Quick Settings tile (29), the weekly recap (20), the daily free spin (12), the "no tables" switch
+(15), native game outcomes (13), Hungarian (36), table skins (17) and Ante Supporter (paywall
+model 3 plus tips, see `docs/PLAY-STORE.md`). Everything else below is still open.
 
 ## Paywall
 
