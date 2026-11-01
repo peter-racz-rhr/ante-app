@@ -7,14 +7,10 @@
   const ui = App.ui;
   const SLIDES = 3; // story slides before sign-in (step 3) and permission (step 4)
 
-  const feedArt = () => `<div class="ob-phone" aria-hidden="true"><div class="ob-feed">${Array.from({ length: 8 }, (_, i) =>
-    `<div class="ob-post"><i class="ob-av"></i><i class="ob-line" style="width:${40 + (i * 17) % 40}%"></i><i class="ob-img"></i></div>`).join("")}</div>
-    <div class="ob-counter"><span class="eyebrow">Scrolled today</span><span class="dotnum" id="ob-count">0:00:00</span></div></div>`;
-  const budgetArt = () => `<div class="ob-budget" aria-hidden="true">
-    ${[["In", "#c13584", 72], ["Tk", "#0e9f99", 46], ["Yt", "#d93636", 88]].map(([m, c, w], i) => `<div class="ob-app" style="--d:${i * 0.25}s;--w:${w}%"><span class="appicon mono" style="background:${c};color:#fff">${m}</span><span class="ob-track"><i></i></span></div>`).join("")}
-    <div class="ob-cover"><span class="ob-lock">${App.ICON.lock}</span><span class="dotnum">0:00</span><span class="muted">Instagram is done for today</span></div></div>`;
-  const betArt = () => `<div class="ob-bet" aria-hidden="true"><div class="ob-wheel">${App.FX.GAME_ART.roulette()}</div>
-    <span class="ob-chip c1">+5:00</span><span class="ob-chip c2">−1:00</span><span class="ob-chip c3">+10:00</span></div>`;
+  // Each slide shows Ante's own screens doing the thing the slide says (js/scenes.js).
+  const feedArt = () => App.Scenes.feed();
+  const budgetArt = () => App.Scenes.cover();
+  const betArt = () => App.Scenes.bet();
 
   const STORY = [
     { art: feedArt, kicker: "Ante", title: "Your feed never ends.<br>Your day does.", body: "Apps are built to keep you scrolling. Ante gives each one a daily budget of minutes." },
@@ -68,15 +64,9 @@
   };
 
   /* Slide 1's counter: a scroll timer that runs away from you. */
-  let countTimer = null;
   App.afterWelcome = function () {
-    clearInterval(countTimer);
-    const el = document.getElementById("ob-count"); if (!el) return;
-    let s = 0;
-    countTimer = setInterval(() => {
-      if (!document.body.contains(el)) { clearInterval(countTimer); return; }
-      s += 37; el.textContent = `${Math.floor(s / 3600)}:${App.pad(Math.floor((s % 3600) / 60))}:${App.pad(s % 60)}`;
-    }, 60);
+    const scr = document.getElementById("screen");
+    if (scr && App.Scenes) App.Scenes.run(scr); // inactive slides wait until they're shown
     attachSwipe();
   };
 

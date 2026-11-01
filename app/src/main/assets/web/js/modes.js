@@ -46,17 +46,12 @@
     };
   };
 
-  /* ---------- artwork (CSS-animated; see .ex-art in app.css) ---------- */
-  const tile = (cls, ic) => `<span class="ex-tile ${cls}">${App.ICON[ic] || ""}</span>`;
+  /* ---------- artwork: product scenes from js/scenes.js ---------- */
   const ART = {
-    strict1: () => `<div class="ex-phone"><div class="ex-row">${tile("t-set", "gear")}${tile("t-bin", "trash")}${tile("t-ante", "logo")}</div>
-      <div class="ex-shield">${App.ICON.shield}<span>Covered</span></div></div>`,
-    strict2: () => `<div class="ex-lock"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="ring-bg" cx="60" cy="60" r="52"/><circle class="ring" cx="60" cy="60" r="52"/></svg>
-      <span class="ex-lock-ic">${App.ICON.lock}</span><span class="ex-cal"><b>7</b>days</span></div>`,
-    focus1: () => `<div class="ex-apps">${[["In", "#c13584"], ["Tk", "#0e9f99"], ["Yt", "#d93636"]].map(([m, c], i) =>
-      `<span class="ex-app" style="--c:${c};--d:${i * 0.45}s"><b>${m}</b><i>${App.ICON.moon}</i></span>`).join("")}</div>`,
-    focus2: () => `<div class="ex-lock focus"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="ring-bg" cx="60" cy="60" r="52"/><circle class="ring" cx="60" cy="60" r="52"/></svg>
-      <span class="ex-lock-ic">${App.ICON.moon}</span><span class="ex-cal"><b>25</b>min</span></div>`,
+    strict1: () => App.Scenes.strictLock(),
+    strict2: () => App.Scenes.strictDays(),
+    focus1: () => App.Scenes.focusCover(),
+    focus2: () => App.Scenes.focusClock(),
   };
 
   const STEPS = {

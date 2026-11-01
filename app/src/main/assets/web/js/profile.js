@@ -191,7 +191,10 @@
         ${item({ icon: "doc", title: "Terms of Service", action: "doc", v: "terms" })}
         ${item({ icon: "doc", title: "Privacy Policy", action: "doc", v: "privacy" })}
         ${item({ icon: "doc", title: "Imprint", action: "doc", v: "imprint" })}
+        ${item({ icon: "heart", title: "Credits", sub: "Fonts, icons and tools Ante is built with", action: "doc", v: "credits" })}
         ${item({ icon: "info", title: "Version", trail: `<span class="sval">${versionLine()}</span>` })}`)}
+
+      ${App.howItWorks ? App.howItWorks(0) : ""}
 
       ${A.native ? "" : group("Web demo", `
         <a class="sitem tap" href="?mode=block&pkg=com.instagram.android&acc=1"><span class="sicon" aria-hidden="true">${App.ICON.lock}</span><span class="sitem-t"><span class="sitem-title">See the block screen</span></span><span class="chev">${App.ICON.chev}</span></a>
