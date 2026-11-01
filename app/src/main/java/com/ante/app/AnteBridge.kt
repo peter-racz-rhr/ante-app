@@ -170,6 +170,8 @@ class AnteBridge(
     @JavascriptInterface
     fun removeLimit(pkg: String): Boolean {
         if (!validPkg(pkg)) return false
+        val now = Bank.now()
+        if (!Bank.read { it.canRemoveLimits(now) }) return false
         Bank.editAt { b, now -> b.removeLimit(pkg, now) }
         return true
     }

@@ -46,7 +46,7 @@
       <div class="rstake" role="group" aria-label="${o.perBet ? "Stake per bet" : "Stake"}">
         <button class="step" data-a="stake" data-d="-1" aria-label="Less" ${dis || (ui.stake <= 60 ? "disabled" : "")}>−</button>
         <button class="rstake-val" id="stake-val" data-a="stakeCycle" ${canSwitch ? "" : "disabled"} aria-label="Stake ${esc(fmt(ui.stake))}${o.perBet ? " per bet" : ""} from ${esc(l.label)}, ${esc(fmt(l.leftSec))} left${canSwitch ? ". Tap to stake another app" : ""}">
-          <span class="dotnum">${fmt(ui.stake)}</span>
+          <span class="dotnum" data-fit="22">${fmt(ui.stake)}</span>
           <small>${App.appIcon(l.pkg, "xs")}<span class="num">${esc(fmt(l.leftSec))}</span></small></button>
         <button class="step" data-a="stake" data-d="1" aria-label="More" ${dis || ((ui.stake + stepUp()) * n > l.leftSec ? "disabled" : "")}>+</button>
       </div>${btn}</div>`;
@@ -193,6 +193,7 @@
       } else html = stakeRow(locked, "pDeal", { label: "Deal" });
     }
     c.innerHTML = html;
+    App.fitText(); // long stakes shrink to fit their box
     App.renderNav();
   };
 

@@ -195,4 +195,19 @@ class TimeBankTest {
         }
         assertEquals(TimeBank.LEDGER_MAX, b.state.ledger.size)
     }
+
+    @Test fun aRoyalFlushPaysItsFull250Times() {
+        val b = bank()
+        assertTrue(b.placeBet(ig, 60))
+        val net = b.settleBet(ig, "Poker", 60, 60 * 250, 1)
+        assertEquals(60 * 249, net)
+        assertEquals(1200 - 60 + 60 * 250, b.limitFor(ig)!!.leftSec)
+    }
+
+    @Test fun nothingPaysMoreThan250Times() {
+        val b = bank()
+        assertTrue(b.placeBet(ig, 60))
+        b.settleBet(ig, "Poker", 60, 60 * 1000, 1)
+        assertEquals(1200 - 60 + 60 * 250, b.limitFor(ig)!!.leftSec)
+    }
 }

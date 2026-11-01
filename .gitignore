@@ -9,3 +9,6 @@ build/
 .cxx
 node_modules/
 *.pem
+keystore.properties
+*.jks
+*.keystore

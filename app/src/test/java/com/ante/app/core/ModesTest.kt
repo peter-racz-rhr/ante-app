@@ -100,4 +100,15 @@ class ModesTest {
         assertEquals(hour, back.focusUntilMs)
         assertEquals(day, back.strictUntilMs)
     }
+
+    @Test fun limitsCanNotBeRemovedDuringFocusOrStrict() {
+        val b = bank()
+        assertTrue(b.canRemoveLimits(0))
+        b.startFocus(0, hour)
+        assertFalse(b.canRemoveLimits(1))
+        assertTrue(b.canRemoveLimits(hour))
+        b.startStrict(hour, day)
+        assertFalse(b.canRemoveLimits(hour + 1))
+        assertTrue(b.canRemoveLimits(hour + day))
+    }
 }

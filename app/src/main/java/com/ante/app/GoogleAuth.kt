@@ -75,6 +75,8 @@ object GoogleAuth {
                         val app = activity.applicationContext
                         Thread({
                             val photo = Photo.fromGoogle(url) ?: return@Thread
+                            // Signed out (or signed in as someone else) while this was loading: drop it.
+                            if (!Account.isSignedInAs(app, google.id)) return@Thread
                             Account.setGooglePhoto(app, photo)
                             onPhoto?.invoke()
                         }, "ante-google-photo").start()

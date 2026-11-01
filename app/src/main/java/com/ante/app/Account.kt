@@ -40,6 +40,8 @@ object Account {
         prefs(c).edit().remove("id").remove("name").remove("email").remove("signedInAt").remove("googlePhoto").apply()
     }
 
+    fun isSignedInAs(c: Context, id: String): Boolean = prefs(c).getString("id", null) == id
+
     /** The user's own picture (data URL), or null to remove it. Wins over the Google photo. */
     fun setPhoto(c: Context, dataUrl: String?) {
         prefs(c).edit().apply { if (dataUrl == null) remove("photo") else putString("photo", dataUrl) }.apply()

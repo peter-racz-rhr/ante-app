@@ -35,6 +35,7 @@ object Photo {
         val u = URL(sized)
         require(u.protocol == "https")
         val conn = u.openConnection() as HttpURLConnection
+        conn.setRequestProperty("User-Agent", "Ante") // no device model or Android version in requests
         conn.connectTimeout = 10_000; conn.readTimeout = 10_000
         try {
             if (conn.responseCode != 200) null

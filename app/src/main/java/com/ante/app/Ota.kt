@@ -152,6 +152,7 @@ object Ota {
         repeat(5) {
             require(target.protocol == "https")
             val conn = target.openConnection() as HttpURLConnection
+            conn.setRequestProperty("User-Agent", "Ante") // no device model or Android version in requests
             conn.instanceFollowRedirects = false
             conn.connectTimeout = TIMEOUT_MS
             conn.readTimeout = TIMEOUT_MS

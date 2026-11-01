@@ -89,7 +89,7 @@
         <span class="meta"><span class="name">${esc(l.label)}</span>
           <span class="meter ${out ? "out" : bonus > 0 ? "bonus" : ""}"><i style="width:${out || bonus > 0 ? 100 : pct}%"></i></span>
           <span class="sub">${sub}</span></span>
-        <span class="left num ${out ? "loss" : ""}">${fmt(l.leftSec)}</span></button>`;
+        <span class="left-box"><span class="left num ${out ? "loss" : ""}" data-fit="30">${fmt(l.leftSec)}</span></span></button>`;
     }).join("");
   }
 

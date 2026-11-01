@@ -15,13 +15,27 @@ android {
         versionName = "0.4.0"
     }
 
+    // Release signing: put your own keystore details in keystore.properties (never commit it;
+    // see README "Release signing"). Without it, release builds fall back to the debug key so
+    // they still install, but they must not be shared: anyone can sign with a debug key.
+    val keystoreProps = rootProject.file("keystore.properties")
+    signingConfigs {
+        if (keystoreProps.exists()) {
+            val p = java.util.Properties().apply { keystoreProps.inputStream().use { load(it) } }
+            create("release") {
+                storeFile = rootProject.file(p.getProperty("storeFile"))
+                storePassword = p.getProperty("storePassword")
+                keyAlias = p.getProperty("keyAlias")
+                keyPassword = p.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // Signed with the debug key so a release APK installs straight away.
-            // Swap in your own keystore before publishing anywhere.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
 

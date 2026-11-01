@@ -801,3 +801,7 @@ img.avatar { object-fit: cover; background: var(--surface-3); }
 .sheet .btn-row .btn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-inline: var(--s3); }
 .ex-replay { align-self: flex-start; gap: 6px; color: var(--ivory-2); margin-top: calc(var(--s2) * -1); }
 .ex-replay svg { width: 16px; height: 16px; }
+/* Numbers that must never leave their box shrink instead (App.fitText, data-fit). */
+.limit .left-box { flex: 0 1 auto; max-width: 46%; min-width: 0; display: flex; justify-content: flex-end; overflow: hidden; }
+.limit .left-box .left { display: inline-block; white-space: nowrap; }
+.rstake-val .dotnum { display: inline-block; white-space: nowrap; max-width: 100%; }

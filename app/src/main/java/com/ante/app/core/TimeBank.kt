@@ -94,6 +94,9 @@ class TimeBank(initial: BankState = BankState()) {
 
     fun isFocus(nowMs: Long): Boolean = nowMs < state.focusUntilMs
 
+    /** While Focus or Strict runs, a limit can't be removed: that would uncover the app and end the lock early. */
+    fun canRemoveLimits(nowMs: Long): Boolean = !isFocus(nowMs) && !isStrict(nowMs)
+
     /** Clears modes whose time is up, so the stored state reads plainly. Returns true when something changed. */
     fun expireModes(nowMs: Long): Boolean {
         var s = state
@@ -258,7 +261,7 @@ class TimeBank(initial: BankState = BankState()) {
     companion object {
         const val MIN_LIMIT_SEC = 60
         const val MAX_LIMIT_SEC = 24 * 60 * 60
-        const val MAX_RETURN_MULTIPLE = 100
+        const val MAX_RETURN_MULTIPLE = 250 // the best real payout: a royal flush in video poker
         const val LEDGER_MAX = 50
         const val HISTORY_MAX = 186
         const val MIN_DAY_MS = 23L * 60 * 60 * 1000

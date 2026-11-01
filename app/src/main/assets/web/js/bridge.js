@@ -15,7 +15,7 @@
       apps: () => parse(N.apps(), []),
       icon: pkg => N.icon(pkg),
       setLimit: (pkg, label, sec) => N.setLimit(pkg, label, sec | 0),
-      removeLimit: pkg => N.removeLimit(pkg),
+      removeLimit: pkg => N.removeLimit(pkg), // false during Focus or Strict mode
       bet: (pkg, sec) => N.bet(pkg, sec | 0),
       settle: (pkg, game, stake, ret) => N.settle(pkg, game, stake | 0, Math.round(ret)),
       open: (pkg, sec) => N.open(pkg, sec | 0),
@@ -149,6 +149,8 @@
       save(); return true;
     },
     removeLimit(pkg) {
+      const now = Date.now();
+      if (now < (S.focusUntilMs || 0) || (S.strict && (!S.strictUntilMs || now < S.strictUntilMs))) return false; // same rule as TimeBank.canRemoveLimits
       const l = lim(pkg); if (!l) return true;
       S.parked = S.parked || {}; S.parked[pkg] = Math.min(l.leftSec, l.limitSec);
       S.limits = S.limits.filter(x => x.pkg !== pkg); save(); return true;

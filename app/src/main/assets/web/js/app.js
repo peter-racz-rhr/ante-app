@@ -69,7 +69,8 @@
       </div>
       <div class="chips">${[[900, "15 min"], [1200, "20 min"], [1800, "30 min"], [3600, "1 hour"]].map(([v, t]) => `<button class="chip" data-a="limSet" data-v="${v}" aria-pressed="${sh.limit === v}">${t}</button>`).join("")}</div>
       ${l && sh.limit > l.limitSec ? `<p class="muted">The extra ${fmt(sh.limit - l.limitSec)} starts tomorrow. Cuts apply straight away.</p>` : ""}
-      <div class="btn-row">${l ? `<button class="btn danger" data-a="removeLimit">Remove limit</button>` : ""}<button class="btn primary" data-a="saveLimit">${l ? "Save" : "Add limit"}</button></div>`);
+      ${l && App.modes && (App.modes().focus || App.modes().strict) ? `<p class="fine">Removing a limit is locked while ${App.modes().strict ? "Strict mode" : "Focus"} is on.</p>` : ""}
+      <div class="btn-row">${l ? `<button class="btn danger" data-a="removeLimit" ${App.modes && (App.modes().focus || App.modes().strict) ? "disabled" : ""}>Remove limit</button>` : ""}<button class="btn primary" data-a="saveLimit">${l ? "Save" : "Add limit"}</button></div>`);
   }
 
   /** Fetches picker icons a few at a time so the list appears at once. */
@@ -233,7 +234,11 @@
       App.refresh(); ui.sheet = null; App.render();
       App.toast(existed ? `${sh.label} limit set to ${fmt(sh.limit)}.` : `${sh.label} added with ${fmt(sh.limit)} a day.`);
     },
-    removeLimit() { const sh = ui.sheet; A.removeLimit(sh.pkg); App.refresh(); ui.sheet = null; App.render(); App.toast(`${sh.label} no longer has a limit.`); },
+    removeLimit() {
+      const sh = ui.sheet;
+      if (A.removeLimit(sh.pkg) === false) { App.toast("Limits can't be removed while Focus or Strict mode is on."); return; }
+      App.refresh(); ui.sheet = null; App.render(); App.toast(`${sh.label} no longer has a limit.`);
+    },
     waitCta() { const t = ui.sheet && ui.sheet.then; if (t && App.act[t] && ui.sheet.left <= 0) App.act[t](); },
   });
 
