@@ -54,7 +54,7 @@ async function open(browser, width, query, prefs) {
   await p.evaluate(([state, acct, pr]) => {
     localStorage.setItem("ante-mock-v2", JSON.stringify(state));
     localStorage.setItem("ante-mock-account", JSON.stringify(acct));
-    localStorage.setItem("ante-prefs", JSON.stringify(Object.assign({ theme: "neutral", accent: "white", clock: "bitcount", name: "", sound: false, haptics: true, seenIntro: {} }, pr)));
+    localStorage.setItem("ante-prefs", JSON.stringify(Object.assign({ theme: "neutral", accent: "white", clock: "bitcount", name: "", sound: false, haptics: true, seenIntro: {}, terms: { v: 99, at: 1 } }, pr)));
   }, [extremeState(Date.now()), ACCOUNT, prefs || {}]);
   await p.goto(INDEX + (query || "?acc=1"));
   await p.waitForSelector(".screen");

@@ -403,11 +403,12 @@
   };
 
   function vGuard() {
-    const CTX = App.CTX, installer = /packageinstaller/.test(CTX.pkg || "");
+    // Google Play builds let the uninstaller open after the wait too (CTX.hardStrict false).
+    const CTX = App.CTX, installer = /packageinstaller/.test(CTX.pkg || "") && CTX.hardStrict !== false;
     return `<div class="screen block" id="screen">
       <div class="block-top"><span class="appicon xl lockicon" aria-hidden="true">${App.ICON.lock}</span><p class="eyebrow">Strict mode</p>
         <h1 class="h1">${installer ? "Installing and removing apps is locked" : `${esc(CTX.label || "Settings")} is locked`}</h1></div>
-      <p class="muted">${installer ? "Strict mode keeps Ante installed. To install or remove apps, turn off Strict mode in Ante first. That takes a 30-second wait." : "Strict mode covers this so blocking can't be switched off on impulse. Wait 30 seconds to use it for 2 minutes."}</p>
+      <p class="muted">${installer ? "Strict mode keeps Ante installed until the lock ends. Then installing and removing apps works again." : "Strict mode covers this so blocking can't be switched off on impulse. Wait 30 seconds to use it for 2 minutes."}</p>
       <div class="grow"></div>
       ${installer ? `<button class="btn primary" data-a="openAnte">Open Ante</button>` : `<button class="btn primary" data-a="guardWait">Start the 30-second wait</button>`}
       <button class="btn ghost" data-a="closeBlock">Back to home screen</button>

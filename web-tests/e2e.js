@@ -22,6 +22,10 @@ async function tab(p, t) {
 
 async function page(browser, query, opts = {}) {
   const ctx = await browser.newContext({ viewport: { width: opts.width || 390, height: 844 }, deviceScaleFactor: 2, reducedMotion: opts.reduced ? "reduce" : "no-preference" });
+  // People in these tests have already accepted the current Terms (the onboarding test accepts them itself).
+  if (!opts.newTerms && !/onboard=1/.test(query)) await ctx.addInitScript(() => {
+    try { const p = JSON.parse(localStorage.getItem("ante-prefs") || "{}"); if (!p.terms) { p.terms = { v: 99, at: 1 }; localStorage.setItem("ante-prefs", JSON.stringify(p)); } } catch (e) { /* storage blocked */ }
+  });
   const p = await ctx.newPage();
   p.errors = [];
   p.on("pageerror", e => p.errors.push(e.message));
@@ -436,6 +440,16 @@ async function noOverflow(p, label) {
     check(await sc.evaluate(() => getComputedStyle(document.getElementById("screen")).overflowY) === "hidden", "the page behind an open sheet is locked");
     await sc.context().close();
   }
+  /* Changed Terms: shown once to people who accepted an older version */
+  {
+    const tm = await page(browser, "?acc=1&reset=1", { newTerms: true });
+    await tm.waitForTimeout(900);
+    check(await tm.isVisible('[data-a="termsAccept"]'), "people who haven't accepted the current Terms are asked once");
+    await tm.click('[data-a="termsAccept"]'); await tm.waitForTimeout(300);
+    await tm.reload(); await tm.waitForSelector(".screen"); await tm.waitForTimeout(900);
+    check(!(await tm.$('[data-a="termsAccept"]')), "after accepting, the Terms aren't asked again");
+    await tm.context().close();
+  }
   /* Your data: Drive backup and restore, delete everything (with the lock rule) */
   {
     const dt = await page(browser, "?acc=1&reset=1");
@@ -466,7 +480,7 @@ async function noOverflow(p, label) {
     await tab(dt, "profile"); await dt.click('[data-a="openSettings"]'); await dt.waitForTimeout(250);
     await dt.click('[data-a="dataDelete"]'); await dt.waitForTimeout(300);
     await dt.click('[data-a="dataDeleteNow"]'); await dt.waitForTimeout(1200);
-    check(await dt.evaluate(() => !window.Ante.account().signedIn && !localStorage.getItem("ante-mock-drive") && !localStorage.getItem("ante-prefs")), "delete wipes the account, settings and Drive backup");
+    check(await dt.evaluate(() => !window.Ante.account().signedIn && !localStorage.getItem("ante-mock-drive") && !JSON.parse(localStorage.getItem("ante-prefs") || "{}").theme), "delete wipes the account, settings and Drive backup");
     check(dt.errors.length === 0, "no console errors in Your data: " + dt.errors.join(" | "));
     await dt.context().close();
   }
@@ -528,6 +542,9 @@ async function noOverflow(p, label) {
     await shot(pl2, "26d-supporter");
     await pl2.click('[data-a="buySupporter"]'); await pl2.waitForTimeout(900);
     check(await pl2.evaluate(() => window.App.isSupporter()), "buying unlocks Supporter");
+    check(await pl2.isVisible(".receipt") && await pl2.isVisible("text=lose the 14-day right of withdrawal"), "after buying, a confirmation with the withdrawal waiver is shown");
+    await shot(pl2, "26g-receipt");
+    await pl2.click('.sheet [data-a="closeSheet"].btn'); await pl2.waitForTimeout(250);
     check(!(await pl2.$('[data-a="clock"][data-v="sixtyfour"] .lock-mark')), "after buying, the locks are gone");
     await pl2.click('[data-a="felt"][data-v="navy"]');
     check(await pl2.evaluate(() => window.AntePrefs.get().felt) === "navy", "a Supporter can pick a table felt");
@@ -615,8 +632,14 @@ async function noOverflow(p, label) {
   await shot(ob, "26b-story2");
   await ob.click('[data-a="obNext"]'); await ob.waitForTimeout(650);
   await shot(ob, "26c-story3");
-  await ob.click('[data-a="obNext"]'); await ob.waitForTimeout(200);
-  check(await ob.isVisible(".w-title"), "story leads to sign-in");
+  await ob.click('[data-a="obNext"]'); await ob.waitForTimeout(650);
+  check(await ob.isVisible("text=Locked when it counts."), "the story also explains Focus, schedules and Strict mode");
+  await ob.click('[data-a="obNext"]'); await ob.waitForTimeout(300);
+  check(await ob.isVisible('[data-a="obAgree"]'), "the story leads to the 18+ agreement");
+  await shot(ob, "26d-agree");
+  await ob.click('[data-a="obAgree"]'); await ob.waitForTimeout(300);
+  check(!!(await ob.evaluate(() => window.AntePrefs.get().terms && window.AntePrefs.get().terms.v)), "accepting stores the Terms version and date");
+  check(await ob.isVisible(".w-title"), "agreeing leads to sign-in");
   check(!(await ob.$(".navpill")), "no navigation during onboarding");
   await shot(ob, "26-welcome");
   await ob.click('[data-a="signinOpen"]');
@@ -627,8 +650,22 @@ async function noOverflow(p, label) {
   await ob.waitForTimeout(500);
   await ob.click('[data-a="signinOpen"]'); await ob.waitForTimeout(500);
   await ob.click('.signin-card [data-a="google"]');
+  await ob.waitForSelector('[data-a="obApps"]', { timeout: 3000 });
+  check(true, "Google sign-in moves on to picking apps");
+  await ob.waitForTimeout(300);
+  check((await ob.$$('.ob-app[aria-checked="true"]')).length === 3, "the usual time-eaters come pre-picked");
+  await ob.click('.ob-app[aria-checked="true"] >> nth=0'); await ob.waitForTimeout(100);
+  check((await ob.textContent('[data-a="obApps"]')).trim() === "Limit 2 apps", "picking updates the button");
+  await shot(ob, "26e-apps");
+  await ob.click('[data-a="obApps"]'); await ob.waitForTimeout(400);
+  check((await ob.evaluate(() => window.Ante.state().limits.length)) >= 2, "the picked apps get a daily limit");
+  check(await ob.isVisible('[data-a="obSched"][data-v="work"]'), "next comes the schedules step");
+  await ob.click('[data-a="obSched"][data-v="work"]'); await ob.waitForTimeout(300);
+  check((await ob.evaluate(() => (window.Ante.state().schedules || []).some(s => s.label === "Work"))), "a schedule can be switched on during onboarding");
+  await shot(ob, "26f-schedules");
+  await ob.click('[data-a="obNextStep"]'); await ob.waitForTimeout(300);
   await ob.waitForSelector("text=One switch to turn on", { timeout: 3000 });
-  check(true, "Google sign-in moves on to the permission step");
+  check(true, "and last the permission step");
   await shot(ob, "28-welcome-perm");
   await ob.click('[data-a="finishWelcome"]');
   await ob.waitForTimeout(200);
@@ -644,6 +681,7 @@ async function noOverflow(p, label) {
   check(ob.errors.length === 0, "no console errors in onboarding: " + ob.errors.join(" | "));
   const of = await page(browser, "?onboard=1&reset=1&google=fail");
   await of.click('[data-a="obSkip"]'); await of.waitForTimeout(200);
+  await of.click('[data-a="obAgree"]'); await of.waitForTimeout(300);
   await of.click('[data-a="signinOpen"]'); await of.waitForTimeout(500);
   await of.click('.signin-card [data-a="google"]');
   await of.waitForSelector("text=No Google account on this phone", { timeout: 3000 });

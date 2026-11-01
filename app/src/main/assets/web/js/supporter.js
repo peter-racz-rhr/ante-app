@@ -52,7 +52,7 @@
     if (!A.supporter && A.native) return ""; // apps before 0.6.0
     const price = s.prices.ante_supporter;
     const head = s.supporter
-      ? item({ icon: "heart", tone: "#f472b6", title: "Ante Supporter", sub: "Thank you. Every look is yours.", trail: `<span class="pill good"><i></i>Supporter</span>` })
+      ? item({ icon: "heart", tone: "#f472b6", title: "Ante Supporter", sub: "Thank you. Every look is yours.", trail: (App.P.get().receipts || []).length ? `<button class="btn-sm" data-a="showReceipt">Receipt</button>` : `<span class="pill good"><i></i>Supporter</span>` })
       : item({ icon: "heart", tone: "#f472b6", title: "Ante Supporter", sub: "Every theme, font, felt and card back. Blocking stays free.", trail: `<button class="btn-sm" data-a="supporter">${esc(price || "See")}</button>` });
     const tips = `<div class="sitem tips-row"><span class="sicon" style="--ic:#fb923c" aria-hidden="true">${App.ICON.coffee}</span>
       <span class="sitem-t"><span class="sitem-title">Leave a tip</span><span class="sitem-sub">Keeps Ante free and ad-free</span></span></div>
@@ -87,11 +87,33 @@
   window.anteBilling = raw => {
     let r; try { r = typeof raw === "string" ? JSON.parse(raw) : raw; } catch (e) { return; }
     load();
-    if (r.ok && r.product === "ante_supporter") { App.toast("Thank you! Every look is unlocked."); App.haptic("win"); App.SFX.play("bigWin"); ui.sheet = null; }
+    if (r.ok && r.product === "ante_supporter") {
+      // A confirmation the buyer can keep (Consumer Rights Directive Art. 8(7)): product, price, date, immediate delivery.
+      const receipt = { product: "Ante Supporter", price: status.prices.ante_supporter || "", at: Date.now() };
+      App.P.set({ receipts: (App.P.get().receipts || []).concat([receipt]).slice(-10) });
+      App.toast("Thank you! Every look is unlocked."); App.haptic("win"); App.SFX.play("bigWin");
+      ui.sheet = { type: "receipt", receipt };
+    }
     else if (r.ok) { App.toast("Thank you for the tip!"); App.haptic("win"); }
     else if (r.error === "pending") App.toast("Your payment is pending. Ante unlocks once it goes through.");
     else if (r.error !== "cancelled") App.toast("The purchase didn't go through. Nothing was charged.");
     App.render(); App.paintOverlay();
+  };
+
+  const receiptText = r => [
+    "Ante – purchase confirmation",
+    `Product: ${r.product} (digital content: extra looks for the Ante app)`,
+    `Price: ${r.price || "as shown by Google Play"}`,
+    `Date: ${new Date(r.at).toLocaleString(App.locale ? App.locale() : undefined)}`,
+    "You asked for the content to be delivered immediately and acknowledged that you lose the 14-day right of withdrawal once it is delivered. Your warranty rights for digital content are not affected.",
+    `Seller: ${App.L.OWNER}, ${App.L.ADDRESS}, ${App.L.EMAIL}. Payment handled by Google Play.`,
+  ].map(l => (App.t ? App.t(l) : l)).join("\n");
+  App.sheetViews.receipt = (sh, sheet, head) => {
+    const r = sh.receipt || {};
+    return sheet("", `${head("Your purchase", "rc-h")}
+      <div class="receipt">${receiptText(r).split("\n").map((l, i) => `<p class="${i ? "" : "rc-title"}">${esc(l)}</p>`).join("")}</div>
+      <p class="fine">Keep this confirmation: save it or send it to yourself.</p>
+      <div class="btn-row"><button class="btn quiet" data-a="closeSheet">Done</button><button class="btn primary" data-a="shareReceipt">Save or share</button></div>`, "rc-h");
   };
 
   const pick = (kind, key) => d => {
@@ -103,6 +125,8 @@
     buySupporter() { if (!A.buy || !A.buy("ante_supporter")) App.toast("Google Play isn't ready. Try again in a moment."); },
     tip(d) { if (!A.buy || !A.buy(d.v)) App.toast("Google Play isn't ready. Try again in a moment."); },
     restorePurchase() { if (A.restorePurchases) A.restorePurchases(); setTimeout(() => { load(); App.render(); App.toast(status.supporter ? "Supporter restored." : "No purchase found on this Google account."); }, 1500); },
+    shareReceipt() { const sh = ui.sheet; if (!sh || !sh.receipt) return; if (!A.shareText || !A.shareText("Ante purchase confirmation", receiptText(sh.receipt))) App.toast("Install the new app version (0.8.0) to save the confirmation."); },
+    showReceipt() { const r = (App.P.get().receipts || []).slice(-1)[0]; if (r) { ui.sheet = { type: "receipt", receipt: r }; App.paintOverlay(); } },
     felt: pick("felt", "felt"),
     cardBack: pick("back", "back"),
   });

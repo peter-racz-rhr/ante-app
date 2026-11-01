@@ -55,7 +55,7 @@ class AnteBridge(
     @JavascriptInterface
     fun context(): String {
         val pkg = blockedPkg()
-        val o = JSONObject().put("mode", mode).put("platform", "android")
+        val o = JSONObject().put("mode", mode).put("platform", "android").put("hardStrict", BuildConfig.HARD_STRICT)
         if (pkg != null) {
             o.put("pkg", pkg)
             o.put("label", AppCatalog.labelFor(ctx, pkg))
@@ -168,7 +168,7 @@ class AnteBridge(
 
     @JavascriptInterface
     fun setLimit(pkg: String, label: String, limitSec: Int): Boolean {
-        if (!validPkg(pkg) || pkg == ctx.packageName) return false
+        if (!validPkg(pkg) || Exempt.isExempt(ctx, pkg)) return false
         Bank.edit { it.setLimit(pkg, label.take(60).ifBlank { pkg }, limitSec) }
         return true
     }
@@ -318,6 +318,17 @@ class AnteBridge(
                 }, "ante-restore").start()
             }, fail = { e -> say("anteDrive", JSONObject().put("op", "restore").put("ok", false).put("error", e)) })
         }
+    }
+
+    /** Opens Android's share sheet with [text] (a purchase receipt, for example). */
+    @JavascriptInterface
+    fun shareText(subject: String, text: String): Boolean {
+        if (text.length > 20_000) return false
+        activity.runOnUiThread {
+            val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_SUBJECT, subject.take(120)).putExtra(Intent.EXTRA_TEXT, text)
+            try { activity.startActivity(Intent.createChooser(send, subject.take(120))) } catch (e: Exception) { /* no app to share with */ }
+        }
+        return true
     }
 
     /** Opens Android's share sheet with everything Ante stores about you, as JSON (GDPR Art. 15 and 20). */

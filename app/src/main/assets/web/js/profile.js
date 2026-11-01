@@ -48,7 +48,7 @@
   }
 
   /** The native part (APK) is older than this UI needs for full screen and vibration. */
-  const NATIVE_WANTED = [0, 7, 0];
+  const NATIVE_WANTED = [0, 8, 0];
   function nativeOutdated() {
     if (!A.native) return false;
     const v = (A.versions && A.versions()) || {};
@@ -76,7 +76,7 @@
       <section class="update-note" role="status">
         <span class="sicon" style="--ic:var(--warn)" aria-hidden="true">${App.ICON.info}</span>
         <div><p class="sitem-title">Install the new app version once</p>
-        <p class="sitem-sub">This phone runs Ante ${esc((A.versions().app) || "")}. Google Drive backup, schedules, the daily spin and fair tables dealt by the phone need 0.7.0. Open the <b>ante-app</b> project in Android Studio and press Run.</p></div>
+        <p class="sitem-sub">This phone runs Ante ${esc((A.versions().app) || "")}. Google Drive backup, purchase receipts and the never-blocked phone and emergency apps need 0.8.0. Open the <b>ante-app</b> project in Android Studio and press Run.</p></div>
       </section>` : "";
   }
 
@@ -224,11 +224,14 @@
   }
 
   App.views.legal = function () {
-    const d = App.L.DOCS[ui.doc] || App.L.DOCS.terms;
+    // The legal texts exist in English, Hungarian and German; other languages show English.
+    const docs = (App.L.LANG && App.lang && App.L.LANG[App.lang()]) || App.L.DOCS;
+    const d = docs[ui.doc] || App.L.DOCS[ui.doc] || App.L.DOCS.terms;
+    // .legal-body: already in the reader's language, so the on-screen translator leaves it alone.
     return `<div class="screen legal" id="screen">
-      <header class="topbar">${App.backBtn("legalBack", "Back")}<div class="grow"><h1 class="h2">${esc(d.title)}</h1></div></header>
-      <p class="muted">${esc(d.intro)}</p>
-      ${d.sections.map(([h, body]) => `<section class="doc-sec"><h2 class="h3">${esc(h)}</h2><p>${body}</p></section>`).join("")}
+      <header class="topbar">${App.backBtn("legalBack", "Back")}<div class="grow legal-body"><h1 class="h2">${esc(d.title)}</h1></div></header>
+      <div class="legal-body"><p class="muted">${esc(d.intro)}</p>
+      ${d.sections.map(([h, body]) => `<section class="doc-sec"><h2 class="h3">${esc(h)}</h2><p>${body}</p></section>`).join("")}</div>
       <p class="fine">Contact: ${esc(App.L.EMAIL)} · ${esc(App.L.PHONE)}</p>
       <button class="btn quiet" data-a="mail">Email ${esc(App.L.OWNER)}</button>
     </div>`;

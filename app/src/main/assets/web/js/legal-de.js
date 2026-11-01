@@ -1,0 +1,71 @@
+/* Ante's legal documents in German (the English ones in js/legal.js are the reference).
+   Keep both in step when anything changes. */
+(function () {
+  "use strict";
+  const L = window.AnteLegal; if (!L) return;
+  const { OWNER, EMAIL, PHONE, TAX_NUMBER, REGISTRATION } = L;
+  const ADDRESS = "Kálti Márk u. 2/B, 1035 Budapest, Ungarn";
+  const UPDATED = "1. November 2026";
+  L.LANG.de = {
+    credits: {
+      title: "Danksagung",
+      intro: "Ante baut eine einzelne Person, mit Hilfe freier, offener Arbeit anderer. Danke.",
+      sections: [
+        ["Schriften", "Geist (Oberfläche) von Vercel. Uhr-Schriften: Bitcount von Petr van Blokland, Doto von Óliver Lalan, DotGothic16 von Fontworks, Handjet von Rosetta, Workbench und Sixtyfour von Jens Kutilek, Silkscreen von Jason Kottke, Pixelify Sans von Stefie Justprince, VT323 von Peter Hull. Alle unter der SIL Open Font License 1.1."],
+        ["Farben", "Die Themen Latte, Frappé, Macchiato und Mocha nutzen die Catppuccin-Paletten (MIT-Lizenz)."],
+        ["Icons", "Linien-Icons für Ante gezeichnet; das Zahnrad folgt Lucides „settings“-Icon (ISC-Lizenz)."],
+        ["Design-Werkzeuge", "Die animierten Szenen folgen den Stageshow-Richtlinien von Benji Taylor (MIT-Lizenz). Außerdem genutzt: ECC (Everything Claude Code) und Matt Pococks Skills für Planung und Reviews."],
+        ["Gebaut mit", "Android, Kotlin, Credential Manager und eine WebView; mit Playwright getestet; gemeinsam mit Claude geschrieben."],
+      ],
+    },
+    imprint: {
+      title: "Impressum",
+      intro: "Angaben zum Anbieter von Ante, wie sie in Ungarn und der EU für Online-Dienste vorgeschrieben sind.",
+      sections: [
+        ["Anbieter", `Ante wird von ${OWNER}, einer Privatperson, entwickelt und betrieben.`],
+        ["Anschrift", ADDRESS],
+        ["Kontakt", `E-Mail: ${EMAIL}<br>Telefon: ${PHONE}`],
+        ["Verantwortlich für den Inhalt", OWNER],
+        ["Unternehmensangaben", TAX_NUMBER ? `Steuernummer: ${TAX_NUMBER}. ${REGISTRATION}` : "Antes Sperrfunktionen sind kostenlos. Registrierung und Steuernummer werden hier angegeben, bevor eine kostenpflichtige Funktion in den Verkauf geht. Ante Supporter und Trinkgelder verkauft Google Play, das bei Käufern in der EU die Umsatzsteuer erhebt."],
+        ["Verbraucherbeschwerden", `Schreib an ${EMAIL}, du bekommst innerhalb von 30 Tagen eine Antwort. Wenn wir uns nicht einigen, kannst du dich an die Schlichtungsstelle am Sitz des Anbieters wenden, die Budapesti Békéltető Testület (Schlichtungsstelle Budapest, 1016 Budapest, Krisztina krt. 99., 1. Stock, Zimmer 111; bekeltet.bkik.hu), oder an die Stelle an deinem Wohnort; das Verfahren ist kostenlos. Du kannst dich auch an die Verbraucherschutzbehörde wenden. Der Anbieter wirkt am Schlichtungsverfahren mit.`],
+      ],
+    },
+    terms: {
+      title: "Nutzungsbedingungen",
+      intro: `Diese Bedingungen gelten für die Ante-App und ihre Web-Demo. Zuletzt geändert am ${UPDATED}. Du nimmst sie an, indem du beim ersten Öffnen von Ante auf „Ich bin 18 oder älter und stimme zu“ tippst.`,
+      sections: [
+        ["1. Was Ante ist", "Ante ist ein Werkzeug für Bildschirmzeit. Du legst tägliche Zeitlimits für Apps auf deinem Handy fest. Ist ein Limit verbraucht, sperrt Ante diese App. An den Tischen (Roulette, Blackjack, Slots, Poker und Münzwurf) kannst du Minuten aus diesem Zeitbudget setzen."],
+        ["2. Kein echtes Geld, keine Preise", "Ante ist kein Glücksspielangebot. Du kannst kein Geld an den Tischen einzahlen und weder Geld noch Waren noch sonst etwas von Wert gewinnen. Gewonnene oder verlorene Minuten ändern nur die Zeitlimits, die du dir selbst setzt, und sie werden jeden Tag zurückgesetzt. Jeder Tisch gibt im Schnitt etwas weniger zurück, als er nimmt. Das ist eine bewusste Gestaltung, damit Spielen Minuten kostet statt welche zu bringen; es ist kein Versprechen, dass deine Bildschirmzeit sinkt."],
+        ["3. Wer es nutzen darf", "Du musst mindestens 18 Jahre alt sein, weil die Tische Casinospiele simulieren. Wenn glücksspielartige Spiele für dich ein Problem sind oder werden könnten, nutze die Tische bitte nicht. Wenn sich Glücksspiel, auch mit Zeit, wie ein Problem anfühlt, sprich mit deinem Arzt oder einer Beratungsstelle in deiner Nähe."],
+        ["4. Dein Handy und seine Einstellungen", "Für die Sperre braucht Ante die Bedienungshilfen-Berechtigung von Android, die du in den Einstellungen jederzeit ein- und ausschalten kannst. Ante sperrt nie deine Telefon-App, deine Nachrichten-App oder Notrufe, egal was deine Limits sagen. Ante kann nicht garantieren, dass jede App in jeder Situation gesperrt wird, zum Beispiel Web-Versionen von Apps oder Bild-im-Bild-Videos. Der strenge Modus setzt eine Wartezeit von 30 Sekunden vor die Einstellungen, den Play Store und das Deinstallieren. Eine zeitlich begrenzte Sperre, die du selbst startest, lässt sich in der App nicht vorzeitig abschalten; sie endet von selbst zur gewählten Zeit. In der Version aus Google Play kannst du Ante nach der Wartezeit immer deinstallieren; außerhalb von Google Play installierte Versionen halten den Deinstallationsbildschirm bis zum Ende der Sperre gesperrt. Es ist eine Hürde, der du zugestimmt hast, keine Garantie: Android lässt sich immer im abgesicherten Modus starten."],
+        ["5. Dein Konto und deine Daten", "Die Anmeldung mit Google ist freiwillig. Sie speichert deinen Namen und deine E-Mail auf diesem Handy und erlaubt dir, deine Daten in deinem eigenen Google Drive zu sichern und auf einem anderen Handy wiederherzustellen. Du kannst dich jederzeit abmelden, deine Daten herunterladen oder alle löschen: Einstellungen → Deine Daten. Das Löschen wartet, bis eine von dir gestartete strenge Sperre oder ein Fokus vorbei ist."],
+        ["6. Ante Supporter und Trinkgeld", "Ante Supporter ist ein freiwilliger, einmaliger Kauf über Google Play, der zusätzliche Looks freischaltet (Themen, Uhr-Schriften, Tischfilze, Kartenrücken und ein Abzeichen). Er schaltet nie Sperrfunktionen, Minuten oder bessere Chancen frei. Trinkgelder über Google Play oder Ko-fi sind freiwillige Geschenke und schalten nichts frei. Zahlung, Erstattung und Steuern regelt Google Play nach seinen eigenen Bedingungen. Ein Supporter-Kauf ist an dein Google-Konto gebunden und lässt sich auf einem neuen Handy wiederherstellen. Widerrufsrecht: Ante Supporter ist ein digitaler Inhalt, der sofort bereitgestellt wird. Mit dem Kauf verlangst du die sofortige Bereitstellung und bestätigst, dass du damit dein 14-tägiges Widerrufsrecht verlierst. Deine Gewährleistungsrechte für digitale Inhalte bleiben unberührt. Nach dem Kauf zeigt Ante eine Bestätigung mit Produkt, Preis, Datum und deinem Wunsch nach sofortiger Bereitstellung, die du speichern oder teilen kannst; sie bleibt unter Einstellungen → Ante unterstützen → Beleg."],
+        ["7. Haftung", "Antes Funktionen werden „wie sie sind“ bereitgestellt. Soweit gesetzlich zulässig, haftet der Anbieter nicht für Schäden durch die Nutzung oder Nichtnutzbarkeit von Ante, zum Beispiel eine verpasste Nachricht, weil eine App gesperrt war. Die Haftung für Vorsatz und grobe Fahrlässigkeit sowie für Schäden an Leben, Körper oder Gesundheit ist nicht ausgeschlossen."],
+        ["8. Änderungen", "Diese Bedingungen können sich ändern, wenn sich die App ändert. Das Datum oben zeigt die neueste Fassung. Ist eine Änderung für dich wichtig, zeigt Ante sie, bevor sie gilt, und bittet dich, die neuen Bedingungen anzunehmen. Wenn nicht, kannst du Ante nicht mehr nutzen und deine Daten unter Einstellungen → Deine Daten löschen."],
+        ["9. Recht und Kontakt", `Es gilt ungarisches Recht. Fragen: ${EMAIL}.`],
+      ],
+    },
+    privacy: {
+      title: "Datenschutzerklärung",
+      intro: `Wie Ante mit deinen Daten umgeht. Zuletzt geändert am ${UPDATED}. Kurz: Alles bleibt auf deinem Handy, und Ante hat keinen Server.`,
+      sections: [
+        ["Verantwortlicher", `${OWNER}, ${ADDRESS}. E-Mail: ${EMAIL}, Telefon: ${PHONE}.`],
+        ["Was auf deinem Handy bleibt", "Deine Limits, die pro App übrige und genutzte Zeit, dein Tagesverlauf (etwa sechs Monate), deine Tisch-Ergebnisse, deine Einstellungen, dein Thema und, falls du eins hinzufügst, dein Profilbild (eine kleine Kopie des gewählten Fotos). Das wird auf deinem Gerät gespeichert. Es verlässt das Gerät nur, wenn du es in deinem eigenen Google Drive sicherst (siehe unten). Rechtsgrundlage: Bereitstellung der App, die du nutzen willst (DSGVO Art. 6 Abs. 1 lit. b)."],
+        ["App-Updates", "Ante prüft auf der öffentlichen GitHub-Seite des Projekts (github.com), ob es eine neuere Version seiner Bildschirme gibt, während der Nutzung höchstens alle zehn Minuten, und lädt sie gegebenenfalls herunter. Diese Anfragen enthalten keine personenbezogenen Daten, aber GitHub sieht wie jede Website deine IP-Adresse und führt übliche Protokolle nach seiner eigenen Datenschutzerklärung (docs.github.com/site-policy/privacy-policies). Rechtsgrundlage: berechtigtes Interesse, die App aktuell und sicher zu halten (DSGVO Art. 6 Abs. 1 lit. f). Jedes Update ist signiert, Ante lehnt alles andere ab."],
+        ["Welche App im Vordergrund ist", "Mit eingeschalteter Bedienungshilfe teilt Android Ante den Namen der App mit, die in den Vordergrund kommt, damit Ante Apps über ihrem Limit sperren kann. Ante liest weder deinen Bildschirm noch deine Eingaben oder Benachrichtigungen. Die App-Namen werden auf dem Handy verwendet und über deine Nutzungssummen hinaus nicht gespeichert. Welche Apps du wie lange nutzt, kann viel über dich verraten (etwa eine Dating-, Gesundheits- oder religiöse App); deshalb bleibt dieser Verlauf auf deinem Handy und, wenn du willst, in deinem eigenen Drive."],
+        ["Google-Anmeldung (freiwillig)", "Wenn du dich mit Google anmeldest, zeigt Google einen eigenen Anmeldebildschirm und gibt Ante deinen Namen, deine E-Mail-Adresse und dein Kontobild. Ante lädt das Bild einmal von Googles Bildserver und speichert eine kleine Kopie mit Name und E-Mail auf deinem Handy. Google verarbeitet die Anmeldung nach seiner eigenen Datenschutzerklärung (policies.google.com/privacy). Ante behält das Google-Anmeldetoken nicht. Rechtsgrundlage: deine Einwilligung (DSGVO Art. 6 Abs. 1 lit. a), die du durch Abmelden widerrufen kannst."],
+        ["Die App-Liste", "Damit du Apps auswählen kannst, liest Ante die Liste der auf deinem Handy installierten Apps und ihre Icons. Diese Liste bleibt auf dem Handy."],
+        ["Web-Demo", "Die Web-Demo läuft in deinem Browser mit Beispieldaten und speichert ihren Zustand im lokalen Speicher des Browsers. Wo auch immer sie gehostet wird, kann der Webhoster nach seiner eigenen Datenschutzerklärung übliche Serverprotokolle wie IP-Adressen führen."],
+        ["Google-Drive-Backup (freiwillig)", "Wenn du das Backup einschaltest oder auf Sichern tippst, bittet Ante Google um Zugriff auf einen privaten App-Ordner in deinem eigenen Google Drive (die Berechtigung drive.appdata: Ante sieht keine deiner anderen Dateien). Dort speichert Ante eine Datei mit deinen Limits, Zeitplänen, deinem Verlauf, deinen Tisch-Ergebnissen und Einstellungen. Die Datei geht direkt von deinem Handy zu Google; Ante hat keinen Server. Rechtsgrundlage: deine Einwilligung (DSGVO Art. 6 Abs. 1 lit. a). „Meine Daten löschen“ entfernt sie, und in deinem Google-Konto unter Sicherheit → Verbindungen mit Drittanbietern kannst du Ante den Zugriff entziehen."],
+        ["Käufe (freiwillig)", "Wenn du Ante Supporter kaufst oder Trinkgeld gibst, verarbeitet Google Play die Zahlung nach seiner eigenen Datenschutzerklärung. Ante erhält nur eine Bestätigung, dass der Kauf gültig ist, und speichert sie auf deinem Handy, damit die Looks freigeschaltet bleiben. Deine Zahlungsdaten sieht Ante nie. Rechtsgrundlage: Vertragserfüllung (DSGVO Art. 6 Abs. 1 lit. b)."],
+        ["Ko-fi", "Der Ko-fi-Link öffnet ko-fi.com in deinem Browser. Was du dort tust, verarbeitet Ko-fi nach seiner eigenen Datenschutzerklärung."],
+        ["Übermittlungen außerhalb der EU", "Google (Anmeldung, Drive-Backup, Google Play) und GitHub (Updates) sind US-Unternehmen. Daten, die sie erreichen, werden auf Grundlage des EU-US-Datenschutzrahmens, für den beide zertifiziert sind, und ihrer Standardvertragsklauseln übermittelt."],
+        ["Wie lange", "Daten auf dem Handy bleiben, bis du sie unter Einstellungen → Deine Daten löschst, Ante deinstallierst oder die App-Daten in den Android-Einstellungen löschst. Ein Drive-Backup bleibt, bis du es löschst. Der Tagesverlauf ist auf etwa sechs Monate begrenzt. Beim Abmelden werden Name und E-Mail sofort gelöscht."],
+        ["Deine Rechte", `Nach der DSGVO hast du das Recht auf Auskunft, Berichtigung und Löschung deiner Daten, auf Einschränkung der Verarbeitung, Widerspruch, Datenübertragbarkeit und Widerruf deiner Einwilligung. Das meiste kannst du selbst unter Einstellungen → Deine Daten erledigen: Meine Daten herunterladen (Auskunft und Übertragbarkeit) und Meine Daten löschen (Löschung). Für alles andere schreib an ${EMAIL}.`],
+        ["Beschwerden", "Du kannst dich bei der ungarischen Datenschutzbehörde beschweren: Nemzeti Adatvédelmi és Információszabadság Hatóság (NAIH), Falk Miksa utca 9–11, 1055 Budapest, naih.hu, oder bei der Datenschutzbehörde deines Landes."],
+        ["Kinder", "Ante ist für Erwachsene (ab 18), weil die Tische Casinospiele simulieren."],
+        ["Änderungen", "Wenn sich diese Erklärung ändert, ändert sich das Datum oben, und wichtige Änderungen werden in der App angezeigt."],
+      ],
+    },
+  };
+})();

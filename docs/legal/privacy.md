@@ -12,11 +12,11 @@ Your limits, the time left and used per app, your daily history (about six month
 
 ## App updates
 
-Ante checks the project's public GitHub page (github.com) for a newer version of its screens, at most every ten minutes while you use it, and downloads it if there is one. These requests carry no personal data, but GitHub, like any website, sees your IP address and keeps standard logs under its own privacy policy (docs.github.com/site-policy/privacy-policies). Each update is signed, and Ante refuses anything that isn't.
+Ante checks the project's public GitHub page (github.com) for a newer version of its screens, at most every ten minutes while you use it, and downloads it if there is one. These requests carry no personal data, but GitHub, like any website, sees your IP address and keeps standard logs under its own privacy policy (docs.github.com/site-policy/privacy-policies). Legal basis: legitimate interest in keeping the app up to date and secure (GDPR Art. 6(1)(f)). Each update is signed, and Ante refuses anything that isn't.
 
 ## Which app is in front
 
-With the accessibility permission on, Android tells Ante the name of the app that comes to the front, so Ante can cover apps that are over their limit. Ante does not read what is on your screen, what you type or your notifications. The app names are used on the phone and not stored beyond your usage totals.
+With the accessibility permission on, Android tells Ante the name of the app that comes to the front, so Ante can cover apps that are over their limit. Ante does not read what is on your screen, what you type or your notifications. The app names are used on the phone and not stored beyond your usage totals. Which apps you use, and for how long, can say a lot about you (a dating, health or religious app, for example), which is why this history stays on your phone and, if you choose, in your own Drive.
 
 ## Google sign-in (optional)
 
@@ -28,7 +28,7 @@ To let you pick apps, Ante reads the list of apps installed on your phone and th
 
 ## Web demo
 
-The web demo runs in your browser with sample data and stores its state in your browser's local storage. The host (Netlify or Vercel) may keep standard server logs, such as IP addresses, under its own privacy policy.
+The web demo runs in your browser with sample data and stores its state in your browser's local storage. Wherever it is hosted, the website host may keep standard server logs, such as IP addresses, under its own privacy policy.
 
 ## Google Drive backup (optional)
 
@@ -60,7 +60,7 @@ You can complain to the Hungarian data protection authority: Nemzeti Adatvédelm
 
 ## Children
 
-Ante is not meant for children under 16.
+Ante is for adults (18 and over), because the tables simulate casino games.
 
 ## Changes
 

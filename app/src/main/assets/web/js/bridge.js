@@ -40,6 +40,7 @@
       backupNow: () => N.backupNow(),
       restoreBackup: () => N.restoreBackup(),
       exportData: () => (has("exportData") ? N.exportData() : false),
+      shareText: (subject, text) => (has("shareText") ? N.shareText(String(subject), String(text)) : false),
       deleteAllData: drive => (has("deleteAllData") ? N.deleteAllData(!!drive) : false),
       open: (pkg, sec) => N.open(pkg, sec | 0),
       closeBlock: () => N.closeBlock(),
@@ -368,6 +369,7 @@
       }, 300);
     },
     exportData() { say("Opens the share sheet with your data as JSON"); return true; },
+    shareText(subject) { say(`Opens the share sheet: ${subject}`); return true; },
     deleteAllData(alsoDrive) {
       const now = Date.now();
       if (strictOn(now) || focusOn(now)) return false;

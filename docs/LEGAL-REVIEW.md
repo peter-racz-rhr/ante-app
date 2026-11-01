@@ -24,9 +24,25 @@ check, not legal advice: have a lawyer read the Terms, Privacy Policy and Imprin
   gambling, choose 18+ as the target audience in the Play Console.
 - **ePrivacy (cookies and storage):** Ante only stores what the app needs to work, so no consent banner is needed.
 - **Accessibility permission:** a clear disclosure is shown before Settings opens (Google Play's prominent-disclosure rule).
-- **Digital Services Act:** there is no user content, so only the contact point (the imprint) applies.
+- **Digital Services Act:** Ante isn't a hosting service or an online platform (users publish nothing to others), so the DSA's contact-point duties don't strictly apply; the Imprint's contact details do no harm. As a seller on Google Play you still declare trader status (DSA Art. 30), and Google shows your contact details on the listing.
 - **European Accessibility Act:** microenterprises providing services are exempt; Ante still has screen-reader labels.
 - **The EU online dispute platform** closed on 20 July 2025, so no ODR link is needed.
+
+## Second review (another agent's evaluation, 1 November 2026): what changed
+
+| Point | Done |
+|---|---|
+| Play's Accessibility rule forbids blocking uninstall | Release (Play) builds open the uninstaller after the 30-second wait; only Android Studio (debug) builds keep the hard lock (`HARD_STRICT`) |
+| PEGI 18 for simulated gambling | 18+ everywhere: Terms, Privacy, onboarding ("I'm 18 or older and agree"), Play target audience |
+| Phone and emergency apps could be blocked | Never covered or listable: the default dialer and SMS app, the phone and emergency apps, Ante itself (`Exempt.kt`); said in the Terms |
+| Legal texts only in English | Terms, Privacy Policy, Imprint and Credits in Hungarian and German (`js/legal-hu.js`, `js/legal-de.js`, exported to `docs/legal/hu`, `docs/legal/de`) |
+| Withdrawal waiver on a durable medium | A purchase confirmation (product, price, date, immediate delivery, loss of withdrawal right) appears after buying and can be saved or shared; it stays under Settings → Support Ante → Receipt |
+| Name the conciliation board | Budapesti Békéltető Testület, 1016 Budapest, Krisztina krt. 99., 1st floor, room 111, bekeltet.bkik.hu |
+| Accepting the Terms | A clear button in onboarding; the version and date are stored on the phone |
+| Changing the Terms | Material changes are shown in the app and must be accepted again (`TERMS_VERSION` in `js/legal.js`); otherwise you can delete your data |
+| Marketing claim | "playing reduces your screen time" is now described as a design choice, not a promise |
+| Privacy details | Legal basis for the update check (legitimate interest), no named web host, a note that app-usage history can be sensitive |
+| Postcode | Not changed: you told me **1035 Budapest** for Ante. The other address the evaluation mentions belongs to a different app; use whichever is your real address in both. |
 
 ## Up to you before Ante Supporter goes on sale
 
@@ -39,4 +55,7 @@ check, not legal advice: have a lawyer read the Terms, Privacy Policy and Imprin
 4. **Data safety form:** mark name, email, photo, app activity and purchase history as *collected*
    (the Drive backup leaves the phone), *not shared*, *optional* except app activity, purposes
    "App functionality" and "Account management", encrypted in transit, deletable in the app.
-5. **Lawyer review** of the three texts, once.
+5. **Trader details on Google Play** are public in the EU (name, address, phone): decide which address to show.
+6. **Ko-fi tips are income too**, even though they unlock nothing.
+7. **Keep the over-the-air updates to visual changes**; anything that changes how Ante behaves goes through a Play update.
+8. **Lawyer review** of the texts in all three languages, once; then remove the "Draft… not legal advice" lines.

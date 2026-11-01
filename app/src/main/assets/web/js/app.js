@@ -295,7 +295,7 @@
     App.refresh();
     if (r && r.ok) {
       App.toast(`Signed in as ${r.name || r.email}.`);
-      if (ui.view === "welcome") ui.welcomeStep = App.SLIDES + 1;
+      if (ui.view === "welcome") ui.welcomeStep = App.OB.apps;
       App.render();
     } else {
       const msg = document.getElementById("auth-msg"), text = (r && r.message) || "Sign-in failed.";

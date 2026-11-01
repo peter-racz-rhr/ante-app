@@ -40,8 +40,8 @@ Then work through **Dashboard → Set up your app**:
 | Privacy policy | The privacy page has to be at a public URL. The easiest option is GitHub Pages: run `node scripts/export-legal.js`, publish `docs/legal/` with Pages, and paste the privacy link. |
 | App access | "All functionality is available without special access". |
 | Ads | **No**, the app contains no ads. |
-| Content rating | Fill in the questionnaire honestly. Under **Gambling**, say there is **simulated gambling** and **no real money**. Expect a 12+ or 16+ rating (PEGI 12 / Teen). |
-| Target audience | **18 and over** is the safest choice with simulated gambling. 13+ is possible but brings more review. |
+| Content rating | Fill in the questionnaire honestly. Under **Gambling**, say there is **simulated gambling** and **no real money**. Since 2020 PEGI rates simulated gambling **PEGI 18**, so expect 18+. |
+| Target audience | **18 and over**, matching the Terms and the "I'm 18 or older" step in onboarding. |
 | News app | No. |
 | Data safety | See section 6 below. |
 | Government app | No. |
@@ -49,6 +49,13 @@ Then work through **Dashboard → Set up your app**:
 | Health | No. |
 
 ## 4. The accessibility permission (the big review risk)
+
+**The specific rule:** Play's Accessibility policy says the API may not be used to *prevent users
+from disabling or uninstalling any app or service*; only parental-control apps set up by a parent
+and enterprise tools are exempt. So the **release** build (the one you upload to Play) never keeps
+the uninstall screen covered: in Strict mode it opens after the same 30-second wait as Settings.
+The **debug** build you install from Android Studio keeps the hard lock. This is the
+`HARD_STRICT` switch in `app/build.gradle.kts`; don't turn it on for release.
 
 Play restricts `AccessibilityService` to apps that really need it. Ante does: it has to see which
 app is in front to block it. In **Policy → App content → Accessibility API**:
@@ -145,13 +152,22 @@ How it behaves: the backup is one file in a hidden folder of the user's own Driv
 can read. Restoring merges into the phone and can't be used to cheat: it never gives back time
 already used today, never ends a Strict lock or Focus, and never removes a schedule.
 
+## 7c. Your public contact details (Digital Services Act)
+
+When you sell Ante Supporter you are a *trader*, and Play Console asks for your trader details
+(Policy → App content → Trader status). Google then shows your **name, address, email and phone
+on the store listing** in the EU. If you don't want your home address public, use a business
+address or a mail-forwarding address, and use the same one in the Imprint.
+
 ## 8. Store listing
 
 **Grow → Store presence → Main store listing**:
 
 - **App name:** Ante: Screen Time Blocker
 - **Short description (80):** Block apps by the minute, then bet your screen time. The house usually wins.
-- **Full description:** start with the hook, then the features: daily limits per app, the block
+- **Full description:** say plainly how Ante uses the Accessibility API ("Ante uses Android's
+  Accessibility service only to see which app is in front, so it can cover apps that are over the
+  limit you set. It never reads your screen."); Play requires this. Then the hook and the features: daily limits per app, the block
   screen, Focus and schedules, timed Strict mode, the tables (no real money; the house edge means
   you play your scrolling away), the widget, privacy (no ads, no tracking, nothing leaves your
   phone), and Supporter looks.

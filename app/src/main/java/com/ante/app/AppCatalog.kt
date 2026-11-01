@@ -23,7 +23,7 @@ object AppCatalog {
         val seen = HashSet<String>()
         val rows = activities.mapNotNull { info ->
             val pkg = info.activityInfo?.packageName ?: return@mapNotNull null
-            if (pkg == context.packageName || !seen.add(pkg)) return@mapNotNull null
+            if (Exempt.isExempt(context, pkg) || !seen.add(pkg)) return@mapNotNull null
             val label = info.loadLabel(pm)?.toString()?.take(60) ?: pkg
             Triple(pkg, label, info)
         }.sortedBy { it.second.lowercase() }

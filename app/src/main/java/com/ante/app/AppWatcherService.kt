@@ -34,7 +34,10 @@ class AppWatcherService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         Bank.init(this)
-        watcher = Watcher(packageName, passable = PASSABLE, locked = LOCKED)
+        // Google Play builds never keep the uninstaller covered (Play's Accessibility policy): it
+        // opens after the same wait as Settings. Builds installed from Android Studio keep the hard lock.
+        watcher = if (BuildConfig.HARD_STRICT) Watcher(packageName, passable = PASSABLE, locked = LOCKED)
+        else Watcher(packageName, passable = PASSABLE + LOCKED, locked = emptySet())
         instance = this
         homePackages = findHomePackages()
         val filter = IntentFilter().apply {
@@ -58,7 +61,7 @@ class AppWatcherService : AccessibilityService() {
         val cls = event.className?.toString()
         // Settings' Internet and Volume panels pop up over other apps; never lock them.
         val panel = pkg == "com.android.settings" && cls != null && cls.contains("Panel")
-        val ignored = pkg in IGNORED || pkg == currentKeyboard() || panel
+        val ignored = pkg in IGNORED || pkg == currentKeyboard() || panel || Exempt.isExempt(this, pkg)
         val isActivity = !ignored && isActivityWindow(pkg, cls)
         val action = Bank.editAt { bank, now -> watcher.onWindow(bank, pkg, isActivity, ignored, pkg in homePackages, now) }
         act(action)

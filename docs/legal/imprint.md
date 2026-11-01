@@ -25,7 +25,7 @@ Ante's blocking features are free. The registration and tax number will be shown
 
 ## Consumer complaints
 
-Write to peter.racz.rhr@gmail.com and you get an answer within 30 days. If we can't agree, you can turn to the conciliation board (békéltető testület) of your county or of Budapest, whose procedure is free, or to the consumer protection authority. The provider cooperates with the conciliation board's procedure.
+Write to peter.racz.rhr@gmail.com and you get an answer within 30 days. If we can't agree, you can turn to the conciliation board for the provider's seat, the Budapesti Békéltető Testület (Budapest Conciliation Board, 1016 Budapest, Krisztina krt. 99., 1st floor, room 111; bekeltet.bkik.hu), or to the board where you live; the procedure is free. You can also turn to the consumer protection authority. The provider cooperates with the conciliation board's procedure.
 
 ---
 

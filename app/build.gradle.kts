@@ -13,8 +13,8 @@ android {
         applicationId = "com.ante.app"
         minSdk = 26
         targetSdk = 36 // Google Play requires API 36 for new apps and updates since 31 Aug 2026
-        versionCode = 7
-        versionName = "0.7.0"
+        versionCode = 8
+        versionName = "0.8.0"
     }
 
     // Release signing: put your own keystore details in keystore.properties (never commit it;
@@ -34,8 +34,18 @@ android {
         }
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     buildTypes {
+        debug {
+            // Installed from Android Studio: Strict mode keeps the uninstall screen covered until the lock ends.
+            buildConfigField("boolean", "HARD_STRICT", "true")
+        }
         release {
+            // Google Play: Accessibility may not stop uninstalling, so the uninstaller opens after the wait.
+            buildConfigField("boolean", "HARD_STRICT", "false")
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")

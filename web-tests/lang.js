@@ -66,7 +66,7 @@ const sheet = (p, s) => p.evaluate(s => { window.App.ui.sheet = s; window.App.pa
     const p = await ctx.newPage(); const errors = [];
     p.on("pageerror", e => errors.push(e.message));
     await p.goto(INDEX + "?acc=1&reset=1"); await p.waitForSelector(".screen");
-    await p.evaluate(l => { localStorage.setItem("ante-prefs", JSON.stringify({ theme: "neutral", accent: "white", clock: "bitcount", name: "Péter", sound: false, haptics: true, seenIntro: {}, lang: l })); }, lang);
+    await p.evaluate(l => { localStorage.setItem("ante-prefs", JSON.stringify({ theme: "neutral", accent: "white", clock: "bitcount", name: "Péter", sound: false, haptics: true, seenIntro: {}, lang: l, terms: { v: 99, at: 1 } })); }, lang);
     await p.goto(INDEX + "?acc=1"); await p.waitForSelector(".screen"); await p.waitForTimeout(300);
     for (const v of ["home", "screentime", "results", "tables", "profile", "settings"]) {
       await go(p, v); await audit(p, `${tag} ${v}`, lang);
@@ -75,7 +75,7 @@ const sheet = (p, s) => p.evaluate(s => { window.App.ui.sheet = s; window.App.pa
     for (const g of ["coin", "roulette", "slots", "blackjack", "poker"]) { await go(p, "game", { game: g, stakePkg: "com.instagram.android", stake: 300 }); await audit(p, `${tag} game ${g}`, lang); if (width === 412) await p.screenshot({ path: path.join(OUT, `${lang}-game-${g}.png`) }); }
     await go(p, "home");
     const sheets = [{ type: "pick", apps: [], q: "" }, { type: "edit", pkg: "com.instagram.android", label: "Instagram", limit: 1200 }, { type: "strict" }, { type: "consent" },
-      { type: "schedules" }, { type: "schedEdit", draft: { id: 0, label: "", days: 31, startMin: 540, endMin: 1020, on: true } }, { type: "recap" }, { type: "supporter" }, { type: "deleteData", drive: true },
+      { type: "schedules" }, { type: "schedEdit", draft: { id: 0, label: "", days: 31, startMin: 540, endMin: 1020, on: true } }, { type: "recap" }, { type: "supporter" }, { type: "deleteData", drive: true }, { type: "terms" }, { type: "receipt", receipt: { product: "Ante Supporter", price: "€4.99", at: 1793500000000 } },
       { type: "wait", left: 30000, title: "End Focus early", body: "Wait 30 seconds. If you still want to stop after that, you can.", cta: "End Focus" }];
     for (const s of sheets) { await sheet(p, s); await audit(p, `${tag} sheet ${s.type}`, lang); if (width === 412) await p.screenshot({ path: path.join(OUT, `${lang}-sheet-${s.type}.png`) }); }
     for (const mode of ["strict", "focus"]) for (const step of [0, 1, 2]) { await sheet(p, { type: "explain", mode, step, pick: null }); await audit(p, `${tag} explain ${mode} ${step}`, lang); }
@@ -84,7 +84,15 @@ const sheet = (p, s) => p.evaluate(s => { window.App.ui.sheet = s; window.App.pa
       await p.goto(INDEX + q); await p.waitForSelector(".screen"); await p.waitForTimeout(400);
       await audit(p, `${tag} ${n}`, lang);
       if (width === 412) await p.screenshot({ path: path.join(OUT, `${lang}-${n}.png`) });
-      if (n === "onboarding") for (let i = 0; i < 3; i++) { const b = await p.$('.ob [data-a="obNext"], [data-a="obNext"]'); if (!b) break; await b.click(); await p.waitForTimeout(500); await audit(p, `${tag} onboarding ${i + 2}`, lang); }
+      if (n === "onboarding") {
+        for (let i = 0; i < 4; i++) { const b = await p.$('[data-a="obNext"]'); if (!b) break; await b.click(); await p.waitForTimeout(600); await audit(p, `${tag} onboarding ${i + 2}`, lang); }
+        for (const [act, step] of [["obAgree", "sign-in"], ["skipSignin", "apps"], ["obApps", "schedules"], ["obNextStep", "permission"]]) {
+          await p.waitForTimeout(400);
+          const b = await p.$(act === "skipSignin" ? 'button.ghost[data-a="skipSignin"]' : `[data-a="${act}"]:not([disabled])`); if (!b) { check(false, `${tag} onboarding: no ${act} button`); break; }
+          await b.click(); await p.waitForTimeout(600); await audit(p, `${tag} onboarding ${step}`, lang);
+          if (width === 412) await p.screenshot({ path: path.join(OUT, `${lang}-onboarding-${step}.png`) });
+        }
+      }
     }
     check(!errors.length, `${tag}: script errors: ${errors.slice(0, 3).join(" | ")}`);
     await ctx.close();
