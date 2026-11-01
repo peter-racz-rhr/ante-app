@@ -461,6 +461,17 @@ async function noOverflow(p, label) {
     check(!(await pl2.$('[data-t="tables"]')), "with the tables off, the Play tab is gone");
     await pl2.click('[data-a="tablesOn"]'); await pl2.waitForTimeout(250);
     check(!!(await pl2.$('[data-t="tables"]')), "turning the tables back on brings the Play tab back");
+    // Ante Supporter: extra looks are locked until bought; blocking never is.
+    check(await pl2.isVisible('[data-a="clock"][data-v="sixtyfour"] .lock-mark'), "Supporter fonts show a lock");
+    await pl2.click('[data-a="clock"][data-v="sixtyfour"]'); await pl2.waitForTimeout(300);
+    check(await pl2.isVisible('[data-a="buySupporter"]'), "a locked look opens the Supporter sheet");
+    check(await pl2.evaluate(() => window.AntePrefs.get().clock) !== "sixtyfour", "a locked font isn't applied");
+    await shot(pl2, "26d-supporter");
+    await pl2.click('[data-a="buySupporter"]'); await pl2.waitForTimeout(900);
+    check(await pl2.evaluate(() => window.App.isSupporter()), "buying unlocks Supporter");
+    check(!(await pl2.$('[data-a="clock"][data-v="sixtyfour"] .lock-mark')), "after buying, the locks are gone");
+    await pl2.click('[data-a="felt"][data-v="navy"]');
+    check(await pl2.evaluate(() => window.AntePrefs.get().felt) === "navy", "a Supporter can pick a table felt");
     check(pl.errors.length === 0 && pl2.errors.length === 0, "no console errors in schedules, spin and recap: " + pl.errors.concat(pl2.errors).join(" | "));
   }
   /* Themes, legal, support */

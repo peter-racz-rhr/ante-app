@@ -23,7 +23,7 @@
         ${miniApp(f.c, hex)}<span class="t-name">${esc(cap(id))}</span></button>`).join("");
     const flavours = Object.entries(P.FLAVORS).map(([id, fl]) =>
       `<button role="radio" class="ftile" aria-checked="${cur.theme === id}" data-a="theme" data-v="${id}">
-        <span class="fsw" aria-hidden="true" style="--f-bg:${fl.c.base};--f-s:${fl.c.s1};--f-t:${fl.c.text}"><i></i></span><span class="fname">${esc(fl.name)}</span></button>`).join("");
+        <span class="fsw" aria-hidden="true" style="--f-bg:${fl.c.base};--f-s:${fl.c.s1};--f-t:${fl.c.text}"><i></i></span><span class="fname">${esc(fl.name)}</span>${App.lockMark("theme", id)}</button>`).join("");
     return `<div class="tcards" role="radiogroup" aria-label="Colour" id="tcards">${colours}</div></div>
       <div class="sblock"><p class="sblock-h">Flavour</p><div class="ftiles" role="radiogroup" aria-label="Flavour">${flavours}</div>`;
   }
@@ -44,7 +44,7 @@
     return `<div class="ctiles" role="radiogroup" aria-label="Clock font" id="ctiles">${Object.entries(P.CLOCKS).map(([id, k]) => `
       <button class="ctile" role="radio" aria-checked="${cur === id}" data-a="clock" data-v="${id}">
         <span class="c-sample" style="font-family:'${esc(k.family)}', monospace;font-weight:${k.lg};font-variation-settings:${esc(k.vary)}" aria-hidden="true">${esc(sample)}</span>
-        <span class="t-name">${esc(k.name)}</span></button>`).join("")}</div>`;
+        <span class="t-name">${esc(k.name)}</span>${App.lockMark("clock", id)}</button>`).join("")}</div>`;
   }
 
   /** The native part (APK) is older than this UI needs for full screen and vibration. */
@@ -125,7 +125,7 @@
       ${outdatedNote()}
       <section class="me me-card">
         <button class="me-photo" data-a="photoPick" aria-label="${ACC.photo ? "Change profile picture" : "Add a profile picture"}">${App.avatar("xl", 'aria-hidden="true"')}<span class="cam" aria-hidden="true">${App.ICON.camera}</span></button>
-        <div class="me-t"><p class="me-name">${esc(name || "Your name")}</p>
+        <div class="me-t"><p class="me-name">${esc(name || "Your name")}</p>${App.supporterBadge()}
           <p class="me-stat"><span class="dotnum">${hText}</span><span>${h === 1 ? "hour" : "hours"}</span></p>
           <p class="sitem-sub">added to your real life</p></div>
       </section>
@@ -174,7 +174,10 @@
 
       ${group("Appearance", `
         <div class="sblock"><p class="sblock-h">Colour</p>${themeCards()}</div>
-        <div class="sblock"><p class="sblock-h">Clock font</p>${clockPicker()}</div>`)}
+        <div class="sblock"><p class="sblock-h">Clock font</p>${clockPicker()}</div>
+        ${App.tablesOn() ? `<div class="sblock"><p class="sblock-h">Table felt</p>${App.feltPicker()}</div>
+        <div class="sblock"><p class="sblock-h">Card back</p>${App.backPicker()}</div>` : ""}`)}
+      ${App.supporterGroup(group, item)}
 
       ${group("Feedback", `
         ${item({ icon: "soundOn", tone: "var(--accent)", title: "Sound effects", trail: App.toggle("sound", !App.SFX.muted, "Sound effects") })}
@@ -233,7 +236,7 @@
   const SETTINGS = { acc: () => A.openAccessibilitySettings(), battery: () => A.openBatterySettings(), date: () => A.openDateSettings(), info: () => A.openAppInfo() };
 
   Object.assign(App.act, {
-    theme(d) { App.P.set({ theme: d.v }); App.SFX.play("tap"); App.render(); },
+    theme(d) { if (App.locked("theme", d.v)) return App.act.supporter(); App.P.set({ theme: d.v }); App.SFX.play("tap"); App.render(); },
     photoPick() {
       if (!A.pickPhoto || A.pickPhoto() === false) App.toast("Install the new app version (0.3.0) to add a photo.");
     },
@@ -242,6 +245,7 @@
     closeSettings() { ui.view = "profile"; App.render(); },
     clock(d) {
       if (!App.P.CLOCKS[d.v]) return;
+      if (App.locked("clock", d.v)) return App.act.supporter();
       App.P.set({ clock: d.v }); App.SFX.play("tap"); App.haptic("tap"); App.render();
       // The font loads on first use; fit the big clocks again once it's there.
       const k = App.P.CLOCKS[d.v];

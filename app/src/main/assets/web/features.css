@@ -69,3 +69,29 @@
 .recap-grid .dotnum { font-size: 24px; color: var(--ivory); }
 .recap-grid span { font-size: var(--t-xs); color: var(--ivory-3); }
 .recap-grid b { color: var(--ivory); font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- Ante Supporter ---------- */
+.lock-mark { position: absolute; top: 6px; right: 6px; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in oklab, var(--surface) 80%, transparent); color: var(--ivory-2); }
+.lock-mark svg { width: 12px; height: 12px; }
+.ftile, .ctile { position: relative; }
+.sup-badge { display: inline-flex; align-items: center; gap: 4px; margin-top: 2px; padding: 3px 9px 3px 7px; border-radius: 999px; background: color-mix(in oklab, #f472b6 18%, transparent); color: #f9a8d4; font-size: var(--t-xs); font-weight: 650; }
+.sup-badge svg { width: 12px; height: 12px; }
+.tips-row { border-bottom: 0; }
+.tip-chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s2); padding: 0 var(--s3) var(--s3); }
+.tip-chips .chip { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--t-xs); }
+.sup-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.sup-tile { aspect-ratio: 1; border-radius: 12px; display: flex; flex-direction: column; justify-content: flex-end; padding: 6px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; min-width: 0; }
+.sup-tile b { font-size: 11px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sup-tile i { display: block; height: 6px; border-radius: 3px; margin-top: 4px; }
+.sup-tile.font { align-items: center; justify-content: center; gap: 2px; }
+.sup-tile.font b { font-size: 20px; font-weight: 400; color: var(--ivory); }
+.sup-tile small { font-size: 10px; color: var(--ivory-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.sup-tile.felt-t small { color: rgba(255, 255, 255, .8); }
+.back-sw { display: block; width: 34px; height: 46px; border-radius: 6px; position: relative; background: var(--surface-3); box-shadow: inset 0 0 0 2px var(--card, #fff); }
+.back-sw i { position: absolute; inset: 5px; border-radius: 5px; }
+.back-sw i { box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--accent) 60%, transparent); }
+.back-sw[data-back="lattice"] i, :root[data-back="lattice"] .back i { background: repeating-linear-gradient(45deg, color-mix(in oklab, var(--accent) 45%, transparent) 0 2px, transparent 2px 7px), repeating-linear-gradient(-45deg, color-mix(in oklab, var(--accent) 45%, transparent) 0 2px, transparent 2px 7px); }
+.back-sw[data-back="dots"] i, :root[data-back="dots"] .back i { background: radial-gradient(color-mix(in oklab, var(--accent) 70%, transparent) 1.4px, transparent 1.6px) 0 0 / 7px 7px; }
+.back-sw[data-back="gold"], :root[data-back="gold"] .back { background: linear-gradient(135deg, #b8862e, #f2d48a 45%, #8a5a12); }
+.back-sw[data-back="gold"] i, :root[data-back="gold"] .back i { box-shadow: inset 0 0 0 1px rgba(60, 35, 0, .55); }
+.sup-tile.backs { align-items: center; justify-content: center; gap: 4px; }

@@ -60,6 +60,9 @@ dependencies {
     implementation("androidx.credentials:credentials-play-services-auth:1.6.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 
+    // Ante Supporter (looks only) and tips. Play requires Billing Library 8+ for updates since 31 Aug 2026.
+    implementation("com.android.billingclient:billing:8.0.0")
+
     testImplementation("junit:junit:4.13.2")
     // Real org.json for JVM unit tests (the Android one is a stub there).
     testImplementation("org.json:json:20240303")

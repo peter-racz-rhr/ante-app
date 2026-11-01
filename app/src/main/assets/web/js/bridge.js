@@ -30,6 +30,9 @@
       freeSpin: pkg => (has("freeSpin") ? parse(N.freeSpin(pkg), BAD) : { ok: false, error: "old" }),
       setSchedule: sc => (has("setSchedule") ? N.setSchedule(sc.id | 0, String(sc.label || ""), sc.days | 0, sc.startMin | 0, sc.endMin | 0, sc.on !== false) : 0),
       removeSchedule: id => (has("removeSchedule") ? N.removeSchedule(id | 0) : false),
+      supporter: () => (has("supporter") ? parse(N.supporter(), { available: false, supporter: false, prices: {} }) : { available: false, supporter: false, prices: {} }),
+      buy: id => (has("buy") ? N.buy(String(id)) : false),
+      restorePurchases: () => { if (has("restorePurchases")) N.restorePurchases(); },
       open: (pkg, sec) => N.open(pkg, sec | 0),
       closeBlock: () => N.closeBlock(),
       openAnte: () => N.openAnte(),
@@ -160,6 +163,7 @@
   }
   const FREE_SPIN_PRIZES = [60, 120, 180, 300, 600, 900], FREE_SPIN_WEIGHTS = [30, 25, 20, 15, 8, 2];
   let D = null; // the JS dealer, made once the mock API below exists
+  const SUP = { on: (() => { try { return localStorage.getItem("ante-mock-supporter") === "1" && q.get("reset") !== "1"; } catch (e) { return false; } })() };
 
   window.Ante = {
     native: false,
@@ -316,6 +320,17 @@
       S.ledger.unshift({ game: "Daily spin", pkg, deltaSec: prizeSec, atMs: Date.now() }); S.ledger = S.ledger.slice(0, 50);
       save(); return { ok: true, index, prizeSec };
     },
+    // Ante Supporter in the demo: ?supporter=1 starts unlocked; buying "succeeds" after a moment.
+    supporter: () => ({ available: true, supporter: SUP.on || q.get("supporter") === "1", prices: { ante_supporter: "€4.99", ante_tip_small: "€1.99", ante_tip_medium: "€4.99", ante_tip_large: "€9.99" } }),
+    buy(id) {
+      if (!/^ante_(supporter|tip_(small|medium|large))$/.test(id)) return false;
+      setTimeout(() => {
+        if (id === "ante_supporter") { SUP.on = true; try { localStorage.setItem("ante-mock-supporter", "1"); } catch (e) { /* private mode */ } }
+        window.anteBilling && window.anteBilling(JSON.stringify({ ok: true, product: id, supporter: SUP.on }));
+      }, 400);
+      return true;
+    },
+    restorePurchases() {},
     setSchedule(sc) {
       const now = Date.now(), list = S.schedules = S.schedules || [];
       const clean = { id: sc.id | 0, label: String(sc.label || "").trim().slice(0, 24), days: sc.days | 0, startMin: sc.startMin | 0, endMin: sc.endMin | 0, on: sc.on !== false };

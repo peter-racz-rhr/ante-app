@@ -236,6 +236,28 @@ class AnteBridge(
     fun freeSpin(pkg: String): String =
         if (!validPkg(pkg)) BAD else Bank.editAt { b, now -> Bank.dealer.freeSpin(b, pkg, now) }.toString()
 
+    /* ---- Ante Supporter (Google Play): looks only, never blocking features ---- */
+
+    /** {available, supporter, prices: {productId: "€4.99"}}. */
+    @JavascriptInterface
+    fun supporter(): String {
+        Supporter.onResult = { json -> activity.runOnUiThread { webView.evaluateJavascript("window.anteBilling && window.anteBilling(" + JSONObject.quote(json) + ")", null) } }
+        return Supporter.status(ctx).toString()
+    }
+
+    /** Opens Google Play's purchase sheet; the result arrives as window.anteBilling(result). */
+    @JavascriptInterface
+    fun buy(productId: String): Boolean {
+        var ok = false
+        val latch = java.util.concurrent.CountDownLatch(1)
+        activity.runOnUiThread { ok = Supporter.buy(activity, productId); latch.countDown() }
+        latch.await(3, java.util.concurrent.TimeUnit.SECONDS)
+        return ok
+    }
+
+    @JavascriptInterface
+    fun restorePurchases() { Supporter.restore() }
+
     /* ---- Focus schedules ---- */
 
     /** Adds ([id] 0) or changes a schedule. Returns its id, or 0 when refused. */

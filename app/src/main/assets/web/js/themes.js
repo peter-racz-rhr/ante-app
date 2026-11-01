@@ -36,6 +36,16 @@
     vt323: { name: "VT323", family: "VT323", lg: 400, sm: 400, vary: "normal" },
   };
 
+  /* Table felt and card backs (Supporter looks). "theme" keeps the felt in the flavour's colours. */
+  const FELTS = {
+    theme: { name: "Theme" },
+    emerald: { name: "Emerald", felt: "#0f4a35", deep: "#06261b" },
+    navy: { name: "Navy", felt: "#16305c", deep: "#0a1730" },
+    wine: { name: "Wine", felt: "#5a1a2b", deep: "#2c0b15" },
+    noir: { name: "Noir", felt: "#151515", deep: "#000000" },
+  };
+  const BACKS = { classic: "Classic", lattice: "Lattice", dots: "Dots", gold: "Gold" };
+
   let prefs = { theme: "neutral", accent: "white", clock: "bitcount", name: "", sound: true, haptics: true, seenIntro: {} };
   try { prefs = Object.assign(prefs, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) { /* storage blocked */ }
   if (!FLAVORS[prefs.theme]) prefs.theme = "neutral";
@@ -62,7 +72,9 @@
     set("--win", c.green); set("--loss", c.red); set("--warn", c.yellow); set("--info", c.blue);
     set("--accent", acc); set("--on-accent", onColor(acc));
     set("--nav-bg", f.light ? c.base : c.crust);
-    set("--felt", f.light ? c.s0 : c.base); set("--felt-deep", f.light ? c.s1 : c.mantle);
+    const felt = FELTS[prefs.felt] && FELTS[prefs.felt].felt ? FELTS[prefs.felt] : null;
+    set("--felt", felt ? felt.felt : f.light ? c.s0 : c.base); set("--felt-deep", felt ? felt.deep : f.light ? c.s1 : c.mantle);
+    root.dataset.back = BACKS[prefs.back] ? prefs.back : "classic";
     set("--brass", c.sub); set("--brass-2", c.text); set("--brass-deep", c.o0); set("--brass-ink", f.light ? "#ffffff" : c.crust);
     root.dataset.theme = prefs.theme;
     root.dataset.light = String(f.light);
@@ -77,7 +89,7 @@
   function save() { try { localStorage.setItem(KEY, JSON.stringify(prefs)); } catch (e) { /* storage blocked */ } }
 
   window.AntePrefs = {
-    FLAVORS, ACCENTS, CLOCKS,
+    FLAVORS, ACCENTS, CLOCKS, FELTS, BACKS,
     get: () => Object.assign({}, prefs),
     isLight: () => FLAVORS[prefs.theme].light,
     set(patch) {

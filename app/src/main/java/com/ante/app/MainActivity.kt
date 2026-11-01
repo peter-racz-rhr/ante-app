@@ -17,6 +17,7 @@ class MainActivity : Activity() {
         Bank.init(this)
         web = WebHost.attach(this, mode = "main")
         GoogleAuth.onPhoto = { runOnUiThread { accountChanged(null) } }
+        Supporter.connect(this) // prices and owned purchases from Google Play (looks only)
         if (Build.VERSION.SDK_INT >= 33) {
             onBackInvokedDispatcher.registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT, backCallback)
         }
