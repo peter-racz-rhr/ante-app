@@ -68,7 +68,7 @@ const sheet = (p, s) => p.evaluate(s => { window.App.ui.sheet = s; window.App.pa
     await p.goto(INDEX + "?acc=1&reset=1"); await p.waitForSelector(".screen");
     await p.evaluate(l => { localStorage.setItem("ante-prefs", JSON.stringify({ theme: "neutral", accent: "white", clock: "bitcount", name: "Péter", sound: false, haptics: true, seenIntro: {}, lang: l, terms: { v: 99, at: 1 } })); }, lang);
     await p.goto(INDEX + "?acc=1"); await p.waitForSelector(".screen"); await p.waitForTimeout(300);
-    for (const v of ["home", "screentime", "results", "tables", "profile", "settings"]) {
+    for (const v of ["home", "screentime", "results", "tables", "stats", "profile", "settings"]) {
       await go(p, v); await audit(p, `${tag} ${v}`, lang);
       if (width === 412) await p.screenshot({ path: path.join(OUT, `${lang}-${v}.png`), fullPage: true });
     }

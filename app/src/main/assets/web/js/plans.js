@@ -7,6 +7,15 @@
   /* ---------- the "no tables" switch ---------- */
   App.tablesOn = () => App.P.get().tables !== false;
 
+  /* With the tables off, the middle tab becomes Stats: the week in one card, then screen time. */
+  App.ICON.chart = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16"/><path d="M7 16v-5"/><path d="M12 16V6"/><path d="M17 16v-8"/></svg>';
+  App.views.stats = () => {
+    const st = App.views.screentime().replace(/<header class="topbar">[\s\S]*?<\/header>/,
+      `<header class="topbar"><div class="grow"><h1 class="h1">Stats</h1><p class="muted">Your time, week by week</p></div></header>
+      <section class="stats-recap" aria-label="Your week">${App.recapCard()}</section>`);
+    return st;
+  };
+
   /* ---------- schedules ---------- */
   const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const DAY_LETTERS = ["M", "T", "W", "T", "F", "S", "S"];
@@ -129,7 +138,8 @@
   }
 
   /* ---------- weekly recap: a card made to be screenshotted ---------- */
-  App.sheetViews.recap = (sh, sheet, head) => {
+  /** The weekly card: hours given back, days within limits, best day, most used app, tables. */
+  App.recapCard = () => {
     const S = App.S, budget = S.limits.reduce((a, l) => a + l.limitSec, 0);
     const days = (S.history || []).slice(0, 7);
     const back = days.reduce((a, d) => a + Math.max(0, budget - (d.usedSec || 0)), 0);
@@ -143,8 +153,7 @@
     // Hours as h:mm (the dot fonts draw a decimal point too much like a plus).
     const h = s => { s = Math.round(s / 60); return s >= 600 ? String(Math.round(s / 60)) : `${Math.floor(s / 60)}:${App.pad(s % 60)}`; };
     const dayName = d => new Date(d + "T12:00:00").toLocaleDateString(App.locale(), { weekday: "long" });
-    return sheet("", `${head("Your week", "recap-h")}
-      <div class="recap" id="recap">
+    return `      <div class="recap" id="recap">
         <p class="eyebrow">${App.ICON.logo}<span>Ante · last 7 days</span></p>
         <p class="recap-big"><span class="dotnum">${h(back)}</span><span>h</span></p>
         <p class="recap-sub">given back to your real life</p>
@@ -155,10 +164,12 @@
           <div><span>Most used</span><b>${top ? esc(App.labelOf(top[0])) : "–"}</b></div>
           ${App.tablesOn() ? `<div class="wide"><span>At the tables</span><b>${net >= 0 ? "+" : "−"}${esc(App.fmt(Math.abs(net)))}</b></div>` : ""}
         </div>
-      </div>
+      </div>`;
+  };
+  App.sheetViews.recap = (sh, sheet, head) => sheet("", `${head("Your week", "recap-h")}
+      ${App.recapCard()}
       <p class="muted center">Take a screenshot to share it.</p>
       <button class="btn primary" data-a="closeSheet">Done</button>`, "recap-h");
-  };
 
   Object.assign(App.act, {
     schedules() { if (!supported()) { App.toast("Install the new app version (0.6.0) for schedules."); return; } App.refresh(); ui.sheet = { type: "schedules" }; App.SFX.play("tap"); App.paintOverlay(); },
@@ -198,6 +209,8 @@
     tablesOn() {
       const on = !App.tablesOn();
       App.P.set({ tables: on });
+      if (!on && (ui.view === "tables" || ui.view === "game")) ui.view = "stats";
+      if (on && ui.view === "stats") ui.view = "tables";
       App.toast(on ? "The tables are back." : "Tables hidden. Ante is a plain blocker now.");
       App.render();
     },

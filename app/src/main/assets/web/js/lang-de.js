@@ -221,6 +221,8 @@
     "Receipt": "Beleg",
     "Strict mode keeps Ante installed until the lock ends. Then installing and removing apps works again.": "Der strenge Modus hält Ante bis zum Ende der Sperre installiert. Danach lassen sich Apps wieder installieren und entfernen.",
     "By agreeing you accept the Terms. How Ante handles your data is explained in the Privacy Policy.": "Mit deiner Zustimmung akzeptierst du die Nutzungsbedingungen. Wie Ante mit deinen Daten umgeht, erklärt die Datenschutzerklärung.",
+    "Stats": "Statistik",
+    "Your time, week by week": "Deine Zeit, Woche für Woche",
     "Phone language": "Handysprache", "Coffee": "Kaffee", "Lunch": "Mittag", "Dinner": "Abend", "Ends": "Ende:", "left today": "heute übrig", "Ante web demo": "Ante Web-Demo",
     "Geist (interface) by Vercel. Clock fonts: Bitcount by Petr van Blokland, Doto by Óliver Lalan, DotGothic16 by Fontworks, Handjet by Rosetta, Workbench and Sixtyfour by Jens Kutilek, Silkscreen by Jason Kottke, Pixelify Sans by Stefie Justprince, VT323 by Peter Hull. All under the SIL Open Font License 1.1.": "Geist (Oberfläche) von Vercel. Uhr-Schriften: Bitcount von Petr van Blokland, Doto von Óliver Lalan, DotGothic16 von Fontworks, Handjet von Rosetta, Workbench und Sixtyfour von Jens Kutilek, Silkscreen von Jason Kottke, Pixelify Sans von Stefie Justprince, VT323 von Peter Hull. Alle unter der SIL Open Font License 1.1.",
     "The Latte, Frappé, Macchiato and Mocha themes use the Catppuccin palettes (MIT licence).": "Die Themen Latte, Frappé, Macchiato und Mocha nutzen die Catppuccin-Paletten (MIT-Lizenz).",

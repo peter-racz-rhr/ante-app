@@ -225,6 +225,8 @@
     "Receipt": "Nyugta",
     "Strict mode keeps Ante installed until the lock ends. Then installing and removing apps works again.": "A Szigorú mód a zárolás végéig telepítve tartja az Ante-t. Utána újra lehet alkalmazásokat telepíteni és eltávolítani.",
     "By agreeing you accept the Terms. How Ante handles your data is explained in the Privacy Policy.": "Az elfogadással elfogadod a Felhasználási feltételeket. Hogy az Ante hogyan kezeli az adataidat, azt az Adatvédelmi tájékoztató írja le.",
+    "Stats": "Statisztika",
+    "Your time, week by week": "Az időd, hétről hétre",
     "Phone language": "Telefon nyelve", "Coffee": "Kávé", "Lunch": "Ebéd", "Dinner": "Vacsora", "Ends": "Vége:", "left today": "maradt mára", "Ante web demo": "Ante webes demó",
     "Geist (interface) by Vercel. Clock fonts: Bitcount by Petr van Blokland, Doto by Óliver Lalan, DotGothic16 by Fontworks, Handjet by Rosetta, Workbench and Sixtyfour by Jens Kutilek, Silkscreen by Jason Kottke, Pixelify Sans by Stefie Justprince, VT323 by Peter Hull. All under the SIL Open Font License 1.1.": "Geist (felület): Vercel. Óra-betűtípusok: Bitcount (Petr van Blokland), Doto (Óliver Lalan), DotGothic16 (Fontworks), Handjet (Rosetta), Workbench és Sixtyfour (Jens Kutilek), Silkscreen (Jason Kottke), Pixelify Sans (Stefie Justprince), VT323 (Peter Hull). Mind SIL Open Font License 1.1 alatt.",
     "The Latte, Frappé, Macchiato and Mocha themes use the Catppuccin palettes (MIT licence).": "A Latte, Frappé, Macchiato és Mocha témák a Catppuccin palettáit használják (MIT licenc).",

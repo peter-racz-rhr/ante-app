@@ -107,14 +107,15 @@
 
   /* ---------- navigation: three tabs, with an indicator that glides to the active one ---------- */
   const ALL_TABS = [["home", "Home", "home"], ["tables", "Play", "play"], ["profile", "Profile", "user"]];
-  const TAB_OF = { home: "home", screentime: "home", results: "home", tables: "tables", game: "tables", profile: "profile", settings: "profile", legal: "profile" };
+  const TAB_OF = { home: "home", screentime: "home", results: "home", tables: "tables", game: "tables", stats: "stats", profile: "profile", settings: "profile", legal: "profile" };
   let indX = null;
   function navbar() {
     if (App.BLOCK || ui.view === "welcome" || (ui.view === "legal" && ui.back === "welcome")) return "";
     const S = App.S, cur = TAB_OF[ui.view] || "home";
     const care = !S.accessibility || !S.watching || S.batteryOk === false;
     const lock = ui.busy || ui.round ? "disabled" : "";
-    const TABS = App.tablesOn() ? ALL_TABS : ALL_TABS.filter(t => t[0] !== "tables");
+    // Tables off: the middle tab is Stats instead, so there are always three.
+    const TABS = App.tablesOn() ? ALL_TABS : ALL_TABS.map(t => (t[0] === "tables" ? ["stats", "Stats", "chart"] : t));
     return `<nav class="navpill" aria-label="Sections"><span class="nav-ind" aria-hidden="true"></span>${TABS.map(([t, l, ic]) =>
       `<button data-a="tab" data-t="${t}" aria-label="${l}" aria-current="${cur === t ? "page" : "false"}" ${lock}>${App.ICON[ic]}${t === "profile" && care ? '<i class="ndot"></i>' : ""}</button>`).join("")}</nav>`;
   }
@@ -275,7 +276,7 @@
     if (ui.view === "settings") { ui.view = "profile"; App.render(); return true; }
     if (ui.view === "screentime" || ui.view === "results") { ui.view = "home"; App.render(); return true; }
     if (App.BLOCK && ui.view === "tables") { ui.view = "block"; App.render(); return true; }
-    if (!App.BLOCK && (ui.view === "tables" || ui.view === "profile")) { ui.view = "home"; App.render(); return true; }
+    if (!App.BLOCK && (ui.view === "tables" || ui.view === "profile" || ui.view === "stats")) { ui.view = "home"; App.render(); return true; }
     if (ui.view === "welcome") {
       if (document.querySelector('#signin[data-open="true"]')) { App.morphSignin(false); return true; }
       return App.welcomeBack();

@@ -135,3 +135,6 @@
 .ob-budget-h { margin: 0; font-size: var(--t-sm); font-weight: 650; color: var(--ivory-2); max-width: 12ch; }
 .receipt { display: flex; flex-direction: column; gap: 6px; padding: var(--s4); border-radius: var(--r-in); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); font-size: var(--t-sm); color: var(--ivory-2); }
 .receipt p { margin: 0; } .receipt .rc-title { color: var(--ivory); font-weight: 700; }
+/* Screens without the navbar (block screen) end right after their content. */
+.screen.block { padding-bottom: max(var(--s4), env(safe-area-inset-bottom, 0px)); }
+.stats-recap { display: block; }

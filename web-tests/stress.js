@@ -105,7 +105,7 @@ const sheet = (p, s) => p.evaluate(s => { window.App.ui.sheet = s; window.App.pa
     for (const theme of ["neutral", "latte", "mocha"]) {
       const tag = `${width}px ${theme}`;
       const p = await open(browser, width, "?acc=1", { theme, accent: theme === "neutral" ? "white" : "mauve", name: theme === "mocha" ? "Ő".repeat(40) : "" });
-      for (const v of ["home", "screentime", "results", "tables", "profile", "settings"]) {
+      for (const v of ["home", "screentime", "results", "tables", "stats", "profile", "settings"]) {
         await go(p, v); await audit(p, `${tag} ${v}`);
         if (v === "home" && width === 360) await p.screenshot({ path: path.join(OUT, `home-${theme}.png`), fullPage: true });
       }

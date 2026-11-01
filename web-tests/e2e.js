@@ -479,7 +479,9 @@ async function noOverflow(p, label) {
     await dt.goto(INDEX + "?acc=1"); await dt.waitForSelector(".screen");
     await tab(dt, "profile"); await dt.click('[data-a="openSettings"]'); await dt.waitForTimeout(250);
     await dt.click('[data-a="dataDelete"]'); await dt.waitForTimeout(300);
-    await dt.click('[data-a="dataDeleteNow"]'); await dt.waitForTimeout(1200);
+    await dt.click('[data-a="dataDeleteNow"]');
+    for (let i = 0; i < 40 && !(await dt.evaluate(() => !localStorage.getItem("ante-mock-drive") && !JSON.parse(localStorage.getItem("ante-prefs") || "{}").theme).catch(() => false)); i++) await dt.waitForTimeout(100);
+    await dt.waitForSelector(".screen");
     check(await dt.evaluate(() => !window.Ante.account().signedIn && !localStorage.getItem("ante-mock-drive") && !JSON.parse(localStorage.getItem("ante-prefs") || "{}").theme), "delete wipes the account, settings and Drive backup");
     check(dt.errors.length === 0, "no console errors in Your data: " + dt.errors.join(" | "));
     await dt.context().close();
@@ -532,6 +534,11 @@ async function noOverflow(p, label) {
     await pl2.click('[data-a="openSettings"]'); await pl2.waitForTimeout(250);
     await pl2.click('[data-a="tablesOn"]'); await pl2.waitForTimeout(250);
     check(!(await pl2.$('[data-t="tables"]')), "with the tables off, the Play tab is gone");
+    check(!!(await pl2.$('[data-t="stats"]')), "and the middle tab becomes Stats");
+    await tab(pl2, "stats"); await pl2.waitForTimeout(300);
+    check(await pl2.isVisible(".stats-recap .recap-big") && await pl2.isVisible(".sbars"), "Stats shows the week card and the screen-time chart");
+    await shot(pl2, "26h-stats");
+    await pl2.click('[data-t="profile"]'); await pl2.waitForTimeout(200); await pl2.click('[data-a="openSettings"]'); await pl2.waitForTimeout(250);
     await pl2.click('[data-a="tablesOn"]'); await pl2.waitForTimeout(250);
     check(!!(await pl2.$('[data-t="tables"]')), "turning the tables back on brings the Play tab back");
     // Ante Supporter: extra looks are locked until bought; blocking never is.
