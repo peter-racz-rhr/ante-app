@@ -17,6 +17,9 @@ class MainActivity : Activity() {
         Bank.init(this)
         web = WebHost.attach(this, mode = "main")
         GoogleAuth.onPhoto = { runOnUiThread { accountChanged(null) } }
+        if (Build.VERSION.SDK_INT >= 33) {
+            onBackInvokedDispatcher.registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT, backCallback)
+        }
     }
 
     /** Android's photo picker (no storage permission needed), or the file picker on older phones. */
@@ -69,15 +72,16 @@ class MainActivity : Activity() {
         Ota.checkAsync(this) { v -> web?.evaluateJavascript("window.anteUpdateReady && window.anteUpdateReady($v)", null) }
     }
 
+    // Android 13+ (and required from targetSdk 36, where onBackPressed is no longer called):
+    // the back gesture goes through OnBackInvokedCallback. Older phones still use onBackPressed.
+    private val backCallback by lazy { android.window.OnBackInvokedCallback { handleBack() } }
+
     @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-        val w = web
-        if (w == null) {
-            @Suppress("DEPRECATION")
-            super.onBackPressed()
-            return
-        }
-        // Let the page close a sheet or leave a table first; finish only when it has nothing to close.
+    override fun onBackPressed() = handleBack()
+
+    /** Let the page close a sheet or leave a table first; finish only when it has nothing to close. */
+    private fun handleBack() {
+        val w = web ?: return finish()
         w.evaluateJavascript("window.anteBack ? window.anteBack() : false") { handled ->
             if (handled != "true") finish()
         }

@@ -20,6 +20,9 @@ class BlockActivity : Activity() {
         Bank.init(this)
         readIntent(intent)
         web = WebHost.attach(this, mode = "block", blockedPkg = { pkg }, blockNote = { note })
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+            onBackInvokedDispatcher.registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT, backCallback)
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -49,14 +52,15 @@ class BlockActivity : Activity() {
         super.onPause()
     }
 
+    // Back gesture on Android 13+ (and the only path from targetSdk 36); onBackPressed for older phones.
+    private val backCallback by lazy { android.window.OnBackInvokedCallback { handleBack() } }
+
     @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-        val w = web
-        if (w == null) {
-            goHome()
-            return
-        }
-        // Back leaves a table first; from the block screen itself it goes home, never into the app.
+    override fun onBackPressed() = handleBack()
+
+    /** Back leaves a table first; from the block screen itself it goes home, never into the app. */
+    private fun handleBack() {
+        val w = web ?: return goHome()
         w.evaluateJavascript("window.anteBack ? window.anteBack() : false") { handled ->
             if (handled != "true") goHome()
         }

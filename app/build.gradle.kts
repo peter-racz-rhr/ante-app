@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.ante.app"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.ante.app"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36 // Google Play requires API 36 for new apps and updates since 31 Aug 2026
         versionCode = 4
         versionName = "0.4.0"
     }
@@ -53,8 +53,8 @@ android {
 
 dependencies {
     // Sign in with Google (Credential Manager). Needs Google Play services on the phone.
-    implementation("androidx.credentials:credentials:1.3.0")
-    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+    implementation("androidx.credentials:credentials:1.6.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.6.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 
     testImplementation("junit:junit:4.13.2")
