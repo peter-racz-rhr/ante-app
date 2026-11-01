@@ -33,6 +33,14 @@
       supporter: () => (has("supporter") ? parse(N.supporter(), { available: false, supporter: false, prices: {} }) : { available: false, supporter: false, prices: {} }),
       buy: id => (has("buy") ? N.buy(String(id)) : false),
       restorePurchases: () => { if (has("restorePurchases")) N.restorePurchases(); },
+      // Your data (0.7.0+): Drive backup, download, delete. Missing on older apps.
+      savePrefs: json => { if (has("savePrefs")) N.savePrefs(json); },
+      backupStatus: has("backupStatus") ? () => parse(N.backupStatus(), { auto: false, lastAt: 0 }) : undefined,
+      setAutoBackup: on => { if (has("setAutoBackup")) N.setAutoBackup(!!on); },
+      backupNow: () => N.backupNow(),
+      restoreBackup: () => N.restoreBackup(),
+      exportData: () => (has("exportData") ? N.exportData() : false),
+      deleteAllData: drive => (has("deleteAllData") ? N.deleteAllData(!!drive) : false),
       open: (pkg, sec) => N.open(pkg, sec | 0),
       closeBlock: () => N.closeBlock(),
       openAnte: () => N.openAnte(),
@@ -163,6 +171,8 @@
   }
   const FREE_SPIN_PRIZES = [60, 120, 180, 300, 600, 900], FREE_SPIN_WEIGHTS = [30, 25, 20, 15, 8, 2];
   let D = null; // the JS dealer, made once the mock API below exists
+  const drive = () => { try { return JSON.parse(localStorage.getItem("ante-mock-drive")) || {}; } catch (e) { return {}; } };
+  const saveDrive = d => { try { localStorage.setItem("ante-mock-drive", JSON.stringify(d)); } catch (e) { /* private mode */ } };
   const SUP = { on: (() => { try { return localStorage.getItem("ante-mock-supporter") === "1" && q.get("reset") !== "1"; } catch (e) { return false; } })() };
 
   window.Ante = {
@@ -331,6 +341,42 @@
       return true;
     },
     restorePurchases() {},
+    // Your data in the demo: the "Drive backup" lives in this browser's storage.
+    savePrefs(json) { try { localStorage.setItem("ante-mock-uiprefs", json); } catch (e) { /* private mode */ } },
+    backupStatus: () => { const d = drive(); return { auto: !!d.auto, lastAt: d.lastAt || 0, signedIn: !!ACCT.signedIn }; },
+    setAutoBackup(on) { const d = drive(); d.auto = !!on; saveDrive(d); },
+    backupNow() {
+      setTimeout(() => {
+        if (!ACCT.signedIn) { window.anteDrive && window.anteDrive(JSON.stringify({ op: "backup", ok: false, error: "auth" })); return; }
+        const d = drive(); d.file = { bank: JSON.parse(JSON.stringify(S)), prefs: JSON.parse(localStorage.getItem("ante-mock-uiprefs") || "{}"), savedAtMs: Date.now() }; d.lastAt = Date.now(); saveDrive(d);
+        window.anteDrive && window.anteDrive(JSON.stringify({ op: "backup", ok: true, lastAt: d.lastAt }));
+      }, 300);
+    },
+    restoreBackup() {
+      setTimeout(() => {
+        const f = drive().file;
+        if (!f) { window.anteDrive && window.anteDrive(JSON.stringify({ op: "restore", ok: false, error: "none" })); return; }
+        // Same rules as Backup.merge: keep this phone's limits (time left only goes down), add the rest; locks only extend.
+        const b = f.bank, same = b.day === S.day;
+        S.limits.forEach(l => { const bl = (b.limits || []).find(x => x.pkg === l.pkg); if (bl && same) l.leftSec = Math.min(l.leftSec, bl.leftSec); });
+        (b.limits || []).forEach(bl => { if (!lim(bl.pkg)) S.limits.push(Object.assign({}, bl, { leftSec: same ? Math.min(bl.leftSec, bl.limitSec) : bl.limitSec })); });
+        const now = Date.now();
+        if ((b.strictUntilMs || 0) > now) { S.strict = true; S.strictUntilMs = Math.max(S.strictUntilMs || 0, b.strictUntilMs); }
+        S.schedules = (S.schedules || []).concat((b.schedules || []).filter(x => !(S.schedules || []).some(y => y.id === x.id))).slice(0, 8);
+        save();
+        window.anteDrive && window.anteDrive(JSON.stringify({ op: "restore", ok: true, prefs: f.prefs, savedAtMs: f.savedAtMs }));
+      }, 300);
+    },
+    exportData() { say("Opens the share sheet with your data as JSON"); return true; },
+    deleteAllData(alsoDrive) {
+      const now = Date.now();
+      if (strictOn(now) || focusOn(now)) return false;
+      if (alsoDrive) { try { localStorage.removeItem("ante-mock-drive"); } catch (e) { /* private mode */ } }
+      S = fresh(); S.limits = []; S.ledger = []; S.history = []; S.usedTodaySec = 0; S.usedTodayByApp = {}; save();
+      ACCT = {}; saveAcct();
+      setTimeout(() => window.anteDrive && window.anteDrive(JSON.stringify({ op: "deleted", ok: true })), 200);
+      return true;
+    },
     setSchedule(sc) {
       const now = Date.now(), list = S.schedules = S.schedules || [];
       const clean = { id: sc.id | 0, label: String(sc.label || "").trim().slice(0, 24), days: sc.days | 0, startMin: sc.startMin | 0, endMin: sc.endMin | 0, on: sc.on !== false };

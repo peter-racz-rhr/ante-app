@@ -16,19 +16,19 @@ You need to be at least 16 years old. If gambling-style games are a problem for 
 
 ## 4. Your phone and its settings
 
-Blocking needs Android's accessibility permission, which you can turn on and off in Settings at any time. Ante can't guarantee that every app is blocked in every situation, for example web versions of apps or picture-in-picture video. Strict mode adds a 30-second wait before Settings and uninstalling; it is meant as friction, not as a lock you can't undo.
+Blocking needs Android's accessibility permission, which you can turn on and off in Settings at any time. Ante can't guarantee that every app is blocked in every situation, for example web versions of apps or picture-in-picture video. Strict mode covers Settings and uninstalling. A timed Strict lock that you start yourself can't be ended early in the app; it ends by itself at the time you chose. It is friction you agreed to, not a guarantee: Android can always be started in safe mode.
 
-## 5. Your account
+## 5. Your account and your data
 
-Signing in with Google is optional. It only puts your name and email on this phone. You can sign out at any time in Profile.
+Signing in with Google is optional. It puts your name and email on this phone, and lets you back up your data to your own Google Drive and restore it on another phone. You can sign out, download your data or delete all of it at any time in Settings → Your data. Deleting waits until a Strict lock or Focus that you started has ended.
 
 ## 6. Ante Supporter and tips
 
-Ante Supporter is an optional one-time purchase through Google Play that unlocks extra looks (themes, clock fonts, table felts, card backs and a badge). It never unlocks blocking features, minutes or better odds. Tips through Google Play or Ko-fi are voluntary gifts and unlock nothing. Google Play handles payments, refunds and taxes under its own terms. A Supporter purchase is linked to your Google account and can be restored on a new phone.
+Ante Supporter is an optional one-time purchase through Google Play that unlocks extra looks (themes, clock fonts, table felts, card backs and a badge). It never unlocks blocking features, minutes or better odds. Tips through Google Play or Ko-fi are voluntary gifts and unlock nothing. Google Play handles payments, refunds and taxes under its own terms. A Supporter purchase is linked to your Google account and can be restored on a new phone. Right of withdrawal: Ante Supporter is digital content delivered right away. By buying it you ask for it to be delivered immediately and acknowledge that you then lose the 14-day right of withdrawal. Your rights if it doesn't work as described (warranty for digital content) are not affected.
 
 ## 7. Use at your own risk
 
-Ante is provided free of charge and "as is". To the extent the law allows, the provider is not liable for damage caused by using or not being able to use Ante, for example a missed message because an app was covered. Liability for intent and gross negligence, and for harm to life, body or health, is not excluded.
+Ante's features are provided "as is". To the extent the law allows, the provider is not liable for damage caused by using or not being able to use Ante, for example a missed message because an app was covered. Liability for intent and gross negligence, and for harm to life, body or health, is not excluded.
 
 ## 8. Changes
 

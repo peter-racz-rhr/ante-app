@@ -436,6 +436,40 @@ async function noOverflow(p, label) {
     check(await sc.evaluate(() => getComputedStyle(document.getElementById("screen")).overflowY) === "hidden", "the page behind an open sheet is locked");
     await sc.context().close();
   }
+  /* Your data: Drive backup and restore, delete everything (with the lock rule) */
+  {
+    const dt = await page(browser, "?acc=1&reset=1");
+    await dt.evaluate(() => { localStorage.removeItem("ante-mock-drive"); localStorage.setItem("ante-mock-account", JSON.stringify({ signedIn: true, onboarded: true, name: "Peti", email: "p@example.com" })); });
+    await dt.goto(INDEX + "?acc=1"); await dt.waitForSelector(".screen");
+    await tab(dt, "profile"); await dt.click('[data-a="openSettings"]'); await dt.waitForTimeout(250);
+    check(await dt.isVisible("text=Never backed up"), "Settings shows the Drive backup, not yet made");
+    await dt.click('[data-a="driveBackup"]'); await dt.waitForTimeout(700);
+    check(await dt.isVisible("text=Backed up just now"), "Back up saves to Google Drive");
+    await shot(dt, "27a-your-data");
+    // A "new phone": fresh data, restore from the backup.
+    await dt.evaluate(() => { window.Ante.resetMock(); const S = JSON.parse(localStorage.getItem("ante-mock-v2")); S.limits = []; localStorage.setItem("ante-mock-v2", JSON.stringify(S)); window.AntePrefs.set({ theme: "latte" }); });
+    await dt.evaluate(() => { const d = JSON.parse(localStorage.getItem("ante-mock-drive")); d.file.prefs.theme = "mocha"; localStorage.setItem("ante-mock-drive", JSON.stringify(d)); });
+    await dt.goto(INDEX + "?acc=1"); await dt.waitForSelector(".screen");
+    await tab(dt, "profile"); await dt.click('[data-a="openSettings"]'); await dt.waitForTimeout(250);
+    await dt.click('[data-a="driveRestore"]'); await dt.waitForTimeout(700);
+    check((await dt.evaluate(() => window.Ante.state().limits.length)) === 3, "restoring brings the limits back");
+    check((await dt.evaluate(() => window.AntePrefs.get().theme)) === "mocha", "restoring brings the settings back");
+    // Delete is refused during Focus, and works afterwards.
+    await dt.evaluate(() => window.Ante.startFocus(30));
+    await dt.evaluate(() => { window.App.refresh(); window.App.render(); });
+    await dt.click('[data-a="dataDelete"]'); await dt.waitForTimeout(300);
+    check(await dt.isDisabled('[data-a="dataDeleteNow"]'), "deleting waits while Focus runs");
+    check(await dt.evaluate(() => window.Ante.deleteAllData(true)) === false, "the bridge refuses to delete during Focus");
+    await shot(dt, "27b-delete-locked");
+    await dt.evaluate(() => { const S = JSON.parse(localStorage.getItem("ante-mock-v2")); S.focusUntilMs = 0; localStorage.setItem("ante-mock-v2", JSON.stringify(S)); });
+    await dt.goto(INDEX + "?acc=1"); await dt.waitForSelector(".screen");
+    await tab(dt, "profile"); await dt.click('[data-a="openSettings"]'); await dt.waitForTimeout(250);
+    await dt.click('[data-a="dataDelete"]'); await dt.waitForTimeout(300);
+    await dt.click('[data-a="dataDeleteNow"]'); await dt.waitForTimeout(1200);
+    check(await dt.evaluate(() => !window.Ante.account().signedIn && !localStorage.getItem("ante-mock-drive") && !localStorage.getItem("ante-prefs")), "delete wipes the account, settings and Drive backup");
+    check(dt.errors.length === 0, "no console errors in Your data: " + dt.errors.join(" | "));
+    await dt.context().close();
+  }
   /* Schedules, the daily spin, the tables switch and the weekly recap */
   {
     const pl = await page(browser, "?acc=1&reset=1");

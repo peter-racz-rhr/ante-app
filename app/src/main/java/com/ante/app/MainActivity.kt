@@ -42,6 +42,7 @@ class MainActivity : Activity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         @Suppress("DEPRECATION")
         super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == Drive.REQ_AUTH) { Drive.onAuthResult(this, data); return }
         if (requestCode != REQ_PHOTO) return
         val uri = data?.data
         if (resultCode != RESULT_OK || uri == null) return
@@ -63,6 +64,15 @@ class MainActivity : Activity() {
         super.onWindowFocusChanged(hasFocus)
         // Dialogs, the keyboard and the Google sheet can bring the bars back; hide them again.
         if (hasFocus) WebHost.immersive(this)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Automatic Drive backup (when the user turned it on), at most every 12 hours.
+        Drive.backupIfDue(this) {
+            val prefs = getSharedPreferences("ante-ui", MODE_PRIVATE).getString("prefs", "{}") ?: "{}"
+            Bank.editAt { b, now -> com.ante.app.core.Backup.export(b.state, prefs, now) }
+        }
     }
 
     override fun onResume() {

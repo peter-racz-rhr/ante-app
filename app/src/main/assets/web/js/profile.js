@@ -48,7 +48,7 @@
   }
 
   /** The native part (APK) is older than this UI needs for full screen and vibration. */
-  const NATIVE_WANTED = [0, 6, 0];
+  const NATIVE_WANTED = [0, 7, 0];
   function nativeOutdated() {
     if (!A.native) return false;
     const v = (A.versions && A.versions()) || {};
@@ -76,7 +76,7 @@
       <section class="update-note" role="status">
         <span class="sicon" style="--ic:var(--warn)" aria-hidden="true">${App.ICON.info}</span>
         <div><p class="sitem-title">Install the new app version once</p>
-        <p class="sitem-sub">This phone runs Ante ${esc((A.versions().app) || "")}. Schedules, the daily spin and fair tables dealt by the phone need 0.6.0. Open the <b>ante-app</b> project in Android Studio and press Run.</p></div>
+        <p class="sitem-sub">This phone runs Ante ${esc((A.versions().app) || "")}. Google Drive backup, schedules, the daily spin and fair tables dealt by the phone need 0.7.0. Open the <b>ante-app</b> project in Android Studio and press Run.</p></div>
       </section>` : "";
   }
 
@@ -179,6 +179,7 @@
         ${App.tablesOn() ? `<div class="sblock"><p class="sblock-h">Table felt</p>${App.feltPicker()}</div>
         <div class="sblock"><p class="sblock-h">Card back</p>${App.backPicker()}</div>` : ""}`)}
       ${App.supporterGroup(group, item)}
+      ${App.dataGroup(group, item)}
 
       ${group("Feedback", `
         ${item({ icon: "soundOn", tone: "var(--accent)", title: "Sound effects", trail: App.toggle("sound", !App.SFX.muted, "Sound effects") })}

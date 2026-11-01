@@ -65,6 +65,19 @@ class TimeBank(initial: BankState = BankState()) {
         return true
     }
 
+    /** Replaces the state with a restored backup (see [Backup.merge]); the clock anchor stays this phone's. */
+    fun replaceState(next: BankState) {
+        state = next.copy(clock = state.clock, session = state.session)
+        openStakes.clear()
+    }
+
+    /** Deletes everything (the user asked to delete their data), keeping only the clock anchor. */
+    fun wipe(today: String) {
+        state = BankState(clock = state.clock)
+        openStakes.clear()
+        rollover(today)
+    }
+
     fun setStrict(on: Boolean) {
         state = state.copy(strict = on, settingsPassUntilMs = if (on) state.settingsPassUntilMs else 0, strictUntilMs = if (on) state.strictUntilMs else 0)
     }

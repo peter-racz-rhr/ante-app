@@ -125,6 +125,26 @@ Silkscreen, Pixelify), four table felts, three card backs and a badge. Debug bui
 Prices show in the app automatically once the products are active. Before that, the Supporter row
 says "Purchases work once Ante is installed from Google Play".
 
+## 7b. Google Drive backup (you, once)
+
+Backup uses your existing Google Cloud project, the one with the sign-in client:
+
+1. **APIs & Services → Library → Google Drive API → Enable.**
+2. **Google Auth Platform → Data Access → Add or remove scopes**, then add
+   `https://www.googleapis.com/auth/drive.appdata`. It is a *non-sensitive* scope, so it needs no
+   security review.
+3. **Clients:** Drive access needs an **Android** OAuth client with package `com.ante.app` and the
+   SHA-1 of every key that signs the app: your debug key (Android Studio → Gradle → signingReport)
+   and, after upload, the **App signing key** SHA-1 from Play Console → Test and release → App integrity.
+   Make one Android client per SHA-1.
+4. While the consent screen is in **Testing**, only the test users you list can back up. Add your
+   Gmail, or press **Publish app** (non-sensitive scopes only need the brand details).
+5. Link the deletion page (`docs/legal/delete-data.md`, published) in Data safety → Data deletion.
+
+How it behaves: the backup is one file in a hidden folder of the user's own Drive that only Ante
+can read. Restoring merges into the phone and can't be used to cheat: it never gives back time
+already used today, never ends a Strict lock or Focus, and never removes a schedule.
+
 ## 8. Store listing
 
 **Grow → Store presence → Main store listing**:

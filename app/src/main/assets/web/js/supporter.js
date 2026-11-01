@@ -80,7 +80,7 @@
         <li style="--k:2">${App.ICON.check}<span>A Supporter badge on your profile</span></li></ul>
       ${s.supporter ? `<p class="pc-state on">${App.ICON.heart}<span>You're a Supporter. Thank you!</span></p><button class="btn primary" data-a="closeSheet">Done</button>`
         : `<div class="btn-row"><button class="btn quiet" data-a="closeSheet">Not now</button><button class="btn primary" data-a="buySupporter" ${s.available ? "" : "disabled"}>${price ? `Unlock · ${esc(price)}` : "Unlock"}</button></div>
-        ${s.available ? "" : `<p class="fine center">Purchases work once Ante is installed from Google Play.</p>`}`}`, "sup-h");
+        <p class="fine center">${s.available ? "By tapping Unlock you ask for the looks right away and lose the 14-day right of withdrawal." : "Purchases work once Ante is installed from Google Play."}</p>`}`, "sup-h");
   };
 
   /** Results from Google Play (native) or the demo. */

@@ -8,7 +8,7 @@ Péter Rácz, Kálti Márk u. 2/B, 1035 Budapest, Hungary. Email: peter.racz.rhr
 
 ## What stays on your phone
 
-Your limits, the time left and used per app, your daily history (about six months), your table results, your settings, your theme and, if you add one, your profile picture (a small copy made from the photo you pick). This is stored only on your device and is never sent anywhere.
+Your limits, the time left and used per app, your daily history (about six months), your table results, your settings, your theme and, if you add one, your profile picture (a small copy made from the photo you pick). This is stored on your device. It only leaves it if you back it up to your own Google Drive (see below). Legal basis: providing the app you asked for (GDPR Art. 6(1)(b)).
 
 ## App updates
 
@@ -30,6 +30,10 @@ To let you pick apps, Ante reads the list of apps installed on your phone and th
 
 The web demo runs in your browser with sample data and stores its state in your browser's local storage. The host (Netlify or Vercel) may keep standard server logs, such as IP addresses, under its own privacy policy.
 
+## Google Drive backup (optional)
+
+If you turn on backup or tap Back up, Ante asks Google for access to a private app folder in your own Google Drive (the drive.appdata permission: Ante can't see any of your other files). It saves one file there with your limits, schedules, history, table results and settings. The file goes straight from your phone to Google; Ante has no server. Legal basis: your consent (GDPR Art. 6(1)(a)). Delete my data removes it, and you can remove Ante's access in your Google account under Security → Third-party connections.
+
 ## Purchases (optional)
 
 If you buy Ante Supporter or leave a tip, Google Play processes the payment under its own privacy policy. Ante only receives a confirmation that the purchase is valid, which it stores on your phone to keep the extra looks unlocked. Ante never sees your payment details. Legal basis: performance of a contract (GDPR Art. 6(1)(b)).
@@ -38,13 +42,17 @@ If you buy Ante Supporter or leave a tip, Google Play processes the payment unde
 
 The Ko-fi link opens ko-fi.com in your browser. Anything you do there is handled by Ko-fi under its own privacy policy.
 
+## Transfers outside the EU
+
+Google (sign-in, Drive backup, Google Play) and GitHub (updates) are US companies. Data that reaches them is transferred under the EU–US Data Privacy Framework, which both are certified under, and their standard contractual clauses.
+
 ## How long
 
-On-device data stays until you uninstall Ante or clear its data in Android settings. Daily history is limited to about six months. Signing out deletes your name and email right away.
+On-device data stays until you delete it in Settings → Your data, uninstall Ante or clear its data in Android settings. A Drive backup stays until you delete it. Daily history is limited to about six months. Signing out deletes your name and email right away.
 
 ## Your rights
 
-Under the GDPR you have the right to access, correct and delete your data, to restrict or object to processing, to data portability and to withdraw consent. Because the data is on your phone, you can delete it yourself at any time. For anything else write to peter.racz.rhr@gmail.com.
+Under the GDPR you have the right to access, correct and delete your data, to restrict or object to processing, to data portability and to withdraw consent. You can do most of this yourself in Settings → Your data: Download my data (access and portability) and Delete my data (erasure). For anything else write to peter.racz.rhr@gmail.com.
 
 ## Complaints
 

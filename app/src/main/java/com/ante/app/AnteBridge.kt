@@ -258,6 +258,106 @@ class AnteBridge(
     @JavascriptInterface
     fun restorePurchases() { Supporter.restore() }
 
+    /* ---- Your data: Google Drive backup, download, delete (GDPR Art. 15, 17, 20) ---- */
+
+    private fun say(fn: String, o: JSONObject) {
+        activity.runOnUiThread { webView.evaluateJavascript("window.$fn && window.$fn(" + JSONObject.quote(o.toString()) + ")", null) }
+    }
+    private fun prefsCopy(): String = ctx.getSharedPreferences(UI_PREFS, android.content.Context.MODE_PRIVATE).getString("prefs", "{}") ?: "{}"
+    private fun backupFile(): String = Bank.editAt { b, now -> com.ante.app.core.Backup.export(b.state, prefsCopy(), now) }
+
+    /** The page's own settings (theme, name, language…), kept natively so backups include them. */
+    @JavascriptInterface
+    fun savePrefs(json: String) {
+        if (json.length > 8_000) return
+        ctx.getSharedPreferences(UI_PREFS, android.content.Context.MODE_PRIVATE).edit().putString("prefs", json).apply()
+    }
+
+    /** {auto, lastAt, signedIn}. */
+    @JavascriptInterface
+    fun backupStatus(): String = JSONObject().put("auto", Drive.autoOn(ctx)).put("lastAt", Drive.lastBackupAt(ctx))
+        .put("signedIn", Account.toJson(ctx).optBoolean("signedIn")).toString()
+
+    @JavascriptInterface
+    fun setAutoBackup(on: Boolean) = Drive.setAuto(ctx, on)
+
+    /** Backs up now; the answer arrives as window.anteDrive({ok, op: "backup"}). */
+    @JavascriptInterface
+    fun backupNow() {
+        activity.runOnUiThread {
+            Drive.withToken(activity, interactive = true, ok = { token ->
+                Thread({
+                    val o = JSONObject().put("op", "backup")
+                    try { Drive.upload(ctx, token, backupFile()); o.put("ok", true).put("lastAt", Drive.lastBackupAt(ctx)) } catch (e: Exception) { o.put("ok", false).put("error", "network") }
+                    say("anteDrive", o)
+                }, "ante-backup").start()
+            }, fail = { e -> say("anteDrive", JSONObject().put("op", "backup").put("ok", false).put("error", e)) })
+        }
+    }
+
+    /**
+     * Restores the Drive backup into this phone (see Backup.merge: it never gives back used time or
+     * ends a lock). Answers window.anteDrive({ok, op: "restore", prefs, savedAtMs} or {error: "none"}).
+     */
+    @JavascriptInterface
+    fun restoreBackup() {
+        activity.runOnUiThread {
+            Drive.withToken(activity, interactive = true, ok = { token ->
+                Thread({
+                    val o = JSONObject().put("op", "restore")
+                    try {
+                        val parsed = com.ante.app.core.Backup.parse(Drive.download(token))
+                        if (parsed == null) o.put("ok", false).put("error", "none")
+                        else {
+                            Bank.editAt { b, now -> b.replaceState(com.ante.app.core.Backup.merge(b.state, parsed.bank, now)) }
+                            AppWatcherService.instance?.scheduleExpiry()
+                            o.put("ok", true).put("prefs", parsed.prefs).put("savedAtMs", parsed.savedAtMs)
+                        }
+                    } catch (e: Exception) { o.put("ok", false).put("error", "network") }
+                    say("anteDrive", o)
+                }, "ante-restore").start()
+            }, fail = { e -> say("anteDrive", JSONObject().put("op", "restore").put("ok", false).put("error", e)) })
+        }
+    }
+
+    /** Opens Android's share sheet with everything Ante stores about you, as JSON (GDPR Art. 15 and 20). */
+    @JavascriptInterface
+    fun exportData(): Boolean {
+        val account = Account.toJson(ctx).apply { remove("photo") }
+        val text = JSONObject(backupFile()).put("account", account).toString(2)
+        activity.runOnUiThread {
+            val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_SUBJECT, "Ante data export").putExtra(Intent.EXTRA_TEXT, text)
+            try { activity.startActivity(Intent.createChooser(send, "Ante data")) } catch (e: Exception) { /* no app to share with */ }
+        }
+        return true
+    }
+
+    /**
+     * Deletes everything Ante stores (GDPR Art. 17): limits, history, schedules, account, photo,
+     * settings and, when [alsoDrive], the Drive backup. Refused while Strict mode or Focus runs,
+     * since that would end the lock the user chose; it works again when the lock ends.
+     */
+    @JavascriptInterface
+    fun deleteAllData(alsoDrive: Boolean): Boolean {
+        val now = Bank.now()
+        if (Bank.read { it.isStrict(now) || it.isFocus(now) }) return false
+        val wipe = {
+            Bank.editAt { b, t -> b.wipe(java.time.Instant.ofEpochMilli(t).atZone(java.time.ZoneId.systemDefault()).toLocalDate().toString()) }
+            Account.clear(ctx); Account.setPhoto(ctx, null)
+            ctx.getSharedPreferences("ante-account", android.content.Context.MODE_PRIVATE).edit().clear().apply()
+            ctx.getSharedPreferences(UI_PREFS, android.content.Context.MODE_PRIVATE).edit().clear().apply()
+            Drive.forget(ctx)
+            say("anteDrive", JSONObject().put("op", "deleted").put("ok", true))
+        }
+        if (!alsoDrive) { wipe(); return true }
+        activity.runOnUiThread {
+            Drive.withToken(activity, interactive = false, ok = { token ->
+                Thread({ try { Drive.delete(token) } catch (e: Exception) { /* deleted locally anyway */ }; wipe() }, "ante-delete").start()
+            }, fail = { wipe() })
+        }
+        return true
+    }
+
     /* ---- Focus schedules ---- */
 
     /** Adds ([id] 0) or changes a schedule. Returns its id, or 0 when refused. */
@@ -447,6 +547,7 @@ class AnteBridge(
         private val HAPTIC_KINDS = setOf("tap", "tick", "win", "loss")
         private val HEX_COLOR = Regex("^#[0-9a-fA-F]{6}$")
         private val STRICT_DAYS = 1..31
+        private const val UI_PREFS = "ante-ui"
         private const val BAD = "{\"ok\":false,\"error\":\"bet\"}"
         private const val DAY_MS = 24 * 60 * 60_000L
         private val OUTSIDE_LINKS = setOf("https://ko-fi.com/peteracz", "mailto:peter.racz.rhr@gmail.com")

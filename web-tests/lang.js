@@ -75,7 +75,7 @@ const sheet = (p, s) => p.evaluate(s => { window.App.ui.sheet = s; window.App.pa
     for (const g of ["coin", "roulette", "slots", "blackjack", "poker"]) { await go(p, "game", { game: g, stakePkg: "com.instagram.android", stake: 300 }); await audit(p, `${tag} game ${g}`, lang); if (width === 412) await p.screenshot({ path: path.join(OUT, `${lang}-game-${g}.png`) }); }
     await go(p, "home");
     const sheets = [{ type: "pick", apps: [], q: "" }, { type: "edit", pkg: "com.instagram.android", label: "Instagram", limit: 1200 }, { type: "strict" }, { type: "consent" },
-      { type: "schedules" }, { type: "schedEdit", draft: { id: 0, label: "", days: 31, startMin: 540, endMin: 1020, on: true } }, { type: "recap" }, { type: "supporter" },
+      { type: "schedules" }, { type: "schedEdit", draft: { id: 0, label: "", days: 31, startMin: 540, endMin: 1020, on: true } }, { type: "recap" }, { type: "supporter" }, { type: "deleteData", drive: true },
       { type: "wait", left: 30000, title: "End Focus early", body: "Wait 30 seconds. If you still want to stop after that, you can.", cta: "End Focus" }];
     for (const s of sheets) { await sheet(p, s); await audit(p, `${tag} sheet ${s.type}`, lang); if (width === 412) await p.screenshot({ path: path.join(OUT, `${lang}-sheet-${s.type}.png`) }); }
     for (const mode of ["strict", "focus"]) for (const step of [0, 1, 2]) { await sheet(p, { type: "explain", mode, step, pick: null }); await audit(p, `${tag} explain ${mode} ${step}`, lang); }

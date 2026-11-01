@@ -21,11 +21,11 @@ Péter Rácz
 
 ## Business details
 
-Ante is a free, non-commercial project. It has no company registration or VAT number. Voluntary tips through Ko-fi do not buy any product or service.
+Ante's blocking features are free. The registration and tax number will be shown here before any paid feature goes on sale. Ante Supporter and tips are sold through Google Play, which collects VAT for buyers in the EU.
 
-## Online dispute resolution
+## Consumer complaints
 
-The provider is not obliged and not willing to take part in dispute resolution before a consumer arbitration board.
+Write to peter.racz.rhr@gmail.com and you get an answer within 30 days. If we can't agree, you can turn to the conciliation board (békéltető testület) of your county or of Budapest, whose procedure is free, or to the consumer protection authority. The provider cooperates with the conciliation board's procedure.
 
 ---
 

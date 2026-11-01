@@ -110,3 +110,4 @@
 .pk-list { touch-action: pan-y; }
 /* Scrolling down tucks the navbar away; scrolling up brings it back. */
 #app.nav-away .navpill { transform: translate(-50%, 140%); opacity: 0; pointer-events: none; }
+.del-drive { display: flex; align-items: center; gap: var(--s3); font-size: var(--t-sm); color: var(--ivory); }
