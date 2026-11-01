@@ -97,6 +97,7 @@
     const wasShown = sheetShown;
     App.$overlay.innerHTML = vSheet() + (ui.toast ? `<div class="toast" role="status">${esc(ui.toast)}</div>` : "");
     sheetShown = !!ui.sheet;
+    App.$app.classList.toggle("sheet-open", sheetShown); // the page behind a sheet never scrolls
     if (App.Scenes && ui.sheet) App.Scenes.run(App.$overlay);
     // Scroll wheels in a sheet report to that sheet's handler (App.wheelHandlers[type]).
     if (App.mountWheels && ui.sheet) App.mountWheels(App.$overlay, (id, v) => { const h = (App.wheelHandlers || {})[ui.sheet && ui.sheet.type]; if (h) h(id, v); });
@@ -190,7 +191,9 @@
 
   /* ---------- render ---------- */
   let mountedKey = null;
+  let lastView = null;
   App.render = function () {
+    if (ui.view !== lastView) { lastView = ui.view; if (App.showNav) App.showNav(); } // a new screen starts with the navbar shown
     if (ui.view === "game" && mountedKey === "game:" + ui.game) { App.renderControls(); App.paintOverlay(); return; }
     const scroller = document.getElementById("screen");
     const same = mountedKey === ui.view, keep = scroller && same ? scroller.scrollTop : 0;
@@ -326,6 +329,20 @@
     if (h < tallest * 0.8) squeezed = true;
     else if (squeezed) { squeezed = false; if (typingIn(document.activeElement)) document.activeElement.blur(); }
   });
+  /* Scrolling down a page tucks the navbar away to show more; scrolling back up brings it back. */
+  let lastY = 0, navHidden = false; // lastView is declared with render
+  const NAV_HIDE_AFTER = 80, NAV_STEP = 6;
+  const setNav = hide => { if (hide !== navHidden) { navHidden = hide; App.$app.classList.toggle("nav-away", hide); } };
+  document.addEventListener("scroll", e => {
+    const el = e.target;
+    if (!el || el.id !== "screen") return;
+    const y = el.scrollTop, dy = y - lastY;
+    if (y < NAV_HIDE_AFTER) setNav(false);
+    else if (dy > NAV_STEP) setNav(true);
+    else if (dy < -NAV_STEP) setNav(false);
+    if (Math.abs(dy) > NAV_STEP) lastY = y;
+  }, true);
+  App.showNav = () => { lastY = 0; setNav(false); };
   const calm = () => !App.BLOCK && !ui.busy && !ui.round && !ui.sheet && !ui.pending && ui.view !== "game" && ui.view !== "welcome";
   function tryApplyUpdate() {
     if (!updatePending || !calm()) return;

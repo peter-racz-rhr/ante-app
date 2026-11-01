@@ -13,6 +13,13 @@ fs.mkdirSync(OUT, { recursive: true });
 const failures = [];
 const check = (ok, msg) => { if (!ok) failures.push(msg); console.log((ok ? "ok   " : "FAIL ") + msg); };
 
+/** Taps a navbar tab. Like a person, it first scrolls up a little if the navbar is tucked away. */
+async function tab(p, t) {
+  await p.evaluate(() => window.App.showNav && window.App.showNav());
+  await p.waitForTimeout(350);
+  await p.click(`[data-t="${t}"]`);
+}
+
 async function page(browser, query, opts = {}) {
   const ctx = await browser.newContext({ viewport: { width: opts.width || 390, height: 844 }, deviceScaleFactor: 2, reducedMotion: opts.reduced ? "reduce" : "no-preference" });
   const p = await ctx.newPage();
@@ -91,7 +98,7 @@ async function noOverflow(p, label) {
   check((await leftOf(p, "com.reddit.frontpage")) === 0, "removing and re-adding a used-up limit keeps it at 0:00");
 
   /* Tables list */
-  await p.click('[data-t="tables"]');
+  await tab(p, "tables");
   await p.waitForTimeout(200);
   await shot(p, "05-tables");
   await noOverflow(p, "tables");
@@ -104,7 +111,7 @@ async function noOverflow(p, label) {
     await p.mouse.up(); await p.waitForTimeout(450);
     check(await p.evaluate(() => window.App.ui.view === "profile"), "letting go over Profile opens Profile");
     check(!(await p.$(".navtip")), "tapping a tab shows no text label");
-    await p.click('[data-t="tables"]'); await p.waitForTimeout(250);
+    await tab(p, "tables"); await p.waitForTimeout(250);
     check(await p.evaluate(() => window.App.ui.view === "tables"), "a plain tap still switches tabs");
     const sb = await p.evaluate(() => getComputedStyle(document.getElementById("screen")).scrollbarWidth);
     check(sb === "none", "no scrollbar on the page");
@@ -268,9 +275,9 @@ async function noOverflow(p, label) {
 
   /* Ledger */
   await p.click('[data-a="leave"]');
-  await p.click('[data-t="home"]');
+  await tab(p, "home");
   await p.waitForTimeout(200);
-  await p.click('[data-t="home"]');
+  await tab(p, "home");
   await p.waitForTimeout(200);
   check(await p.isVisible(".dotclock"), "home shows the dot-matrix clock");
   check((await p.$$(".card-chart .sbar-col")).length === 7, "home shows a 7-day stacked screen-time chart");
@@ -281,7 +288,7 @@ async function noOverflow(p, label) {
   await p.waitForTimeout(250);
   check((await p.$$(".txn")).length >= 5, "bets appear in table results");
   await shot(p, "17b-results");
-  await p.click('[data-t="home"]');
+  await tab(p, "home");
   await p.click('.card-chart');
   await p.waitForTimeout(250);
   check((await p.$$(".slegend li")).length === 3, "screen-time page has a legend per app");
@@ -323,7 +330,7 @@ async function noOverflow(p, label) {
 
   /* Sounds: every effect plays without errors, mute is remembered */
   const snd = await page(browser, "?acc=1&reset=1");
-  await snd.click('[data-t="tables"]');
+  await tab(snd, "tables");
   const names = await snd.evaluate(() => window.AnteSFX.names);
   check(names.length >= 14, `sound bank has ${names.length} effects`);
   await snd.click('[data-a="game"][data-id="slots"]');
@@ -342,7 +349,7 @@ async function noOverflow(p, label) {
   const st = await page(browser, "?acc=1&wait=1&battery=0&reset=1");
   check(await st.isVisible("text=Blocking on"), "status shows blocking is on");
   check(await st.isVisible(".navpill .ndot"), "profile tab gets a dot when something needs care");
-  await st.click('[data-t="profile"]');
+  await tab(st, "profile");
   check(await st.isVisible(".me-card") && await st.isVisible("text=added to your real life"), "profile shows you, hours added, strict, week and donate");
   check(await st.isVisible(".week-dots") && await st.isVisible('[data-a="kofi"]'), "profile has the week and donate boxes");
   await shot(st, "22b-profile-summary");
@@ -366,7 +373,7 @@ async function noOverflow(p, label) {
   /* Timed strict mode and Focus (?unit=s: a "day" or "minute" lasts one second) */
   {
     const md = await page(browser, "?acc=1&wait=1&reset=1&unit=s");
-    await md.click('[data-t="profile"]'); await md.waitForTimeout(200);
+    await tab(md, "profile"); await md.waitForTimeout(200);
     await md.click('[data-a="explain"][data-v="strict"]');
     check(await md.isVisible(".ex-art.strict1"), "strict explainer opens with an animation");
     await shot(md, "25a-strict-explain-1");
@@ -392,7 +399,7 @@ async function noOverflow(p, label) {
     check(fits, "sheet button labels fit on one line");
     await md.click('.sheet [data-a="closeSheet"].btn'); await md.waitForTimeout(150);
 
-    await md.click('[data-t="home"]'); await md.waitForTimeout(200);
+    await tab(md, "home"); await md.waitForTimeout(200);
     await md.click('.focus-card [data-a="explain"][data-v="focus"]');
     check(await md.isVisible(".ex-art.focus1"), "focus explainer opens from Home");
     await md.click('[data-a="exNext"]'); await md.click('[data-a="exNext"]');
@@ -410,6 +417,24 @@ async function noOverflow(p, label) {
     await md.click("#wait-go"); await md.waitForTimeout(200);
     check(!(await md.$(".focus-card.on")), "Focus ends after the wait");
     check(md.errors.length === 0, "no console errors in Focus and Strict: " + md.errors.join(" | "));
+  }
+  /* Scrolling: the navbar tucks away going down and comes back going up; a sheet holds the page still */
+  {
+    const sc = await page(browser, "?acc=1&reset=1");
+    const box = await sc.$eval("#screen", el => { const r = el.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; });
+    await sc.mouse.move(box.x, box.y);
+    await sc.mouse.wheel(0, 500); await sc.waitForTimeout(400);
+    check(await sc.evaluate(() => document.getElementById("app").classList.contains("nav-away")), "scrolling down hides the navbar");
+    await sc.mouse.wheel(0, -120); await sc.waitForTimeout(400);
+    check(!(await sc.evaluate(() => document.getElementById("app").classList.contains("nav-away"))), "scrolling back up shows the navbar again");
+    await sc.evaluate(() => { document.getElementById("screen").scrollTop = 0; });
+    await sc.click('.focus-card [data-a="explain"][data-v="focus"]'); await sc.waitForTimeout(400);
+    const before = await sc.evaluate(() => document.getElementById("screen").scrollTop);
+    const ends = await sc.$eval(".sheet .ex-title", el => { const r = el.getBoundingClientRect(); return { x: r.x + 20, y: r.y + r.height / 2 }; });
+    await sc.mouse.move(ends.x, ends.y); await sc.mouse.wheel(0, 600); await sc.waitForTimeout(300);
+    check(await sc.evaluate(() => document.getElementById("screen").scrollTop) === before, "swiping on a sheet doesn't scroll the page behind it");
+    check(await sc.evaluate(() => getComputedStyle(document.getElementById("screen")).overflowY) === "hidden", "the page behind an open sheet is locked");
+    await sc.context().close();
   }
   /* Schedules, the daily spin, the tables switch and the weekly recap */
   {
@@ -440,7 +465,7 @@ async function noOverflow(p, label) {
     const pl2 = await page(browser, "?acc=1&reset=1");
     await pl2.evaluate(() => { window.Ante.resetMock(); const S = JSON.parse(localStorage.getItem("ante-mock-v2")); S.history[0].usedSec = 60; localStorage.setItem("ante-mock-v2", JSON.stringify(S)); });
     await pl2.goto(INDEX + "?acc=1"); await pl2.waitForSelector(".screen");
-    await pl2.click('[data-t="tables"]'); await pl2.waitForTimeout(250);
+    await tab(pl2, "tables"); await pl2.waitForTimeout(250);
     const before = await pl2.evaluate(() => window.Ante.state().limits.reduce((a, l) => a + l.leftSec, 0));
     await pl2.click('[data-a="freeSpin"]'); await pl2.waitForTimeout(3300);
     const after = await pl2.evaluate(() => window.Ante.state().limits.reduce((a, l) => a + l.leftSec, 0));
@@ -451,7 +476,7 @@ async function noOverflow(p, label) {
     check(await pl2.isVisible(".spin-card.idle"), "after spinning, the card says it's used");
 
     // The tables switch.
-    await pl2.click('[data-t="profile"]'); await pl2.waitForTimeout(200);
+    await tab(pl2, "profile"); await pl2.waitForTimeout(200);
     await pl2.click('[data-a="recap"]'); await pl2.waitForTimeout(300);
     check(await pl2.isVisible(".recap .recap-big"), "the weekly recap card opens from Profile");
     await shot(pl2, "26c-recap");
@@ -475,10 +500,10 @@ async function noOverflow(p, label) {
     // Language: Hungarian everywhere, English again on the way back.
     await pl2.click('[data-a="lang"][data-v="hu"]'); await pl2.waitForTimeout(300);
     check(await pl2.isVisible("text=Beállítások"), "switching to Magyar translates the screen");
-    await pl2.click('[data-t="home"]'); await pl2.waitForTimeout(300);
+    await tab(pl2, "home"); await pl2.waitForTimeout(300);
     check(await pl2.isVisible("text=Képernyőidő"), "Home is in Hungarian too");
     await shot(pl2, "26e-hungarian");
-    await pl2.click('[data-t="profile"]'); await pl2.waitForTimeout(200); await pl2.click('[data-a="openSettings"]'); await pl2.waitForTimeout(250);
+    await tab(pl2, "profile"); await pl2.waitForTimeout(200); await pl2.click('[data-a="openSettings"]'); await pl2.waitForTimeout(250);
     await pl2.click('[data-a="lang"][data-v="de"]'); await pl2.waitForTimeout(300);
     check(await pl2.isVisible("h1:text('Einstellungen')"), "switching to Deutsch translates the screen");
     // The name is a nickname: at most 20 characters, however it's typed.
@@ -574,7 +599,7 @@ async function noOverflow(p, label) {
   await ob.click('[data-a="finishWelcome"]');
   await ob.waitForTimeout(200);
   check(await ob.isVisible(".navpill"), "finishing onboarding lands on Today");
-  await ob.click('[data-t="profile"]');
+  await tab(ob, "profile");
   await ob.click('[data-a="openSettings"]'); await ob.waitForTimeout(150);
   check(await ob.isVisible("text=demo@example.com"), "settings shows the signed-in account");
   await shot(ob, "29-profile");
@@ -593,7 +618,7 @@ async function noOverflow(p, label) {
   /* Small phone + reduced motion */
   const s = await page(browser, "?acc=1", { width: 340, reduced: true });
   await noOverflow(s, "today at 340px");
-  await s.click('[data-t="tables"]');
+  await tab(s, "tables");
   await noOverflow(s, "tables at 340px");
   await shot(s, "21-small-tables");
   await s.click('[data-a="game"][data-id="poker"]');
@@ -606,7 +631,7 @@ async function noOverflow(p, label) {
 
   /* Over-the-air update: waits during a round, switches when calm, says so after the reload */
   const u = await page(browser, "?acc=1");
-  await u.click('[data-t="tables"]'); await u.waitForTimeout(150);
+  await tab(u, "tables"); await u.waitForTimeout(150);
   await u.click('[data-a="game"][data-id="coin"]'); await u.waitForTimeout(150);
   const reloads = [];
   u.on("framenavigated", f => { if (f === u.mainFrame()) reloads.push(f.url()); });
@@ -618,7 +643,7 @@ async function noOverflow(p, label) {
   await u.waitForTimeout(600);
   check(reloads.length === 1, "the update applies once the table is closed");
   check(await u.isVisible("text=Ante just updated itself."), "after an update, a short note says so");
-  await u.click('[data-t="profile"]'); await u.waitForTimeout(200);
+  await tab(u, "profile"); await u.waitForTimeout(200);
   await u.click('[data-a="openSettings"]'); await u.waitForTimeout(150);
   check(await u.isVisible("text=built-in UI") || await u.isVisible("text=web demo"), "profile shows which UI version runs");
   check(u.errors.length === 0, "no console errors around updates: " + u.errors.join(" | "));
