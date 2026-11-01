@@ -98,7 +98,7 @@
     "Supporter restored.": "Támogató visszaállítva.", "No purchase found on this Google account.": "Ezen a Google-fiókon nincs vásárlás.",
     // sheets
     "Add an app": "Alkalmazás hozzáadása", "Search apps": "Alkalmazások keresése", "No app matches that name.": "Nincs ilyen nevű alkalmazás.", "Every app already has a limit.": "Minden alkalmazásnak van már limitje.",
-    "Loading your apps…": "Alkalmazások betöltése…", "Daily limit": "Napi limit", "Five minutes less": "Öt perccel kevesebb", "Five minutes more": "Öt perccel több", "1 hour": "1 óra", "Remove limit": "Limit eltávolítása",
+    "Loading your apps…": "Alkalmazások betöltése…", "Daily limit": "Napi limit", "Five minutes less": "Öt perccel kevesebb", "Five minutes more": "Öt perccel több", "1 hour": "1 óra", "Remove limit": "Eltávolítás",
     "Turn on Strict mode": "Szigorú mód bekapcsolása",
     "Opening Settings shows a block screen. After a 30-second wait you get 2 minutes, then it is covered again.": "A Beállítások megnyitásakor tiltóképernyő jelenik meg. 30 másodperc várakozás után 2 percet kapsz, utána újra letakarja.",
     "The Play Store opens the same way. The install and uninstall screen stays covered until Strict mode is off.": "A Play Áruház ugyanígy nyílik meg. A telepítő és eltávolító képernyő letakarva marad, amíg a Szigorú mód ki nem kapcsol.",

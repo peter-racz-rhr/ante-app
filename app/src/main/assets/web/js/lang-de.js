@@ -94,7 +94,7 @@
     "Supporter restored.": "Supporter wiederhergestellt.", "No purchase found on this Google account.": "Kein Kauf auf diesem Google-Konto gefunden.",
     // sheets
     "Add an app": "App hinzufügen", "Search apps": "Apps suchen", "No app matches that name.": "Keine App mit diesem Namen.", "Every app already has a limit.": "Jede App hat schon ein Limit.",
-    "Loading your apps…": "Apps werden geladen…", "Daily limit": "Tageslimit", "Five minutes less": "Fünf Minuten weniger", "Five minutes more": "Fünf Minuten mehr", "1 hour": "1 h", "Remove limit": "Limit entfernen",
+    "Loading your apps…": "Apps werden geladen…", "Daily limit": "Tageslimit", "Five minutes less": "Fünf Minuten weniger", "Five minutes more": "Fünf Minuten mehr", "1 hour": "1 h", "Remove limit": "Entfernen",
     "Turn on Strict mode": "Strengen Modus einschalten",
     "Opening Settings shows a block screen. After a 30-second wait you get 2 minutes, then it is covered again.": "Beim Öffnen der Einstellungen erscheint ein Sperrbildschirm. Nach 30 Sekunden Wartezeit hast du 2 Minuten, dann wird wieder gesperrt.",
     "The Play Store opens the same way. The install and uninstall screen stays covered until Strict mode is off.": "Der Play Store öffnet sich genauso. Der Installations- und Deinstallationsbildschirm bleibt gesperrt, bis der strenge Modus aus ist.",
