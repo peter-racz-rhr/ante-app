@@ -56,7 +56,7 @@
       : item({ icon: "heart", tone: "#f472b6", title: "Ante Supporter", sub: "Every theme, font, felt and card back. Blocking stays free.", trail: `<button class="btn-sm" data-a="supporter">${esc(price || "See")}</button>` });
     const tips = `<div class="sitem tips-row"><span class="sicon" style="--ic:#fb923c" aria-hidden="true">${App.ICON.coffee}</span>
       <span class="sitem-t"><span class="sitem-title">Leave a tip</span><span class="sitem-sub">Keeps Ante free and ad-free</span></span></div>
-      <div class="tip-chips">${TIPS.map(([id, label]) => `<button class="chip" data-a="tip" data-v="${id}" ${s.available ? "" : "disabled"}>${esc(label)}${s.prices[id] ? ` · ${esc(s.prices[id])}` : ""}</button>`).join("")}</div>`;
+      <div class="tip-chips">${TIPS.map(([id, label]) => `<button class="chip tip" data-a="tip" data-v="${id}" ${s.available ? "" : "disabled"}><span>${esc(label)}</span>${s.prices[id] ? `<small>${esc(s.prices[id])}</small>` : ""}</button>`).join("")}</div>`;
     return group("Support Ante", `${head}${tips}${item({ icon: "info", title: "Restore purchase", sub: "After reinstalling, or on a new phone", action: "restorePurchase" })}`,
       s.available ? "" : "Purchases work once Ante is installed from Google Play.");
   };

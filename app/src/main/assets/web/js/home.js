@@ -41,8 +41,8 @@
   /** Name for an app that may no longer have a limit: its label if known, else the last part of its id. */
   const nameOf = pkg => { const l = App.labelOf(pkg); if (l !== pkg) return l; const last = pkg.split(".").pop() || pkg; return last.charAt(0).toUpperCase() + last.slice(1); };
   App.nameOf = nameOf;
-  const dayLabel = i => i.date.toLocaleDateString(undefined, { weekday: "short" }).replace(".", "").slice(0, 2);
-  const monthLabel = i => i.date.toLocaleDateString(undefined, { month: "short" }).replace(".", "").slice(0, 3);
+  const dayLabel = i => i.date.toLocaleDateString(App.locale(), { weekday: "short" }).replace(".", "").slice(0, 2);
+  const monthLabel = i => i.date.toLocaleDateString(App.locale(), { month: "short" }).replace(".", "").slice(0, 3);
   const isLight = () => App.P.isLight();
   App.data = { todayTotals, lastDays, lastMonths };
 
@@ -97,7 +97,7 @@
   App.views.home = function () {
     const S = App.S, t = todayTotals();
     const total = S.limits.reduce((a, l) => a + l.leftSec, 0);
-    const date = new Date().toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
+    const date = new Date().toLocaleDateString(App.locale(), { weekday: "long", day: "numeric", month: "long" });
     const week = withParts(lastDays(7)), series = App.CH.seriesFor(S.limits, week, isLight(), nameOf);
     const allowed = S.limits.reduce((a, l) => a + l.limitSec, 0);
     const avg = week.reduce((a, d) => a + d.used, 0) / 7;

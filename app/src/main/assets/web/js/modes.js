@@ -25,7 +25,7 @@
     const days = Math.floor((new Date(d).setHours(0, 0, 0, 0) - start) / DAY);
     if (days === 0) return clock(d);
     if (days === 1) return `tomorrow ${clock(d)}`;
-    return `${d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" })}, ${clock(d)}`;
+    return `${d.toLocaleDateString(App.locale(), { weekday: "short", day: "numeric", month: "short" })}, ${clock(d)}`;
   }
   /** "42 min", "3 h 10 min", "2 days 4 h". */
   function span(ms) {

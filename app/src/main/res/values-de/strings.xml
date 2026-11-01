@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="accessibility_label">Ante App-Limits</string>
+    <string name="accessibility_description">Ante prüft, welche App du öffnest, damit es Apps über ihrem Tageslimit sperren kann. Ante liest nichts auf deinem Bildschirm.</string>
+    <string name="widget_label">Heute übrige Zeit</string>
+    <string name="widget_description">Die heute übrige Zeit in deinen begrenzten Apps, als Punktuhr.</string>
+    <string name="tile_label">Fokus</string>
+    <string name="tile_minutes_left">noch %1$d min</string>
+    <string name="tile_quick">25 min</string>
+    <string name="widget_left_today">heute übrig</string>
+    <string name="widget_focus_until">Fokus bis %1$s</string>
+    <string name="widget_no_limits">Lege in Ante ein Limit an</string>
+    <string name="widget_clock_description">Heute übrig: %1$s</string>
+</resources>

@@ -710,7 +710,7 @@ img.avatar { object-fit: cover; background: var(--surface-3); }
 .me-card { display: flex; flex-direction: row; align-items: center; gap: var(--s4); padding: var(--s2) var(--s1) var(--s3); }
 .avatar.xl { width: 124px; height: 124px; font-size: 38px; }
 .me-card .me-photo .cam { right: 4px; bottom: 4px; width: 30px; height: 30px; } .me-card .me-photo .cam svg { width: 17px; height: 17px; }
-.me-card .me-name { font-size: 46px; line-height: 1; }
+.me-card .me-name { font-size: clamp(22px, calc(46px * 9 / var(--len, 9)), 46px); line-height: 1.05; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .me-stat { margin: 6px 0 0; display: flex; align-items: baseline; gap: 6px; font-weight: 600; color: var(--win); }
 .me-stat { font-size: var(--t-lg); } .me-stat .dotnum { font-size: 34px; line-height: 1; }
 .me-card .sitem-sub { white-space: normal; }

@@ -47,7 +47,7 @@
         <p>Ante uses Android's Accessibility service to see <b>which app is in front</b>, so it can cover apps that are over their limit.</p>
         <ul class="facts"><li>It only sees the name of the app you open.</li><li>It does not read what is on your screen, what you type or your notifications.</li><li>None of this leaves your phone. Ante only goes online to check for app updates.</li></ul>
         <p class="muted">You can switch it off any time in Settings → Accessibility.</p>
-        <div class="btn-row"><button class="btn quiet" data-a="closeSheet">Not now</button><button class="btn primary" data-a="agreeAcc">I agree, open Settings</button></div>`, "consent-h");
+        <div class="btn-row"><button class="btn quiet" data-a="closeSheet">Not now</button><button class="btn primary" data-a="agreeAcc">I agree</button></div>`, "consent-h");
     if (sh.type === "pick") {
       const q = (sh.q || "").toLowerCase();
       const list = (sh.apps || []).filter(a => !App.lim(a.pkg) && (!q || a.label.toLowerCase().includes(q)));
@@ -314,6 +314,18 @@
      straight away when nothing is in progress; otherwise wait for a calm moment. */
   const UPDATED_KEY = "ante-just-updated";
   let updatePending = false;
+  /* While typing, the keyboard pushes the floating navbar up the screen: hide it until done.
+     Closing the keyboard (the screen grows back) also ends the typing. */
+  let tallest = window.innerHeight, squeezed = false;
+  const typingIn = el => !!el && (el.matches("input:not([type=checkbox]):not([type=radio]), textarea, [contenteditable=true]"));
+  document.addEventListener("focusin", e => { if (typingIn(e.target)) App.$app.classList.add("typing"); });
+  document.addEventListener("focusout", () => setTimeout(() => { if (!typingIn(document.activeElement)) App.$app.classList.remove("typing"); }, 50));
+  window.addEventListener("resize", () => {
+    const h = window.innerHeight;
+    if (h > tallest) tallest = h;
+    if (h < tallest * 0.8) squeezed = true;
+    else if (squeezed) { squeezed = false; if (typingIn(document.activeElement)) document.activeElement.blur(); }
+  });
   const calm = () => !App.BLOCK && !ui.busy && !ui.round && !ui.sheet && !ui.pending && ui.view !== "game" && ui.view !== "welcome";
   function tryApplyUpdate() {
     if (!updatePending || !calm()) return;

@@ -125,7 +125,7 @@
       ${outdatedNote()}
       <section class="me me-card">
         <button class="me-photo" data-a="photoPick" aria-label="${ACC.photo ? "Change profile picture" : "Add a profile picture"}">${App.avatar("xl", 'aria-hidden="true"')}<span class="cam" aria-hidden="true">${App.ICON.camera}</span></button>
-        <div class="me-t"><p class="me-name">${esc(name || "Your name")}</p>${App.supporterBadge()}
+        <div class="me-t"><p class="me-name" style="--len:${Math.max(6, Array.from(name || "Your name").length)}">${esc(name || "Your name")}</p>${App.supporterBadge()}
           <p class="me-stat"><span class="dotnum">${hText}</span><span>${h === 1 ? "hour" : "hours"}</span></p>
           <p class="sitem-sub">added to your real life</p></div>
       </section>
@@ -142,7 +142,7 @@
           <span class="streak"><span class="dotnum">${st}</span> ${st === 1 ? "day" : "days"} in a row</span></div>
         <div class="week-dots" role="img" aria-label="Days within your budget this week: ${week.filter(d => d.known && budget && d.used <= budget).length} of 7">${week.map(d => {
           const ok = d.known && budget && d.used <= budget, over = d.known && budget && d.used > budget;
-          return `<span class="wd ${ok ? "ok" : over ? "over" : ""} ${d.today ? "today" : ""}"><i></i><b>${esc(d.d.toLocaleDateString(undefined, { weekday: "narrow" }))}</b></span>`;
+          return `<span class="wd ${ok ? "ok" : over ? "over" : ""} ${d.today ? "today" : ""}"><i></i><b>${esc(d.d.toLocaleDateString(App.locale(), { weekday: "narrow" }))}</b></span>`;
         }).join("")}</div>
         <p class="sitem-sub">${budget ? "A filled dot is a day you stayed within your limits." : "Add a limit on Home to start counting."}</p>
         ${(S.history || []).length ? `<button class="link pw-recap" data-a="recap">${App.ICON.heart}<span>Your week in one card</span>${App.ICON.chev}</button>` : ""}
@@ -165,7 +165,7 @@
       ${group("Account", `
         <label class="sitem field-row"><span class="sicon" style="--ic:var(--info)" aria-hidden="true">${App.ICON.user}</span>
           <span class="sitem-t"><span class="sitem-title">Name</span></span>
-          <input id="name-input" class="inline-input" type="text" maxlength="40" autocomplete="nickname" placeholder="${esc(ACC.name || "Add a name")}" value="${esc(prefs.name)}"></label>
+          <input id="name-input" class="inline-input" type="text" maxlength="${App.P.NAME_MAX}" autocomplete="nickname" placeholder="${esc(ACC.name || "Add a name")}" value="${esc(prefs.name)}"></label>
         ${item({ icon: "camera", tone: "var(--accent)", title: "Photo", sub: ACC.photo ? (ACC.customPhoto ? "Your photo" : "From Google") : "None yet",
           trail: `<span class="btn-pair">${ACC.customPhoto ? `<button class="btn-sm ghost" data-a="photoRemove">Remove</button>` : ""}<button class="btn-sm" data-a="photoPick">${ACC.photo ? "Change" : "Add"}</button></span>` })}
         ${ACC.signedIn
@@ -298,6 +298,9 @@
   /* Display name saves as you type (no network; local only). */
   document.addEventListener("input", e => {
     if (e.target.id !== "name-input") return;
+    // Some Android keyboards ignore maxlength while composing a word, so cut it here too.
+    const chars = Array.from(e.target.value);
+    if (chars.length > App.P.NAME_MAX && !e.isComposing) e.target.value = chars.slice(0, App.P.NAME_MAX).join("");
     App.P.set({ name: e.target.value });
     const h = document.querySelector(".me-name"), av = document.querySelector(".me span.avatar");
     if (h) h.textContent = App.displayName() || "Your name";

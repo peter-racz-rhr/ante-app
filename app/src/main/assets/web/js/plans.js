@@ -142,7 +142,7 @@
     const top = Object.entries(byApp).sort((a, b) => b[1] - a[1])[0];
     // Hours as h:mm (the dot fonts draw a decimal point too much like a plus).
     const h = s => { s = Math.round(s / 60); return s >= 600 ? String(Math.round(s / 60)) : `${Math.floor(s / 60)}:${App.pad(s % 60)}`; };
-    const dayName = d => new Date(d + "T12:00:00").toLocaleDateString(undefined, { weekday: "long" });
+    const dayName = d => new Date(d + "T12:00:00").toLocaleDateString(App.locale(), { weekday: "long" });
     return sheet("", `${head("Your week", "recap-h")}
       <div class="recap" id="recap">
         <p class="eyebrow">${App.ICON.logo}<span>Ante · last 7 days</span></p>

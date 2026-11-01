@@ -3,6 +3,7 @@
 (function () {
   "use strict";
   const KEY = "ante-prefs";
+  const NAME_MAX = 20; // a nickname, not a full name: it has to fit big on Profile
   const flavor = (name, light, c) => ({ name, light, c });
   // Catppuccin palettes (catppuccin.com/palette): base, mantle, crust, surface0-2, overlay0-1, subtext0, text, plus accents.
   const FLAVORS = {
@@ -89,14 +90,14 @@
   function save() { try { localStorage.setItem(KEY, JSON.stringify(prefs)); } catch (e) { /* storage blocked */ } }
 
   window.AntePrefs = {
-    FLAVORS, ACCENTS, CLOCKS, FELTS, BACKS,
+    FLAVORS, ACCENTS, CLOCKS, FELTS, BACKS, NAME_MAX,
     get: () => Object.assign({}, prefs),
     isLight: () => FLAVORS[prefs.theme].light,
     set(patch) {
       Object.assign(prefs, patch);
       if (patch.theme && !ACCENTS[prefs.theme][prefs.accent]) prefs.accent = DEFAULT_ACCENT[prefs.theme];
       if (!CLOCKS[prefs.clock]) prefs.clock = "bitcount";
-      prefs.name = String(prefs.name || "").slice(0, 40);
+      prefs.name = Array.from(String(prefs.name || "")).slice(0, NAME_MAX).join("");
       save(); apply();
       return Object.assign({}, prefs);
     },
