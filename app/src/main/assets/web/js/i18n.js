@@ -161,6 +161,12 @@
     "That schedule can't be changed right now.": "Ez az ütemezés most nem módosítható.", "That schedule can't be removed right now.": "Ez az ütemezés most nem törölhető.",
     "Today's spin is used.": "A mai pörgetés elhasználva.", "No spin right now.": "Most nincs pörgetés.", "The tables are back.": "Az asztalok visszatértek.",
     "Tables hidden. Ante is a plain blocker now.": "Asztalok elrejtve. Az Ante most egyszerű tiltó.",
+    "Phone language": "Telefon nyelve", "Ends": "Vége:", "left today": "maradt mára", "Ante web demo": "Ante webes demó",
+    "Geist (interface) by Vercel. Clock fonts: Bitcount by Petr van Blokland, Doto by Óliver Lalan, DotGothic16 by Fontworks, Handjet by Rosetta, Workbench and Sixtyfour by Jens Kutilek, Silkscreen by Jason Kottke, Pixelify Sans by Stefie Justprince, VT323 by Peter Hull. All under the SIL Open Font License 1.1.": "Geist (felület): Vercel. Óra-betűtípusok: Bitcount (Petr van Blokland), Doto (Óliver Lalan), DotGothic16 (Fontworks), Handjet (Rosetta), Workbench és Sixtyfour (Jens Kutilek), Silkscreen (Jason Kottke), Pixelify Sans (Stefie Justprince), VT323 (Peter Hull). Mind SIL Open Font License 1.1 alatt.",
+    "The Latte, Frappé, Macchiato and Mocha themes use the Catppuccin palettes (MIT licence).": "A Latte, Frappé, Macchiato és Mocha témák a Catppuccin palettáit használják (MIT licenc).",
+    "Line icons drawn for Ante; the settings cog follows Lucide's \"settings\" icon (ISC licence).": "A vonalas ikonok az Ante-hoz készültek; a beállítások fogaskereke a Lucide „settings” ikonját követi (ISC licenc).",
+    "Animated product scenes follow the Stageshow guidelines by Benji Taylor (MIT licence). Also used: ECC (Everything Claude Code) and Matt Pocock's skills for planning and reviews.": "Az animált jelenetek Benji Taylor Stageshow irányelveit követik (MIT licenc). Ezeket is használtuk: ECC (Everything Claude Code) és Matt Pocock skilljei a tervezéshez és az átnézésekhez.",
+    "Android, Kotlin, Credential Manager and a WebView; tested with Playwright; written together with Claude.": "Android, Kotlin, Credential Manager és egy WebView; Playwrighttal tesztelve; Claude-dal közösen írva.",
   };
 
   /* ---------- Hungarian: sentences with names, numbers and times ---------- */
@@ -223,6 +229,7 @@
     [/^This phone runs Ante (.*)\. (.+)$/, (m, v) => `Ezen a telefonon az Ante ${v} fut. Az új funkciókhoz telepítsd az új verziót: nyisd meg az ante-app projektet az Android Studióban, és nyomd meg a Run gombot.`],
     [/^Contact: (.+)$/, (m, c) => `Kapcsolat: ${c}`],
     [/^(\d+) min$/, (m, n) => `${n} perc`],
+    [/^(\d+h )?\d+m$|^\d+h$/, m => units(m)],
     [/^You kept to your limits yesterday\. Free minutes for$/, () => HU["You kept to your limits yesterday. Free minutes for"]],
   ];
 
@@ -281,6 +288,12 @@
       walk(document.body);
     }
   };
+  App.langPicker = () => {
+    const cur = App.P.get().lang || "auto";
+    return `<div class="seg-sm lang-seg" role="radiogroup" aria-label="Language">${Object.entries(App.LANGS).map(([id, name]) =>
+      `<button role="radio" data-a="lang" data-v="${id}" aria-pressed="${cur === id}" aria-checked="${cur === id}">${name}</button>`).join("")}</div>`;
+  };
+  App.act.lang = d => { if (!App.LANGS[d.v]) return; App.P.set({ lang: d.v }); App.setLang(d.v); App.render(); };
   App.t = translate; // for text set from code that the observer can't see (none so far)
   App.setLang(App.P.get().lang || "auto");
 })();

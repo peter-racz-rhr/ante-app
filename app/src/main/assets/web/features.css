@@ -95,3 +95,4 @@
 .back-sw[data-back="gold"], :root[data-back="gold"] .back { background: linear-gradient(135deg, #b8862e, #f2d48a 45%, #8a5a12); }
 .back-sw[data-back="gold"] i, :root[data-back="gold"] .back i { box-shadow: inset 0 0 0 1px rgba(60, 35, 0, .55); }
 .sup-tile.backs { align-items: center; justify-content: center; gap: 4px; }
+.lang-seg { width: 100%; } .lang-seg button { flex: 1; }

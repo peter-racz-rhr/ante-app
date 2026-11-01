@@ -174,6 +174,7 @@
 
       ${group("Appearance", `
         <div class="sblock"><p class="sblock-h">Colour</p>${themeCards()}</div>
+        <div class="sblock"><p class="sblock-h">Language</p>${App.langPicker()}</div>
         <div class="sblock"><p class="sblock-h">Clock font</p>${clockPicker()}</div>
         ${App.tablesOn() ? `<div class="sblock"><p class="sblock-h">Table felt</p>${App.feltPicker()}</div>
         <div class="sblock"><p class="sblock-h">Card back</p>${App.backPicker()}</div>` : ""}`)}

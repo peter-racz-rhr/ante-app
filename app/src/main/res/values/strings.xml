@@ -6,4 +6,10 @@
     <string name="widget_label">Time left today</string>
     <string name="widget_description">Time left in your limited apps today, as a dot clock.</string>
     <string name="tile_label">Focus</string>
+    <string name="tile_minutes_left">%1$d min left</string>
+    <string name="tile_quick">25 min</string>
+    <string name="widget_left_today">left today</string>
+    <string name="widget_focus_until">Focus until %1$s</string>
+    <string name="widget_no_limits">Add a limit in Ante</string>
+    <string name="widget_clock_description">%1$s left today</string>
 </resources>

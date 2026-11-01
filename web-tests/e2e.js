@@ -472,6 +472,15 @@ async function noOverflow(p, label) {
     check(!(await pl2.$('[data-a="clock"][data-v="sixtyfour"] .lock-mark')), "after buying, the locks are gone");
     await pl2.click('[data-a="felt"][data-v="navy"]');
     check(await pl2.evaluate(() => window.AntePrefs.get().felt) === "navy", "a Supporter can pick a table felt");
+    // Language: Hungarian everywhere, English again on the way back.
+    await pl2.click('[data-a="lang"][data-v="hu"]'); await pl2.waitForTimeout(300);
+    check(await pl2.isVisible("text=Beállítások"), "switching to Magyar translates the screen");
+    await pl2.click('[data-t="home"]'); await pl2.waitForTimeout(300);
+    check(await pl2.isVisible("text=Képernyőidő"), "Home is in Hungarian too");
+    await shot(pl2, "26e-hungarian");
+    await pl2.click('[data-t="profile"]'); await pl2.waitForTimeout(200); await pl2.click('[data-a="openSettings"]'); await pl2.waitForTimeout(250);
+    await pl2.click('[data-a="lang"][data-v="en"]'); await pl2.waitForTimeout(300);
+    check(await pl2.isVisible("h1:text('Settings')"), "switching back to English works");
     check(pl.errors.length === 0 && pl2.errors.length === 0, "no console errors in schedules, spin and recap: " + pl.errors.concat(pl2.errors).join(" | "));
   }
   /* Themes, legal, support */

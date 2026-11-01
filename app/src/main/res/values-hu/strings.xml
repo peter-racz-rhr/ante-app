@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="accessibility_label">Ante alkalmazáslimitek</string>
+    <string name="accessibility_description">Az Ante azt nézi, melyik alkalmazást nyitod meg, hogy le tudja takarni a napi limitet túllépőket. A képernyőd tartalmát nem olvassa.</string>
+    <string name="widget_label">Mára maradt idő</string>
+    <string name="widget_description">A limitált alkalmazásokban mára maradt idő, pontmátrixos órán.</string>
+    <string name="tile_label">Fókusz</string>
+    <string name="tile_minutes_left">még %1$d perc</string>
+    <string name="tile_quick">25 perc</string>
+    <string name="widget_left_today">maradt mára</string>
+    <string name="widget_focus_until">Fókusz eddig: %1$s</string>
+    <string name="widget_no_limits">Adj hozzá limitet az Ante-ban</string>
+    <string name="widget_clock_description">Mára maradt: %1$s</string>
+</resources>

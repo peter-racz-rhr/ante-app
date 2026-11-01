@@ -65,12 +65,12 @@ class TimeWidget : AppWidgetProvider() {
             val v = RemoteViews(context.packageName, R.layout.widget_time)
             v.setImageViewBitmap(R.id.widget_clock, draw(DotFont.clock(left)))
             val note = when {
-                focusEnd > now -> "Focus until ${DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(focusEnd))}"
-                !limited -> "Add a limit in Ante"
-                else -> "left today"
+                focusEnd > now -> context.getString(R.string.widget_focus_until, DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(focusEnd)))
+                !limited -> context.getString(R.string.widget_no_limits)
+                else -> context.getString(R.string.widget_left_today)
             }
             v.setTextViewText(R.id.widget_note, note)
-            v.setContentDescription(R.id.widget_clock, "${DotFont.clock(left)} left today")
+            v.setContentDescription(R.id.widget_clock, context.getString(R.string.widget_clock_description, DotFont.clock(left)))
             val open = PendingIntent.getActivity(context, 0, Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
             v.setOnClickPendingIntent(R.id.widget_root, open)

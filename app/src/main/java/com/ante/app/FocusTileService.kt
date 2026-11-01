@@ -33,7 +33,7 @@ class FocusTileService : TileService() {
         val now = Bank.now()
         val end = Bank.read { it.focusEndsAt(now) }
         tile.state = if (end > now) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
-        if (Build.VERSION.SDK_INT >= 29) tile.subtitle = if (end > now) "${((end - now) / 60_000L).coerceAtLeast(1)} min left" else "25 min"
+        if (Build.VERSION.SDK_INT >= 29) tile.subtitle = if (end > now) getString(R.string.tile_minutes_left, ((end - now) / 60_000L).coerceAtLeast(1).toInt()) else getString(R.string.tile_quick)
         tile.updateTile()
     }
 
