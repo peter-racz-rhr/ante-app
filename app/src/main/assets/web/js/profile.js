@@ -121,7 +121,7 @@
       : m.strict ? `<p class="pc-state on">${App.ICON.lock}<span>On, with no end set</span></p>`
       : `<p class="muted">Lock blocking for a day, a week or a month. No way out until it ends.</p>`;
     return `<div class="screen profile2" id="screen">
-      <header class="prof-top"><h1 class="h1">Profile</h1><button class="iconbtn" data-a="openSettings" aria-label="Settings">${App.ICON.gear}</button></header>
+      <header class="prof-top"><h1 class="h1">Profile</h1><button class="iconbtn plain" data-a="openSettings" aria-label="Settings">${App.ICON.gear}</button></header>
       ${outdatedNote()}
       <section class="me me-card">
         <button class="me-photo" data-a="photoPick" aria-label="${ACC.photo ? "Change profile picture" : "Add a profile picture"}">${App.avatar("xl", 'aria-hidden="true"')}<span class="cam" aria-hidden="true">${App.ICON.camera}</span></button>
