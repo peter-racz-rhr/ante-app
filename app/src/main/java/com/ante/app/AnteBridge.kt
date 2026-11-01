@@ -255,7 +255,7 @@ class AnteBridge(
         return true
     }
 
-    /** Strict mode for a set number of days (1, 3, 7 or 30). It switches itself off at the end. */
+    /** Strict mode for a set number of days (1 to 31). It switches itself off at the end. */
     @JavascriptInterface
     fun startStrict(days: Int): Boolean {
         if (days !in STRICT_DAYS) return false
@@ -354,7 +354,7 @@ class AnteBridge(
     companion object {
         private val HAPTIC_KINDS = setOf("tap", "tick", "win", "loss")
         private val HEX_COLOR = Regex("^#[0-9a-fA-F]{6}$")
-        private val STRICT_DAYS = setOf(1, 3, 7, 30)
+        private val STRICT_DAYS = 1..31
         private const val DAY_MS = 24 * 60 * 60_000L
         private val OUTSIDE_LINKS = setOf("https://ko-fi.com/peteracz", "mailto:peter.racz.rhr@gmail.com")
         private const val WAIT_MS = 30_000L

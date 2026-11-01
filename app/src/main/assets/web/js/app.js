@@ -98,6 +98,7 @@
     App.$overlay.innerHTML = vSheet() + (ui.toast ? `<div class="toast" role="status">${esc(ui.toast)}</div>` : "");
     sheetShown = !!ui.sheet;
     if (App.Scenes && ui.sheet) App.Scenes.run(App.$overlay);
+    if (App.mountWheels && ui.sheet && ui.sheet.type === "explain") App.mountWheels(App.$overlay, App.exWheel);
     if (sheetShown && wasShown) App.$overlay.querySelector(".scrim").classList.add("still"); // no re-entry animation on updates
     if (focusSearch) { const s = document.getElementById("app-search"); if (s) { s.focus(); try { s.setSelectionRange(caret, caret); } catch (e) { /* type=search */ } } }
   };

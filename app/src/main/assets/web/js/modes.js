@@ -7,8 +7,13 @@
   const { A, esc } = App;
   const ui = App.ui;
 
-  const STRICT_CHOICES = [[1, "1 day"], [3, "3 days"], [7, "1 week"], [30, "1 month"]];
-  const FOCUS_CHOICES = [[25, "25 min"], [60, "1 hour"], [120, "2 hours"], [240, "4 hours"]];
+  // Picked on a scroll wheel: Strict 1 to 31 days, Focus 5 min to 12 h in 5-minute steps.
+  const STRICT_DEFAULT = 7, FOCUS_DEFAULT = 25;
+  const FOCUS_MIN = 5, FOCUS_MAX = 720;
+  const strictLabel = d => d === 7 ? "1 week" : `${d} ${d === 1 ? "day" : "days"}`;
+  const focusLabel = m => { const h = Math.floor(m / 60), r = m % 60; return h ? `${h} h${r ? ` ${r} min` : ""}` : `${r} min`; };
+  const pickOf = sh => sh.pick || (sh.mode === "strict" ? STRICT_DEFAULT : FOCUS_DEFAULT);
+  const endsOf = sh => Date.now() + (sh.mode === "strict" ? pickOf(sh) * DAY : pickOf(sh) * 60000);
   const DAY = 86400000;
 
   /* ---------- time words ---------- */
@@ -78,25 +83,48 @@
   };
 
   function chooseStep(sh) {
-    const strict = sh.mode === "strict", list = strict ? STRICT_CHOICES : FOCUS_CHOICES;
-    const v = sh.pick || list[strict ? 2 : 0][0];
-    const ends = Date.now() + (strict ? v * DAY : v * 60000);
-    const m = App.modes();
-    const extend = strict && m.strict && m.strictUntil > ends;
-    return `<div class="ex-choose">
-      <div class="chips ex-chips">${list.map(([n, t]) => `<button class="chip" data-a="exPick" data-v="${n}" aria-pressed="${v === n}">${t}</button>`).join("")}</div>
-      <p class="ex-ends">${extend ? `Already locked until <b>${esc(when(m.strictUntil))}</b>. A shorter lock won't cut it.` : `Ends <b>${esc(when(ends))}</b>`}</p>
+    const strict = sh.mode === "strict", v = pickOf(sh);
+    const wheel = strict
+      ? App.wheels([{ id: "days", aria: "Days", values: Array.from({ length: 31 }, (_, k) => k + 1), label: String, value: v, unit: v === 1 ? "day" : "days" }])
+      : App.wheels([
+        { id: "h", aria: "Hours", values: Array.from({ length: 13 }, (_, k) => k), label: String, value: Math.floor(v / 60), unit: "h" },
+        { id: "m", aria: "Minutes", values: Array.from({ length: 12 }, (_, k) => k * 5), label: n => App.pad(n), value: v % 60, unit: "min" },
+      ]);
+    return `<div class="ex-choose">${wheel}
+      <p class="ex-ends" id="ex-ends">${endsLine(sh)}</p>
       ${strict ? `<p class="muted ex-warn">${App.ICON.info}<span>You won't be able to turn this off early, not even after a wait.</span></p>` : ""}
     </div>`;
   }
+  function endsLine(sh) {
+    const m = App.modes(), ends = endsOf(sh);
+    return sh.mode === "strict" && m.strict && m.strictUntil > ends
+      ? `Already locked until <b>${esc(when(m.strictUntil))}</b>. A shorter lock won't cut it.`
+      : `Ends <b>${esc(when(ends))}</b>`;
+  }
+  const goLabel = sh => sh.mode === "strict" ? `Lock · ${strictLabel(pickOf(sh))}` : `Start · ${focusLabel(pickOf(sh))}`;
+
+  /** Wheel turned: keep the value valid and update the end time and button in place. */
+  App.exWheel = (id, val) => {
+    const sh = ui.sheet; if (!sh || sh.type !== "explain") return;
+    const box = App.$overlay;
+    if (sh.mode === "strict") sh.pick = val;
+    else {
+      let h = id === "h" ? val : Math.floor(pickOf(sh) / 60), m = id === "m" ? val : pickOf(sh) % 60;
+      if (h === 12 && m) { m = 0; App.setWheel(box, "m", 0); }       // 12 h is the longest Focus
+      if (!h && m < FOCUS_MIN) { m = FOCUS_MIN; App.setWheel(box, "m", FOCUS_MIN); }
+      sh.pick = Math.max(FOCUS_MIN, Math.min(FOCUS_MAX, h * 60 + m));
+    }
+    const ends = box.querySelector("#ex-ends"); if (ends) ends.innerHTML = endsLine(sh);
+    const go = box.querySelector('[data-a="exGo"]'); if (go) go.textContent = goLabel(sh);
+    const unit = box.querySelector('[data-unit="days"]'); if (unit) unit.textContent = pickOf(sh) === 1 ? "day" : "days";
+  };
 
   /** The explainer sheet (registered with the sheet renderer in app.js). */
   App.sheetViews = App.sheetViews || {};
   App.sheetViews.explain = (sh, sheet, head) => {
     const steps = STEPS[sh.mode], i = sh.step || 0, s = steps[i], last = i === steps.length - 1;
     const strict = sh.mode === "strict";
-    const v = sh.pick || (strict ? STRICT_CHOICES[2][0] : FOCUS_CHOICES[0][0]);
-    const label = strict ? `Lock · ${STRICT_CHOICES.find(c => c[0] === v)[1]}` : `Start · ${FOCUS_CHOICES.find(c => c[0] === v)[1]}`;
+    const label = goLabel(sh);
     return sheet("", `${head(strict ? "Strict mode" : "Focus", "ex-h")}
       ${sh.quick ? "" : `<div class="ex-dots" aria-hidden="true">${steps.map((_, k) => `<i class="${k === i ? "on" : k < i ? "done" : ""}"></i>`).join("")}</div>`}
       <div class="ex-step" data-step="${i}">
@@ -190,17 +218,16 @@
       App.haptic("tap"); App.paintOverlay();
     },
     exBack() { const sh = ui.sheet; if (!sh || sh.type !== "explain") return; sh.step = Math.max(0, (sh.step || 0) - 1); App.paintOverlay(); },
-    exPick(d) { const sh = ui.sheet; if (!sh) return; sh.pick = Number(d.v); App.chipFx(); App.paintOverlay(); },
     exGo() {
       const sh = ui.sheet; if (!sh || sh.type !== "explain") return;
       if (sh.mode === "strict") {
-        const days = sh.pick || STRICT_CHOICES[2][0];
-        if (!A.startStrict || !A.startStrict(days)) { App.toast("Install the new app version (0.4.0) for timed Strict mode."); return; }
+        const days = pickOf(sh);
+        if (!A.startStrict || !A.startStrict(days)) { App.toast("Install the new app version (0.5.0) for timed Strict mode."); return; }
         App.refresh(); ui.sheet = null; App.render(); App.haptic("win");
         App.toast(`Strict mode is on until ${when(App.modes().strictUntil)}.`);
       } else {
-        const min = sh.pick || FOCUS_CHOICES[0][0];
-        if (!A.startFocus || !A.startFocus(min)) { App.toast("Install the new app version (0.4.0) to use Focus."); return; }
+        const min = pickOf(sh);
+        if (!A.startFocus || !A.startFocus(min)) { App.toast("Install the new app version (0.5.0) to use Focus."); return; }
         App.refresh(); ui.sheet = null; App.render(); App.haptic("win");
         App.toast(`Focus is on until ${when(App.modes().focusUntil)}.`);
       }

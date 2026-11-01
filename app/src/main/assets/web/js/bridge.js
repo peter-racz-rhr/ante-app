@@ -34,7 +34,7 @@
       startWait: () => N.startWait(),
       waitLeftMs: () => Number(N.waitLeftMs()),
       setStrict: on => N.setStrict(!!on),
-      startStrict: days => { try { return N.startStrict(days | 0); } catch (e) { return false; } }, // false on apps older than 0.4.0
+      startStrict: days => { try { return N.startStrict(days | 0); } catch (e) { return false; } }, // false on apps older than 0.5.0
       startFocus: min => { try { return N.startFocus(min | 0); } catch (e) { return false; } },
       endFocus: () => { try { return N.endFocus(); } catch (e) { return false; } },
       openGuarded: pkg => N.openGuarded(pkg),
@@ -237,7 +237,7 @@
     },
     // ?unit=s makes "days" and "minutes" last seconds, so tests can watch locks end.
     startStrict(days) {
-      if (![1, 3, 7, 30].includes(days)) return false;
+      if (!(Number.isInteger(days) && days >= 1 && days <= 31)) return false;
       const unit = q.get("unit") === "s" ? 1000 : 86400000, now = Date.now(), cur = S.strict && S.strictUntilMs > now ? S.strictUntilMs : 0;
       S.strict = true; S.strictUntilMs = Math.max(now + days * unit, cur); save(); return true;
     },
