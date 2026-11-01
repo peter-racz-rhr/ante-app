@@ -669,7 +669,20 @@
   })[id] || "";
 
   /** A static, real wheel for the Roulette tile. */
-  function miniWheel(el) { el.innerHTML = ""; Roulette(el, { max: 136 }); }
+  /* The wheel on the Play tile: drawn once, then reused as a picture (drawing it took ~17 ms on
+     every visit, and each live wheel kept a ResizeObserver around). */
+  let miniCache = null;
+  function miniWheel(el) {
+    if (miniCache) { el.innerHTML = `<div class="wheel-wrap"><img class="wheel" src="${miniCache}" alt="" width="136" height="136"></div>`; return; }
+    el.innerHTML = "";
+    const wheel = Roulette(el, { max: 136 });
+    const snap = () => {
+      const cv = el.querySelector("canvas");
+      try { if (cv && cv.width) miniCache = cv.toDataURL("image/png"); } catch (e) { /* keep drawing live */ }
+      wheel.destroy();
+    };
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => requestAnimationFrame(snap)); else snap();
+  }
 
   window.AnteFX = { GAME_ICON, miniWheel, cardHtml, slotSvg, coinFace, GAME_ART, suitSvg, burst, countUp, wait, Coin, Roulette, Slots, Blackjack, Poker, reduced };
 })();

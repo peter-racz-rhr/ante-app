@@ -327,8 +327,7 @@
     try { fresh = localStorage.getItem(UPDATED_KEY) === "1"; localStorage.removeItem(UPDATED_KEY); } catch (e) { /* ignore */ }
     if (fresh) App.toast("Ante just updated itself.");
   };
-  if (document.fonts && document.fonts.ready) {
-    let done = false; const go = () => { if (!done) { done = true; start(); } };
-    document.fonts.ready.then(go); setTimeout(go, 400);
-  } else start();
+  // Draw straight away; once the fonts are in, fit the numbers to their final widths.
+  start();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => App.fitText());
 })();

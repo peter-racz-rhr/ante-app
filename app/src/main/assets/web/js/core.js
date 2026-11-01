@@ -73,15 +73,14 @@
   window.addEventListener("ante-mock", e => App.toast(e.detail));
 
   /* Shrinks [data-fit] text until it fits its box on one line (the big clock). */
+  /* Shrinks [data-fit] text to its box. Batched: write all, read all, write all, so the page is
+     laid out once instead of once per number. */
   App.fitText = () => {
-    document.querySelectorAll("[data-fit]").forEach(el => {
-      const max = Number(el.dataset.fit) || 160;
-      el.style.fontSize = max + "px";
-      const box = el.parentElement.clientWidth;
-      if (!box) return;
-      const ratio = box / Math.max(1, el.scrollWidth);
-      if (ratio < 1) el.style.fontSize = Math.floor(max * ratio * 0.98) + "px";
-    });
+    const els = [...document.querySelectorAll("[data-fit]")];
+    const max = els.map(el => Number(el.dataset.fit) || 160);
+    els.forEach((el, i) => { el.style.fontSize = max[i] + "px"; });
+    const ratio = els.map(el => { const box = el.parentElement.clientWidth; return box ? box / Math.max(1, el.scrollWidth) : 1; });
+    els.forEach((el, i) => { if (ratio[i] < 1) el.style.fontSize = Math.floor(max[i] * ratio[i] * 0.98) + "px"; });
   };
 
   const ic = (d, w = 22, extra = "") => `<svg viewBox="0 0 24 24" width="${w}" height="${w}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ${extra}>${d}</svg>`;
