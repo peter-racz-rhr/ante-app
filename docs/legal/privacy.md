@@ -4,7 +4,7 @@ How Ante handles your data. Last updated 1 November 2026. In short: everything s
 
 ## Who is responsible
 
-Péter Rácz, Kálti Márk u. 2/B, 1035 Budapest, Hungary. Email: peter.racz.rhr@gmail.com, phone: +36 50 104 5007.
+Péter Rácz, Kálti Márk u. 2/B, 1183 Budapest, Hungary. Email: peter.racz.rhr@gmail.com, phone: +36 50 104 5007.
 
 ## What stays on your phone
 

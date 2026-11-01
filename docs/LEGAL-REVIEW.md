@@ -42,7 +42,7 @@ check, not legal advice: have a lawyer read the Terms, Privacy Policy and Imprin
 | Changing the Terms | Material changes are shown in the app and must be accepted again (`TERMS_VERSION` in `js/legal.js`); otherwise you can delete your data |
 | Marketing claim | "playing reduces your screen time" is now described as a design choice, not a promise |
 | Privacy details | Legal basis for the update check (legitimate interest), no named web host, a note that app-usage history can be sensitive |
-| Postcode | Not changed: you told me **1035 Budapest** for Ante. The other address the evaluation mentions belongs to a different app; use whichever is your real address in both. |
+| Postcode | Not changed: fixed to **1183 Budapest**, Kálti Márk u. 2/B. |
 
 ## Up to you before Ante Supporter goes on sale
 

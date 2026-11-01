@@ -4,7 +4,7 @@ Wie Ante mit deinen Daten umgeht. Zuletzt geändert am 1. November 2026. Kurz: A
 
 ## Verantwortlicher
 
-Péter Rácz, Kálti Márk u. 2/B, 1035 Budapest, Ungarn. E-Mail: peter.racz.rhr@gmail.com, Telefon: +36 50 104 5007.
+Péter Rácz, Kálti Márk u. 2/B, 1183 Budapest, Ungarn. E-Mail: peter.racz.rhr@gmail.com, Telefon: +36 50 104 5007.
 
 ## Was auf deinem Handy bleibt
 

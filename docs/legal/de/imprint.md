@@ -8,7 +8,7 @@ Ante wird von Péter Rácz, einer Privatperson, entwickelt und betrieben.
 
 ## Anschrift
 
-Kálti Márk u. 2/B, 1035 Budapest, Ungarn
+Kálti Márk u. 2/B, 1183 Budapest, Ungarn
 
 ## Kontakt
 

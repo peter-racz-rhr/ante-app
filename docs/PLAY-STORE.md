@@ -8,7 +8,7 @@ code is already done.
 1. Go to <https://play.google.com/console/signup> and pick **Personal** (just you).
 2. Pay the one-time **$25** fee, then verify your identity with an ID card. This takes 1 to 3 days.
 3. Verify a phone number. The Console also asks for an address: use the one in the imprint
-   (Kálti Márk u. 2/B, 1035 Budapest).
+   (Kálti Márk u. 2/B, 1183 Budapest).
 
 ## 2. A release key (you, once, and never lose it)
 

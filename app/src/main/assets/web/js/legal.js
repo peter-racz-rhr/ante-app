@@ -3,7 +3,7 @@
 (function () {
   "use strict";
   const OWNER = "Péter Rácz";
-  const ADDRESS = "Kálti Márk u. 2/B, 1035 Budapest, Hungary";
+  const ADDRESS = "Kálti Márk u. 2/B, 1183 Budapest, Hungary";
   const EMAIL = "peter.racz.rhr@gmail.com";
   const PHONE = "+36 50 104 5007";
   const UPDATED = "1 November 2026";

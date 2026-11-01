@@ -4,7 +4,7 @@
   "use strict";
   const L = window.AnteLegal; if (!L) return;
   const { OWNER, EMAIL, PHONE, TAX_NUMBER, REGISTRATION } = L;
-  const ADDRESS = "1035 Budapest, Kálti Márk u. 2/B";
+  const ADDRESS = "1183 Budapest, Kálti Márk u. 2/B";
   const UPDATED = "2026. november 1.";
   L.LANG.hu = {
     credits: {

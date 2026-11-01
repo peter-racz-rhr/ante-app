@@ -4,7 +4,7 @@ Hogyan kezeli az Ante az adataidat. Utolsó módosítás: 2026. november 1.. Rö
 
 ## Az adatkezelő
 
-Péter Rácz, 1035 Budapest, Kálti Márk u. 2/B. E-mail: peter.racz.rhr@gmail.com, telefon: +36 50 104 5007.
+Péter Rácz, 1183 Budapest, Kálti Márk u. 2/B. E-mail: peter.racz.rhr@gmail.com, telefon: +36 50 104 5007.
 
 ## Ami a telefonodon marad
 

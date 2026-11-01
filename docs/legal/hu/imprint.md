@@ -8,7 +8,7 @@ Az Ante-t Péter Rácz magánszemély készíti és üzemelteti.
 
 ## Cím
 
-1035 Budapest, Kálti Márk u. 2/B
+1183 Budapest, Kálti Márk u. 2/B
 
 ## Elérhetőség
 
