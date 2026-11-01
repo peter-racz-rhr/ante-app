@@ -457,15 +457,17 @@ async function noOverflow(p, label) {
     await dt.goto(INDEX + "?acc=1"); await dt.waitForSelector(".screen");
     await tab(dt, "profile"); await dt.click('[data-a="openSettings"]'); await dt.waitForTimeout(250);
     check(await dt.isVisible("text=Never backed up"), "Settings shows the Drive backup, not yet made");
-    await dt.click('[data-a="driveBackup"]'); await dt.waitForTimeout(700);
-    check(await dt.isVisible("text=Backed up just now"), "Back up saves to Google Drive");
+    await dt.click('[data-a="driveBackup"]');
+    check(await dt.waitForSelector("text=Backed up just now", { timeout: 5000 }).then(() => true, () => false), "Back up saves to Google Drive");
     await shot(dt, "27a-your-data");
     // A "new phone": fresh data, restore from the backup.
     await dt.evaluate(() => { window.Ante.resetMock(); const S = JSON.parse(localStorage.getItem("ante-mock-v2")); S.limits = []; localStorage.setItem("ante-mock-v2", JSON.stringify(S)); window.AntePrefs.set({ theme: "latte" }); });
     await dt.evaluate(() => { const d = JSON.parse(localStorage.getItem("ante-mock-drive")); d.file.prefs.theme = "mocha"; localStorage.setItem("ante-mock-drive", JSON.stringify(d)); });
     await dt.goto(INDEX + "?acc=1"); await dt.waitForSelector(".screen");
     await tab(dt, "profile"); await dt.click('[data-a="openSettings"]'); await dt.waitForTimeout(250);
-    await dt.click('[data-a="driveRestore"]'); await dt.waitForTimeout(700);
+    await dt.click('[data-a="driveRestore"]');
+    for (let i = 0; i < 50 && (await dt.evaluate(() => window.Ante.state().limits.length)) !== 3; i++) await dt.waitForTimeout(100);
+    await dt.waitForTimeout(200);
     check((await dt.evaluate(() => window.Ante.state().limits.length)) === 3, "restoring brings the limits back");
     check((await dt.evaluate(() => window.AntePrefs.get().theme)) === "mocha", "restoring brings the settings back");
     // Delete is refused during Focus, and works afterwards.
