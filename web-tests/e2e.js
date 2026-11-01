@@ -411,6 +411,58 @@ async function noOverflow(p, label) {
     check(!(await md.$(".focus-card.on")), "Focus ends after the wait");
     check(md.errors.length === 0, "no console errors in Focus and Strict: " + md.errors.join(" | "));
   }
+  /* Schedules, the daily spin, the tables switch and the weekly recap */
+  {
+    const pl = await page(browser, "?acc=1&reset=1");
+    await pl.click('[data-a="schedules"]'); await pl.waitForTimeout(250);
+    check(await pl.isVisible('[data-a="schedPreset"][data-v="sleep"]'), "schedules offer Work and Sleep presets");
+    await pl.click('[data-a="schedPreset"][data-v="work"]'); await pl.waitForTimeout(300);
+    check((await pl.$$(".sched-wheels .pk-list")).length === 4, "the editor has hour and minute wheels for the start and end");
+    await pl.click('[data-a="schedDay"][data-v="0"]');
+    check((await pl.textContent("#sched-sum")).startsWith("Tue, Wed, Thu, Fri"), "tapping a day takes it out of the schedule");
+    await pl.click('[data-a="schedDay"][data-v="0"]');
+    await pl.click('[data-a="schedSave"]'); await pl.waitForTimeout(250);
+    check((await pl.$$(".sched-row")).length === 1, "the saved schedule is listed");
+    await shot(pl, "26a-schedules");
+    const saved = await pl.evaluate(() => window.Ante.state().schedules[0]);
+    check(saved && saved.days === 31 && saved.startMin === 540 && saved.endMin === 1020, "the schedule is weekdays 9:00 to 17:00");
+    // A window running now is Focus, and it can't be edited away.
+    const live = await pl.evaluate(() => { const n = new Date(), m = n.getHours() * 60 + n.getMinutes(); return window.Ante.setSchedule({ id: 0, label: "Now", days: 127, startMin: (m + 1435) % 1440, endMin: (m + 30) % 1440 }); });
+    check(live > 0, "a schedule covering now can be added");
+    check(await pl.evaluate(() => window.Ante.state().focusActive), "a running schedule turns Focus on");
+    check(await pl.evaluate(id => window.Ante.removeSchedule(id), live) === false, "a running schedule can't be removed");
+    check(await pl.evaluate(() => window.Ante.open("com.instagram.android", 300)) === false, "no app opens during a scheduled window");
+    await pl.click('.sheet [data-a="closeSheet"].btn'); await pl.waitForTimeout(200);
+    await pl.evaluate(() => { window.App.refresh(); window.App.render(); });
+    check(await pl.isVisible(".focus-card.on"), "Home shows the scheduled Focus");
+
+    // Daily spin: yesterday (sample data) was within the limits.
+    const pl2 = await page(browser, "?acc=1&reset=1");
+    await pl2.evaluate(() => { window.Ante.resetMock(); const S = JSON.parse(localStorage.getItem("ante-mock-v2")); S.history[0].usedSec = 60; localStorage.setItem("ante-mock-v2", JSON.stringify(S)); });
+    await pl2.goto(INDEX + "?acc=1"); await pl2.waitForSelector(".screen");
+    await pl2.click('[data-t="tables"]'); await pl2.waitForTimeout(250);
+    const before = await pl2.evaluate(() => window.Ante.state().limits.reduce((a, l) => a + l.leftSec, 0));
+    await pl2.click('[data-a="freeSpin"]'); await pl2.waitForTimeout(3300);
+    const after = await pl2.evaluate(() => window.Ante.state().limits.reduce((a, l) => a + l.leftSec, 0));
+    check([60, 120, 180, 300, 600, 900].includes(after - before), "the daily spin adds a prize of minutes");
+    await shot(pl2, "26b-daily-spin");
+    check((await pl2.evaluate(() => window.Ante.freeSpin("com.instagram.android"))).ok === false, "the daily spin works once a day");
+    await pl2.waitForTimeout(900);
+    check(await pl2.isVisible(".spin-card.idle"), "after spinning, the card says it's used");
+
+    // The tables switch.
+    await pl2.click('[data-t="profile"]'); await pl2.waitForTimeout(200);
+    await pl2.click('[data-a="recap"]'); await pl2.waitForTimeout(300);
+    check(await pl2.isVisible(".recap .recap-big"), "the weekly recap card opens from Profile");
+    await shot(pl2, "26c-recap");
+    await pl2.click('.sheet [data-a="closeSheet"].btn'); await pl2.waitForTimeout(200);
+    await pl2.click('[data-a="openSettings"]'); await pl2.waitForTimeout(250);
+    await pl2.click('[data-a="tablesOn"]'); await pl2.waitForTimeout(250);
+    check(!(await pl2.$('[data-t="tables"]')), "with the tables off, the Play tab is gone");
+    await pl2.click('[data-a="tablesOn"]'); await pl2.waitForTimeout(250);
+    check(!!(await pl2.$('[data-t="tables"]')), "turning the tables back on brings the Play tab back");
+    check(pl.errors.length === 0 && pl2.errors.length === 0, "no console errors in schedules, spin and recap: " + pl.errors.concat(pl2.errors).join(" | "));
+  }
   /* Themes, legal, support */
   await st.click('[data-a="theme"][data-v="mocha"]');
   check(await st.evaluate(() => document.documentElement.dataset.theme) === "mocha", "Catppuccin Mocha theme applies");

@@ -37,6 +37,8 @@ function extremeState(now) {
     ledger: Array.from({ length: 50 }, (_, k) => ({ game: k % 2 ? "Roulette" : `Game ${XSS}`, pkg: pkgOf(k % 20), deltaSec: (k % 2 ? 1 : -1) * 359999, atMs: now - k * 60e3 })),
     session: null, parked: {}, strict: true, strictUntilMs: now + 30 * 864e5, focusUntilMs: now + 4 * 3600e3,
     usedTodaySec: 86399, usedTodayByApp: Object.fromEntries(limits.map(l => [l.pkg, 4319])),
+    schedules: Array.from({ length: 8 }, (_, k) => ({ id: k + 1, label: k % 2 ? "W".repeat(24) : LONG_WORD.slice(0, 24), days: [127, 31, 96, 85, 1, 64, 42, 127][k], startMin: (k * 190) % 1440, endMin: (k * 190 + 600) % 1440, on: k % 3 !== 0 })),
+    freeSpin: true, canEditSchedules: false, scheduleActive: true,
   };
 }
 const ACCOUNT = { signedIn: true, onboarded: true, name: "Bartholomew-Maximilian " + LONG_WORD.slice(0, 50), email: "a".repeat(64) + "@" + "very-long-subdomain-name-for-testing.".repeat(5) + "example.com", googleConfigured: true };
@@ -118,6 +120,9 @@ const sheet = (p, s) => p.evaluate(s => { window.App.ui.sheet = s; window.App.pa
       await sheet(p, { type: "pick", apps: window_apps(), q: "" }); await audit(p, `${tag} sheet pick`);
       await sheet(p, { type: "edit", pkg: pkgOf(1), label: LABELS[1], limit: 14400 }); await audit(p, `${tag} sheet edit`);
       await sheet(p, { type: "wait", left: 30000, title: "Settings is behind Strict mode and this title is long", body: LONG_WORD + " " + LONG_WORD, cta: "Open Settings now please" }); await audit(p, `${tag} sheet wait`);
+      await sheet(p, { type: "schedules" }); await audit(p, `${tag} sheet schedules`);
+      await sheet(p, { type: "schedEdit", draft: { id: 1, label: "W".repeat(24), days: 85, startMin: 1335, endMin: 425, on: true } }); await audit(p, `${tag} sheet schedule editor`);
+      await sheet(p, { type: "recap" }); await audit(p, `${tag} sheet recap`);
       for (const mode of ["strict", "focus"]) for (const step of [0, 1, 2]) { await sheet(p, { type: "explain", mode, step, pick: null }); await audit(p, `${tag} explain ${mode} ${step}`); }
       await sheet(p, null);
       check(!p.errors.length, `${tag}: script errors: ${p.errors.slice(0, 3).join(" | ")}`);

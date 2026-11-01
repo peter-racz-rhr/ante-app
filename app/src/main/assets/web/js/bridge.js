@@ -7,7 +7,10 @@
 
   function parse(s, fallback) { try { return JSON.parse(s); } catch (e) { return fallback; } }
 
+  const BAD = { ok: false, error: "bet" };
   if (N) {
+    const has = name => typeof N[name] === "function";
+    const D = has("play") ? null : window.AnteDealer((pkg, sec) => N.bet(pkg, sec | 0), (pkg, game, stake, ret) => N.settle(pkg, game, stake | 0, Math.round(ret)));
     window.Ante = {
       native: true,
       state: () => parse(N.state(), { limits: [], ledger: [] }),
@@ -16,8 +19,17 @@
       icon: pkg => N.icon(pkg),
       setLimit: (pkg, label, sec) => N.setLimit(pkg, label, sec | 0),
       removeLimit: pkg => N.removeLimit(pkg), // false during Focus or Strict mode
-      bet: (pkg, sec) => N.bet(pkg, sec | 0),
-      settle: (pkg, game, stake, ret) => N.settle(pkg, game, stake | 0, Math.round(ret)),
+      // Table rounds: dealt by the phone since 0.6.0; older apps run them here with bet/settle.
+      play: (pkg, game, stake, args) => (D ? D.play(pkg, game, stake | 0, args) : parse(N.play(pkg, game, stake | 0, JSON.stringify(args || {})), BAD)),
+      bjDeal: (pkg, stake) => (D ? D.bjDeal(pkg, stake | 0) : parse(N.bjDeal(pkg, stake | 0), BAD)),
+      bjHit: () => (D ? D.bjHit() : parse(N.bjHit(), BAD)),
+      bjDouble: () => (D ? D.bjDouble() : parse(N.bjDouble(), BAD)),
+      bjStand: () => (D ? D.bjStand() : parse(N.bjStand(), BAD)),
+      pkDeal: (pkg, stake) => (D ? D.pkDeal(pkg, stake | 0) : parse(N.pkDeal(pkg, stake | 0), BAD)),
+      pkDraw: held => (D ? D.pkDraw(held | 0) : parse(N.pkDraw(held | 0), BAD)),
+      freeSpin: pkg => (has("freeSpin") ? parse(N.freeSpin(pkg), BAD) : { ok: false, error: "old" }),
+      setSchedule: sc => (has("setSchedule") ? N.setSchedule(sc.id | 0, String(sc.label || ""), sc.days | 0, sc.startMin | 0, sc.endMin | 0, sc.on !== false) : 0),
+      removeSchedule: id => (has("removeSchedule") ? N.removeSchedule(id | 0) : false),
       open: (pkg, sec) => N.open(pkg, sec | 0),
       closeBlock: () => N.closeBlock(),
       openAnte: () => N.openAnte(),
@@ -120,6 +132,35 @@
   let waitStart = 0;
   const say = msg => window.dispatchEvent(new CustomEvent("ante-mock", { detail: msg }));
 
+  /* Same rules as Schedule.kt / TimeBank.kt: windows by weekday (bit 0 = Monday), overnight
+     windows run into the next day, a skipped window stays off until its end. */
+  const strictOn = now => !!S.strict && (!S.strictUntilMs || now < S.strictUntilMs);
+  function windowEnd(sc, now) {
+    if (!sc.on) return 0;
+    const base = new Date(now); base.setHours(0, 0, 0, 0);
+    for (const back of [0, 1]) {
+      const d = new Date(base); d.setDate(d.getDate() - back);
+      if (!(sc.days & (1 << ((d.getDay() + 6) % 7)))) continue;
+      const from = new Date(d); from.setMinutes(sc.startMin);
+      const to = new Date(d); if (sc.endMin <= sc.startMin) to.setDate(to.getDate() + 1); to.setMinutes(sc.endMin);
+      if (now >= +from && now < +to) return +to;
+    }
+    return 0;
+  }
+  const schedEnd = now => (now < (S.scheduleSkipUntilMs || 0) ? 0 : Math.max(0, ...(S.schedules || []).map(sc => windowEnd(sc, now))));
+  const focusOn = now => now < (S.focusUntilMs || 0) || schedEnd(now) > 0;
+  const validSched = sc => sc.days >= 1 && sc.days <= 127 && sc.startMin >= 0 && sc.startMin < 1440 && sc.endMin >= 0 && sc.endMin < 1440 && sc.startMin !== sc.endMin;
+  function freeSpinOk() {
+    const budget = S.limits.reduce((a, l) => a + l.limitSec, 0);
+    if (!budget || S.freeSpinDay === S.day) return false;
+    const y = new Date(S.day + "T12:00:00"); y.setDate(y.getDate() - 1);
+    const key = `${y.getFullYear()}-${String(y.getMonth() + 1).padStart(2, "0")}-${String(y.getDate()).padStart(2, "0")}`;
+    const h = (S.history || []).find(x => x.day === key);
+    return !!h && h.usedSec <= budget;
+  }
+  const FREE_SPIN_PRIZES = [60, 120, 180, 300, 600, 900], FREE_SPIN_WEIGHTS = [30, 25, 20, 15, 8, 2];
+  let D = null; // the JS dealer, made once the mock API below exists
+
   window.Ante = {
     native: false,
     resetMock: () => { S = fresh(); save(); },
@@ -127,8 +168,12 @@
       const now = Date.now();
       if (S.strictUntilMs && now >= S.strictUntilMs) { S.strict = false; S.strictUntilMs = 0; save(); }
       if (S.focusUntilMs && now >= S.focusUntilMs) { S.focusUntilMs = 0; save(); }
-      const strictActive = !!S.strict && (!S.strictUntilMs || now < S.strictUntilMs), focusActive = now < (S.focusUntilMs || 0);
-      return JSON.parse(JSON.stringify(Object.assign({ watching: true, autoTime: true, batteryOk: q.get("battery") !== "0" }, S, { now, strictActive, focusActive })));
+      const sched = schedEnd(now);
+      const strictActive = strictOn(now), focusActive = focusOn(now);
+      const focusEndsAt = Math.max(now < (S.focusUntilMs || 0) ? S.focusUntilMs : 0, sched || 0);
+      return JSON.parse(JSON.stringify(Object.assign({ watching: true, autoTime: true, batteryOk: q.get("battery") !== "0" }, S, {
+        now, strictActive, focusActive, focusEndsAt, scheduleActive: !!sched, canEditSchedules: !strictActive && !sched, freeSpin: freeSpinOk(),
+      })));
     },
     context: () => {
       if (ctx.mode !== "block" || !ctx.pkg) return { mode: ctx.mode, platform: "browser" };
@@ -150,7 +195,7 @@
     },
     removeLimit(pkg) {
       const now = Date.now();
-      if (now < (S.focusUntilMs || 0) || (S.strict && (!S.strictUntilMs || now < S.strictUntilMs))) return false; // same rule as TimeBank.canRemoveLimits
+      if (focusOn(now) || strictOn(now)) return false; // same rule as TimeBank.canRemoveLimits
       const l = lim(pkg); if (!l) return true;
       S.parked = S.parked || {}; S.parked[pkg] = Math.min(l.leftSec, l.limitSec);
       S.limits = S.limits.filter(x => x.pkg !== pkg); save(); return true;
@@ -164,7 +209,7 @@
       const l = lim(pkg); stake |= 0;
       if (!l || stake <= 0 || stake > (open[pkg] || 0)) return -2147483648;
       open[pkg] -= stake;
-      ret = Math.max(0, Math.min(Math.round(ret), stake * 100));
+      ret = Math.max(0, Math.min(Math.round(ret), stake * 250));
       l.leftSec += ret;
       S.wonTodaySec = (S.wonTodaySec || 0) + Math.max(0, ret - stake);
       S.lostTodaySec = (S.lostTodaySec || 0) + Math.max(0, stake - ret);
@@ -174,7 +219,7 @@
     },
     open(pkg, sec) {
       const l = lim(pkg); sec |= 0;
-      if (!l || sec <= 0 || sec > l.leftSec || Date.now() < (S.focusUntilMs || 0)) return false;
+      if (!l || sec <= 0 || sec > l.leftSec || focusOn(Date.now())) return false;
       l.leftSec -= sec; save();
       say(`Opens ${l.label} for ${Math.round(sec / 60)} min`);
       return true;
@@ -247,11 +292,44 @@
     },
     endFocus() {
       const now = Date.now();
-      if (!(waitStart && now - waitStart >= WAIT) || (S.strict && (!S.strictUntilMs || now < S.strictUntilMs))) return false;
+      if (!(waitStart && now - waitStart >= WAIT) || strictOn(now)) return false;
+      const sched = schedEnd(now);
+      if (sched) S.scheduleSkipUntilMs = sched;
       S.focusUntilMs = 0; waitStart = 0; save(); return true;
     },
     openGuarded(pkg) { if (!(waitStart && Date.now() - waitStart >= WAIT)) return false; waitStart = 0; say("Opens Settings for 2 minutes"); return true; },
     openBatterySettings: () => { say("Opens battery optimization"); S.batteryOk = true; save(); return true; },
     openDateSettings: () => { say("Opens Date & time"); return true; },
+    play: (pkg, game, stake, args) => D.play(pkg, game, stake | 0, args),
+    bjDeal: (pkg, stake) => D.bjDeal(pkg, stake | 0),
+    bjHit: () => D.bjHit(), bjDouble: () => D.bjDouble(), bjStand: () => D.bjStand(),
+    pkDeal: (pkg, stake) => D.pkDeal(pkg, stake | 0),
+    pkDraw: held => D.pkDraw(held | 0),
+    freeSpin(pkg) {
+      const l = lim(pkg);
+      if (!freeSpinOk()) return { ok: false, error: "used" };
+      if (!l) return { ok: false, error: "stake" };
+      let r = Math.random() * 100, index = 0;
+      while (index < FREE_SPIN_WEIGHTS.length - 1 && (r -= FREE_SPIN_WEIGHTS[index]) >= 0) index++;
+      const prizeSec = FREE_SPIN_PRIZES[index];
+      l.leftSec += prizeSec; S.freeSpinDay = S.day; S.wonTodaySec = (S.wonTodaySec || 0) + prizeSec;
+      S.ledger.unshift({ game: "Daily spin", pkg, deltaSec: prizeSec, atMs: Date.now() }); S.ledger = S.ledger.slice(0, 50);
+      save(); return { ok: true, index, prizeSec };
+    },
+    setSchedule(sc) {
+      const now = Date.now(), list = S.schedules = S.schedules || [];
+      const clean = { id: sc.id | 0, label: String(sc.label || "").trim().slice(0, 24), days: sc.days | 0, startMin: sc.startMin | 0, endMin: sc.endMin | 0, on: sc.on !== false };
+      if (!validSched(clean)) return 0;
+      const i = list.findIndex(x => x.id === clean.id);
+      if (i < 0) { if (list.length >= 8) return 0; clean.id = Math.max(0, ...list.map(x => x.id)) + 1; list.push(clean); }
+      else { if (strictOn(now) || schedEnd(now)) return 0; list[i] = clean; }
+      save(); return clean.id;
+    },
+    removeSchedule(id) {
+      const now = Date.now(), list = S.schedules || [];
+      if (!list.some(x => x.id === id) || strictOn(now) || schedEnd(now)) return false;
+      S.schedules = list.filter(x => x.id !== id); save(); return true;
+    },
   };
+  D = window.AnteDealer(window.Ante.bet, window.Ante.settle);
 })();

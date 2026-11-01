@@ -10,6 +10,8 @@ import android.view.HapticFeedbackConstants
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import com.ante.app.core.Codec
+import com.ante.app.core.Schedule
+import com.ante.app.core.TimeBank
 import org.json.JSONObject
 
 /**
@@ -36,6 +38,10 @@ class AnteBridge(
         json.put("now", now)
         json.put("strictActive", Bank.read { it.isStrict(now) })
         json.put("focusActive", Bank.read { it.isFocus(now) })
+        json.put("focusEndsAt", Bank.read { it.focusEndsAt(now) })
+        json.put("scheduleActive", Bank.read { it.scheduledFocusEnd(now) != null })
+        json.put("canEditSchedules", Bank.read { it.canEditSchedules(now) })
+        json.put("freeSpin", Bank.read { it.freeSpinAvailable() })
         json.put("accessibility", isWatcherEnabled())
         // Health checks shown on Today: is the watcher really running, can the clock be trusted,
         // and is Android allowed to kill Ante to save battery.
@@ -176,14 +182,78 @@ class AnteBridge(
         return true
     }
 
-    @JavascriptInterface
-    fun bet(pkg: String, stakeSec: Int): Boolean =
-        validPkg(pkg) && Bank.edit { it.placeBet(pkg, stakeSec) }
+    /* ---- The tables. Since 0.6.0 every round is dealt natively ([com.ante.app.core.Dealer]); the
+       old bet/settle pair, where the page named its own payout, is switched off. ---- */
 
     @JavascriptInterface
-    fun settle(pkg: String, game: String, stakeSec: Int, returnSec: Int): Int {
-        if (!validPkg(pkg)) return 0
-        return Bank.editAt { b, now -> b.settleBet(pkg, game, stakeSec, returnSec, now) }
+    fun bet(pkg: String, stakeSec: Int): Boolean = false
+
+    @JavascriptInterface
+    fun settle(pkg: String, game: String, stakeSec: Int, returnSec: Int): Int = TimeBank.INVALID_SETTLE
+
+    /** One-shot games: "coin" (args {pick: "H"|"T"}), "roulette" ({bets: [...]}, [stakeSec] per bet), "slots". */
+    @JavascriptInterface
+    fun play(pkg: String, game: String, stakeSec: Int, args: String): String {
+        if (!validPkg(pkg)) return BAD
+        val a = try { JSONObject(args) } catch (e: Exception) { JSONObject() }
+        return Bank.editAt { b, now ->
+            when (game) {
+                "coin" -> Bank.dealer.coin(b, pkg, stakeSec, a.optString("pick", ""), now)
+                "roulette" -> {
+                    val arr = a.optJSONArray("bets")
+                    val bets = if (arr == null) emptyList() else (0 until minOf(arr.length(), 64)).map { arr.optString(it, "") }
+                    Bank.dealer.roulette(b, pkg, stakeSec, bets, now)
+                }
+                "slots" -> Bank.dealer.slots(b, pkg, stakeSec, now)
+                else -> JSONObject(BAD)
+            }
+        }.toString()
+    }
+
+    @JavascriptInterface
+    fun bjDeal(pkg: String, stakeSec: Int): String =
+        if (!validPkg(pkg)) BAD else Bank.editAt { b, now -> Bank.dealer.bjDeal(b, pkg, stakeSec, now) }.toString()
+
+    @JavascriptInterface
+    fun bjHit(): String = Bank.editAt { b, now -> Bank.dealer.bjHit(b, now) }.toString()
+
+    @JavascriptInterface
+    fun bjDouble(): String = Bank.editAt { b, now -> Bank.dealer.bjDouble(b, now) }.toString()
+
+    @JavascriptInterface
+    fun bjStand(): String = Bank.editAt { b, now -> Bank.dealer.bjStand(b, now) }.toString()
+
+    @JavascriptInterface
+    fun pkDeal(pkg: String, stakeSec: Int): String =
+        if (!validPkg(pkg)) BAD else Bank.editAt { b, _ -> Bank.dealer.pkDeal(b, pkg, stakeSec) }.toString()
+
+    /** [held]: one bit per card kept, bit 0 for the first card. */
+    @JavascriptInterface
+    fun pkDraw(held: Int): String = Bank.editAt { b, now -> Bank.dealer.pkDraw(b, held, now) }.toString()
+
+    /** The daily free spin: once a day, after a day within the limits. The prize goes to [pkg]. */
+    @JavascriptInterface
+    fun freeSpin(pkg: String): String =
+        if (!validPkg(pkg)) BAD else Bank.editAt { b, now -> Bank.dealer.freeSpin(b, pkg, now) }.toString()
+
+    /* ---- Focus schedules ---- */
+
+    /** Adds ([id] 0) or changes a schedule. Returns its id, or 0 when refused. */
+    @JavascriptInterface
+    fun setSchedule(id: Int, label: String, days: Int, startMin: Int, endMin: Int, on: Boolean): Int {
+        val res = Bank.editAt { b, now ->
+            val sid = if (id <= 0) b.nextScheduleId() else id
+            if (b.setSchedule(Schedule(sid, label, days, startMin, endMin, on), now)) sid else 0
+        }
+        AppWatcherService.instance?.scheduleExpiry()
+        return res
+    }
+
+    @JavascriptInterface
+    fun removeSchedule(id: Int): Boolean {
+        val ok = Bank.editAt { b, now -> b.removeSchedule(id, now) }
+        AppWatcherService.instance?.scheduleExpiry()
+        return ok
     }
 
     /** Reserves time and opens the app. */
@@ -276,7 +346,7 @@ class AnteBridge(
     fun endFocus(): Boolean {
         val now = Bank.now()
         if (!waitDone() || Bank.read { it.isStrict(now) }) return false
-        Bank.edit { it.endFocus() }
+        Bank.editAt { b, t -> b.endFocus(t) }
         waitStartedAt = 0
         return true
     }
@@ -355,6 +425,7 @@ class AnteBridge(
         private val HAPTIC_KINDS = setOf("tap", "tick", "win", "loss")
         private val HEX_COLOR = Regex("^#[0-9a-fA-F]{6}$")
         private val STRICT_DAYS = 1..31
+        private const val BAD = "{\"ok\":false,\"error\":\"bet\"}"
         private const val DAY_MS = 24 * 60 * 60_000L
         private val OUTSIDE_LINKS = setOf("https://ko-fi.com/peteracz", "mailto:peter.racz.rhr@gmail.com")
         private const val WAIT_MS = 30_000L

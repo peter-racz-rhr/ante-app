@@ -32,6 +32,11 @@ object Codec {
         put("settingsPassUntilMs", s.settingsPassUntilMs)
         put("strictUntilMs", s.strictUntilMs)
         put("focusUntilMs", s.focusUntilMs)
+        put("schedules", JSONArray().apply {
+            s.schedules.forEach { put(JSONObject().put("id", it.id).put("label", it.label).put("days", it.days).put("startMin", it.startMin).put("endMin", it.endMin).put("on", it.on)) }
+        })
+        put("scheduleSkipUntilMs", s.scheduleSkipUntilMs)
+        put("freeSpinDay", s.freeSpinDay)
         put("clock", JSONObject().put("wallMs", s.clock.wallMs).put("elapsedMs", s.clock.elapsedMs).put("lastTrustedMs", s.clock.lastTrustedMs).put("bootCount", s.clock.bootCount))
         val session = s.session
         if (session != null) {
@@ -73,6 +78,11 @@ object Codec {
                 settingsPassUntilMs = o.optLong("settingsPassUntilMs", 0),
                 strictUntilMs = o.optLong("strictUntilMs", 0),
                 focusUntilMs = o.optLong("focusUntilMs", 0),
+                schedules = o.optJSONArray("schedules").objects().map { j ->
+                    Schedule(j.optInt("id", 0), j.optString("label", ""), j.optInt("days", 0), j.optInt("startMin", 0), j.optInt("endMin", 0), j.optBoolean("on", true))
+                }.filter { it.valid }.take(Schedule.MAX),
+                scheduleSkipUntilMs = o.optLong("scheduleSkipUntilMs", 0),
+                freeSpinDay = o.optString("freeSpinDay", ""),
                 clock = o.optJSONObject("clock")?.let { j ->
                     ClockAnchor(j.optLong("wallMs", 0), j.optLong("elapsedMs", 0), j.optLong("lastTrustedMs", 0), j.optInt("bootCount", -1))
                 } ?: ClockAnchor(),

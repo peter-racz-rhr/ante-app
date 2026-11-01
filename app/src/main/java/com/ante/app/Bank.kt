@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.os.SystemClock
 import android.provider.Settings
 import com.ante.app.core.Codec
+import com.ante.app.core.Dealer
 import com.ante.app.core.TimeBank
 import com.ante.app.core.TrustedClock
 import java.time.ZoneId
@@ -22,6 +23,9 @@ object Bank {
     private var prefs: SharedPreferences? = null
     private var bank: TimeBank? = null
 
+    /** Deals every table round natively; only ever used inside [editAt]. */
+    val dealer = Dealer()
+
     @Synchronized
     fun init(context: Context) {
         if (bank != null) return
@@ -37,7 +41,8 @@ object Bank {
     fun <T> editAt(block: (TimeBank, Long) -> T): T {
         val b = checkNotNull(bank) { "Bank.init() was not called" }
         val now = tick(b)
-        b.rolloverIfDue(now, ZoneId.systemDefault())
+        b.zone = ZoneId.systemDefault()
+        b.rolloverIfDue(now, b.zone)
         val result = block(b, now)
         save(b)
         return result
@@ -49,7 +54,8 @@ object Bank {
     @Synchronized
     fun <T> read(block: (TimeBank) -> T): T {
         val b = checkNotNull(bank) { "Bank.init() was not called" }
-        if (b.rolloverIfDue(tick(b), ZoneId.systemDefault())) save(b)
+        b.zone = ZoneId.systemDefault()
+        if (b.rolloverIfDue(tick(b), b.zone)) save(b)
         return block(b)
     }
 
@@ -84,5 +90,6 @@ object Bank {
 
     private fun save(b: TimeBank) {
         prefs?.edit()?.putString(KEY, Codec.encode(b.state))?.apply()
+        app?.let { TimeWidget.refresh(it) }
     }
 }

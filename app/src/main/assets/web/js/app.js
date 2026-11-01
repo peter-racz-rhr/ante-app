@@ -98,13 +98,14 @@
     App.$overlay.innerHTML = vSheet() + (ui.toast ? `<div class="toast" role="status">${esc(ui.toast)}</div>` : "");
     sheetShown = !!ui.sheet;
     if (App.Scenes && ui.sheet) App.Scenes.run(App.$overlay);
-    if (App.mountWheels && ui.sheet && ui.sheet.type === "explain") App.mountWheels(App.$overlay, App.exWheel);
+    // Scroll wheels in a sheet report to that sheet's handler (App.wheelHandlers[type]).
+    if (App.mountWheels && ui.sheet) App.mountWheels(App.$overlay, (id, v) => { const h = (App.wheelHandlers || {})[ui.sheet && ui.sheet.type]; if (h) h(id, v); });
     if (sheetShown && wasShown) App.$overlay.querySelector(".scrim").classList.add("still"); // no re-entry animation on updates
     if (focusSearch) { const s = document.getElementById("app-search"); if (s) { s.focus(); try { s.setSelectionRange(caret, caret); } catch (e) { /* type=search */ } } }
   };
 
   /* ---------- navigation: three tabs, with an indicator that glides to the active one ---------- */
-  const TABS = [["home", "Home", "home"], ["tables", "Play", "play"], ["profile", "Profile", "user"]];
+  const ALL_TABS = [["home", "Home", "home"], ["tables", "Play", "play"], ["profile", "Profile", "user"]];
   const TAB_OF = { home: "home", screentime: "home", results: "home", tables: "tables", game: "tables", profile: "profile", settings: "profile", legal: "profile" };
   let indX = null;
   function navbar() {
@@ -112,6 +113,7 @@
     const S = App.S, cur = TAB_OF[ui.view] || "home";
     const care = !S.accessibility || !S.watching || S.batteryOk === false;
     const lock = ui.busy || ui.round ? "disabled" : "";
+    const TABS = App.tablesOn() ? ALL_TABS : ALL_TABS.filter(t => t[0] !== "tables");
     return `<nav class="navpill" aria-label="Sections"><span class="nav-ind" aria-hidden="true"></span>${TABS.map(([t, l, ic]) =>
       `<button data-a="tab" data-t="${t}" aria-label="${l}" aria-current="${cur === t ? "page" : "false"}" ${lock}>${App.ICON[ic]}${t === "profile" && care ? '<i class="ndot"></i>' : ""}</button>`).join("")}</nav>`;
   }

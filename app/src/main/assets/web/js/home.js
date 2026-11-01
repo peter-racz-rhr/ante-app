@@ -187,10 +187,10 @@
         ${tr.svg}
         <div class="ledger-box"><div class="lrow"><span>Won</span><span class="num">${signed(won30)}</span></div><div class="lrow"><span>Lost</span><span class="num">${lost30 ? signed(-lost30) : signed(0)}</span></div></div>
       </section>
-      <section class="panel" aria-labelledby="h-bets">
+      ${App.tablesOn() ? `<section class="panel" aria-labelledby="h-bets">
         <div class="panel-head"><div><h2 class="h3" id="h-bets">Recent bets</h2><p class="muted">Today's rounds</p></div><button class="btn-sm" data-a="tab" data-t="tables">Play</button></div>
         ${recent ? `<div class="txns">${recent}</div>` : `<p class="muted">No bets today. Results show up here as you play.</p>`}
-      </section>
+      </section>` : ""}
     </div>`;
   };
 

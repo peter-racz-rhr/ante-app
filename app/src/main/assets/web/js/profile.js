@@ -48,7 +48,7 @@
   }
 
   /** The native part (APK) is older than this UI needs for full screen and vibration. */
-  const NATIVE_WANTED = [0, 5, 0];
+  const NATIVE_WANTED = [0, 6, 0];
   function nativeOutdated() {
     if (!A.native) return false;
     const v = (A.versions && A.versions()) || {};
@@ -76,7 +76,7 @@
       <section class="update-note" role="status">
         <span class="sicon" style="--ic:var(--warn)" aria-hidden="true">${App.ICON.info}</span>
         <div><p class="sitem-title">Install the new app version once</p>
-        <p class="sitem-sub">This phone runs Ante ${esc((A.versions().app) || "")}. Full screen, vibration, photos, Focus and timed Strict mode need 0.5.0. Open the <b>ante-app</b> project in Android Studio and press Run.</p></div>
+        <p class="sitem-sub">This phone runs Ante ${esc((A.versions().app) || "")}. Schedules, the daily spin and fair tables dealt by the phone need 0.6.0. Open the <b>ante-app</b> project in Android Studio and press Run.</p></div>
       </section>` : "";
   }
 
@@ -145,6 +145,7 @@
           return `<span class="wd ${ok ? "ok" : over ? "over" : ""} ${d.today ? "today" : ""}"><i></i><b>${esc(d.d.toLocaleDateString(undefined, { weekday: "narrow" }))}</b></span>`;
         }).join("")}</div>
         <p class="sitem-sub">${budget ? "A filled dot is a day you stayed within your limits." : "Add a limit on Home to start counting."}</p>
+        ${(S.history || []).length ? `<button class="link pw-recap" data-a="recap">${App.ICON.heart}<span>Your week in one card</span>${App.ICON.chev}</button>` : ""}
       </section>
 
       <section class="panel pcard donate" aria-labelledby="pd-h">
@@ -183,7 +184,9 @@
         ${item({ icon: "shield", tone: ok ? "var(--win)" : "var(--loss)", title: "Accessibility switch", trail: ok ? status("good", "Running") : `<button class="btn-sm" data-a="settingsGo" data-go="acc">${S.accessibility ? "Restart" : "Turn on"}</button>` })}
         ${item({ icon: "battery", tone: S.batteryOk === false ? "var(--warn)" : "#34d399", title: "Background use", trail: S.batteryOk === false ? `<button class="btn-sm" data-a="settingsGo" data-go="battery">Allow</button>` : status("good", "Allowed") })}
         ${item({ icon: "clock", tone: S.autoTime === false ? "var(--warn)" : "#60a5fa", title: "Date & time", trail: S.autoTime === false ? `<button class="btn-sm" data-a="settingsGo" data-go="date">Fix</button>` : status("good", "Automatic") })}
-        ${S.accessibility ? App.modeItems(item, status) : ""}`,
+        ${S.accessibility ? App.modeItems(item, status) : ""}
+        ${A.setSchedule ? item({ icon: "clock", tone: "#a78bfa", title: "Schedules", sub: esc(App.scheduleLine() || "Focus for work hours or sleep"), action: "schedules" }) : ""}
+        ${item({ icon: "play", tone: "#f472b6", title: "Tables", sub: "Gamble minutes for more time", trail: App.toggle("tablesOn", App.tablesOn(), "Tables") })}`,
         App.modes().strict ? "Settings opens after a 30-second wait while Strict mode is on." : "")}
 
 

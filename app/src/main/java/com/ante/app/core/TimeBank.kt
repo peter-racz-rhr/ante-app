@@ -1,6 +1,7 @@
 package com.ante.app.core
 
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 
 /**
@@ -10,6 +11,9 @@ import java.time.ZoneId
 class TimeBank(initial: BankState = BankState()) {
     var state: BankState = initial
         private set
+
+    /** Local time zone, for schedules. [com.ante.app.Bank] keeps it current; tests set it. */
+    var zone: ZoneId = ZoneId.systemDefault()
 
     /** Stakes placed but not settled yet, per app. Kept in memory only: an unfinished hand is lost. */
     private val openStakes = mutableMapOf<String, Int>()
@@ -90,9 +94,86 @@ class TimeBank(initial: BankState = BankState()) {
         return true
     }
 
-    fun endFocus() { state = state.copy(focusUntilMs = 0) }
+    /** Ends Focus now, the manual one and any scheduled window running (until that window is over). */
+    fun endFocus(nowMs: Long = 0) {
+        val skip = scheduledFocusEnd(nowMs) ?: state.scheduleSkipUntilMs
+        state = state.copy(focusUntilMs = 0, scheduleSkipUntilMs = skip)
+    }
 
-    fun isFocus(nowMs: Long): Boolean = nowMs < state.focusUntilMs
+    fun isFocus(nowMs: Long): Boolean = nowMs < state.focusUntilMs || scheduledFocusEnd(nowMs) != null
+
+    /** When Focus ends, counting both a manual session and scheduled windows (0 = not in Focus). */
+    fun focusEndsAt(nowMs: Long): Long {
+        val manual = if (nowMs < state.focusUntilMs) state.focusUntilMs else 0L
+        return maxOf(manual, scheduledFocusEnd(nowMs) ?: 0L)
+    }
+
+    /** The end of the scheduled window covering now (the latest, if they overlap), unless it was skipped. */
+    fun scheduledFocusEnd(nowMs: Long): Long? {
+        if (nowMs < state.scheduleSkipUntilMs) return null
+        return state.schedules.mapNotNull { it.activeEnd(nowMs, zone) }.maxOrNull()
+    }
+
+    /** The next time a schedule starts or ends, so the watcher can wake up for it. */
+    fun nextScheduleChange(nowMs: Long): Long? =
+        (state.schedules.mapNotNull { it.nextChange(nowMs, zone) } + listOf(state.scheduleSkipUntilMs).filter { it > nowMs }).minOrNull()
+
+    /** During Focus no session runs: one still open (it started before a window began) ends with a refund. */
+    fun enforceFocus(nowMs: Long): String? {
+        val s = state.session ?: return null
+        if (!isFocus(nowMs)) return null
+        endSession(nowMs)
+        return s.pkg
+    }
+
+    /**
+     * Adds or changes a schedule. Changing or removing one is refused while Strict mode is on or
+     * while any scheduled window runs, since that would be a way out; adding one always works.
+     */
+    fun setSchedule(s: Schedule, nowMs: Long): Boolean {
+        val clean = s.copy(label = s.label.trim().take(24))
+        if (!clean.valid) return false
+        val existing = state.schedules.firstOrNull { it.id == clean.id }
+        if (existing == null) {
+            if (state.schedules.size >= Schedule.MAX) return false
+        } else if (!canEditSchedules(nowMs)) return false
+        state = state.copy(schedules = if (existing == null) state.schedules + clean else state.schedules.map { if (it.id == clean.id) clean else it })
+        return true
+    }
+
+    fun removeSchedule(id: Int, nowMs: Long): Boolean {
+        if (state.schedules.none { it.id == id } || !canEditSchedules(nowMs)) return false
+        state = state.copy(schedules = state.schedules.filterNot { it.id == id })
+        return true
+    }
+
+    fun canEditSchedules(nowMs: Long): Boolean = !isStrict(nowMs) && scheduledFocusEnd(nowMs) == null
+
+    fun nextScheduleId(): Int = (state.schedules.maxOfOrNull { it.id } ?: 0) + 1
+
+    /* ---------- daily free spin ---------- */
+
+    /** Yesterday was spent within today's total budget, and today's spin is still unused. */
+    fun freeSpinAvailable(): Boolean {
+        if (state.day.isEmpty() || state.freeSpinDay == state.day) return false
+        val budget = state.limits.sumOf { it.limitSec.toLong() }
+        if (budget <= 0) return false
+        val yesterday = try { LocalDate.parse(state.day).minusDays(1).toString() } catch (e: Exception) { return false }
+        val y = state.history.firstOrNull { it.day == yesterday } ?: return false
+        return y.usedSec <= budget
+    }
+
+    /** Adds the free spin's [prizeSec] to [pkg] and uses up today's spin. */
+    fun claimFreeSpin(pkg: String, prizeSec: Int, nowMs: Long): Boolean {
+        if (!freeSpinAvailable() || limitFor(pkg) == null || prizeSec !in 1..FREE_SPIN_MAX_SEC) return false
+        adjustLeft(pkg, prizeSec)
+        state = state.copy(
+            freeSpinDay = state.day,
+            ledger = (listOf(Bet(FREE_SPIN_GAME, pkg, prizeSec, nowMs)) + state.ledger).take(LEDGER_MAX),
+            wonTodaySec = state.wonTodaySec + prizeSec,
+        )
+        return true
+    }
 
     /** While Focus or Strict runs, a limit can't be removed: that would uncover the app and end the lock early. */
     fun canRemoveLimits(nowMs: Long): Boolean = !isFocus(nowMs) && !isStrict(nowMs)
@@ -102,6 +183,7 @@ class TimeBank(initial: BankState = BankState()) {
         var s = state
         if (s.strict && s.strictUntilMs > 0 && nowMs >= s.strictUntilMs) s = s.copy(strict = false, strictUntilMs = 0, settingsPassUntilMs = 0)
         if (s.focusUntilMs > 0 && nowMs >= s.focusUntilMs) s = s.copy(focusUntilMs = 0)
+        if (s.scheduleSkipUntilMs > 0 && nowMs >= s.scheduleSkipUntilMs) s = s.copy(scheduleSkipUntilMs = 0)
         if (s == state) return false
         state = s
         return true
@@ -270,6 +352,9 @@ class TimeBank(initial: BankState = BankState()) {
         const val FOCUS_MAX_MS = 12 * 60 * 60_000L
         /** Longest strict lock: 31 days. */
         const val STRICT_MAX_MS = 31 * 24 * 60 * 60_000L
+
+        const val FREE_SPIN_GAME = "Daily spin"
+        const val FREE_SPIN_MAX_SEC = 15 * 60
 
         /** Returned by [settleBet] when there is no matching open stake. */
         const val INVALID_SETTLE = Int.MIN_VALUE

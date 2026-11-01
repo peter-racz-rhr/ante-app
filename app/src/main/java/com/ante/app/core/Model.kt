@@ -51,6 +51,12 @@ data class BankState(
     val lostTodaySec: Int = 0,
     /** Finished days, newest first. */
     val history: List<DaySummary> = emptyList(),
+    /** Repeating Focus windows (work hours, sleep). */
+    val schedules: List<Schedule> = emptyList(),
+    /** A scheduled window ended early with the wait stays off until then. */
+    val scheduleSkipUntilMs: Long = 0,
+    /** The day the daily free spin was last used. */
+    val freeSpinDay: String = "",
 )
 
 /** One finished day, kept for the history charts. */

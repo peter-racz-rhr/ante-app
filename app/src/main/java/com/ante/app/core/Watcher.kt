@@ -27,6 +27,7 @@ class Watcher(
     fun onWindow(bank: TimeBank, pkg: String, isActivity: Boolean, ignored: Boolean, isHome: Boolean, nowMs: Long): Action {
         // Every event is a chance to catch a session that ran out while the timer was asleep.
         val expired = expireSession(bank, nowMs)
+        bank.enforceFocus(nowMs)
         if (ignored || !isActivity) return expired
 
         // Screens inside the same app don't count, unless that app should be blocked right now:
@@ -52,6 +53,9 @@ class Watcher(
     fun onTimer(bank: TimeBank, nowMs: Long): Action {
         val expired = expireSession(bank, nowMs)
         if (expired is Action.Block) return expired
+        // A scheduled Focus window just began over an app in use: cover it.
+        val cut = bank.enforceFocus(nowMs)
+        if (cut != null && cut == foreground) return Action.Block(cut, FOCUS_NOTE)
         val fg = foreground ?: return Action.None
         return if (guarded(bank, fg, nowMs)) Action.Block(fg, GUARD_NOTE) else Action.None
     }

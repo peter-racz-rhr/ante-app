@@ -77,7 +77,7 @@ class AppWatcherService : AccessibilityService() {
         super.onDestroy()
     }
 
-    /** Wakes up when the current session's time, or a strict-mode Settings pass, runs out. */
+    /** Wakes up when the current session's time, a strict-mode Settings pass, or a schedule window starts or ends. */
     fun scheduleExpiry() {
         handler.post {
             handler.removeCallbacks(expiryCheck)
@@ -85,7 +85,8 @@ class AppWatcherService : AccessibilityService() {
             val (session, passUntil) = Bank.read { it.state.session to (if (it.state.strict) it.state.settingsPassUntilMs else 0L) }
             // Also wake when Focus or a strict lock ends, so the screen updates on time.
             val (focusUntil, strictUntil) = Bank.read { it.state.focusUntilMs to it.state.strictUntilMs }
-            val next = listOfNotNull(session?.endsAtMs, passUntil.takeIf { it > now }, focusUntil.takeIf { it > now }, strictUntil.takeIf { it > now }).minOrNull() ?: return@post
+            val schedule = Bank.read { it.nextScheduleChange(now) }
+            val next = listOfNotNull(session?.endsAtMs, passUntil.takeIf { it > now }, focusUntil.takeIf { it > now }, strictUntil.takeIf { it > now }, schedule).minOrNull() ?: return@post
             handler.postDelayed(expiryCheck, (next - now).coerceAtLeast(0) + 250)
         }
     }

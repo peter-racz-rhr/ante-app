@@ -34,7 +34,7 @@ jobs:
         run: ./gradlew --no-daemon assembleDebug
 
       - name: Game rule tests
-        run: node --test web-tests/games.test.js
+        run: node --test web-tests/games.test.js web-tests/dealer.test.js
 
       - name: UI test in Chromium
         run: |

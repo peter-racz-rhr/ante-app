@@ -41,12 +41,14 @@
   /** Mode flags from the latest state (the native side computes them; older apps don't). */
   App.modes = () => {
     const S = App.S, now = S.now || Date.now();
-    const strictUntil = S.strictUntilMs || 0, focusUntil = S.focusUntilMs || 0;
+    // focusEndsAt (0.6.0+) also counts scheduled windows; older apps only send focusUntilMs.
+    const strictUntil = S.strictUntilMs || 0, focusUntil = S.focusEndsAt || S.focusUntilMs || 0;
     return {
       strict: S.strictActive != null ? !!S.strictActive : !!S.strict,
       strictUntil: strictUntil > now ? strictUntil : 0,
       focus: S.focusActive != null ? !!S.focusActive : focusUntil > now,
       focusUntil: focusUntil > now ? focusUntil : 0,
+      scheduled: !!S.scheduleActive,
       now,
     };
   };
@@ -104,7 +106,8 @@
   const goLabel = sh => sh.mode === "strict" ? `Lock · ${strictLabel(pickOf(sh))}` : `Start · ${focusLabel(pickOf(sh))}`;
 
   /** Wheel turned: keep the value valid and update the end time and button in place. */
-  App.exWheel = (id, val) => {
+  App.wheelHandlers = App.wheelHandlers || {};
+  App.wheelHandlers.explain = App.exWheel = (id, val) => {
     const sh = ui.sheet; if (!sh || sh.type !== "explain") return;
     const box = App.$overlay;
     if (sh.mode === "strict") sh.pick = val;
@@ -168,10 +171,10 @@
       <div class="panel-head"><div class="fc-h"><span class="sicon" style="--ic:#a78bfa" aria-hidden="true">${App.ICON.moon}</span><div><h2 class="h3" id="focus-h">Focus</h2><p class="muted">Ends ${esc(when(m.focusUntil))}</p></div></div>
         <button class="btn-sm ghost" data-a="focusEnd" ${m.strict ? "disabled" : ""}>End</button></div>
       <div class="dotclock-box"><p class="dotclock" data-fit="96" data-until-clock="${m.focusUntil}">${App.fmt(Math.max(0, Math.round((m.focusUntil - Date.now()) / 1000)))}</p></div>
-      <p class="muted fc-note">Every limited app stays covered until then.</p></section>`;
+      <p class="muted fc-note">${m.scheduled ? `Scheduled. ${esc(App.scheduleLine ? App.scheduleLine() : "")}` : "Every limited app stays covered until then."}</p></section>`;
     return `<section class="panel focus-card" aria-labelledby="focus-h">
       <div class="panel-head"><div class="fc-h"><span class="sicon" style="--ic:#a78bfa" aria-hidden="true">${App.ICON.moon}</span><div><h2 class="h3" id="focus-h">Focus</h2><p class="muted">Cover every limited app for a while</p></div></div>
-        <button class="btn-sm" data-a="explain" data-v="focus">Start</button></div></section>`;
+        <button class="btn-sm" data-a="explain" data-v="focus">Start</button></div>${App.scheduleButton ? App.scheduleButton() : ""}</section>`;
   };
   App.focusChip = () => App.modes().focus ? "" : `<button class="chip-sm" data-a="explain" data-v="focus">${App.ICON.moon}Focus</button>`;
 

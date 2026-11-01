@@ -5,10 +5,11 @@
   "use strict";
   const App = window.App;
   const esc = App.esc;
-  const ITEM = 44, VISIBLE = 5; // px per row, rows in view
+  const ITEM = 44, VISIBLE = 5, SMALL = 36; // px per row, rows in view; row height of a small wheel
+  const rowOf = list => parseFloat(getComputedStyle(list.closest(".picker")).getPropertyValue("--pk-h")) || ITEM;
 
-  /** cols: [{ id, values: [...], label: v => text, value, unit, aria }] */
-  App.wheels = cols => `<div class="picker" style="--pk-h:${ITEM}px;--pk-n:${VISIBLE}">
+  /** cols: [{ id, values: [...], label: v => text, value, unit, aria }]; opts.small makes a 3-row wheel. */
+  App.wheels = (cols, opts) => `<div class="picker${opts && opts.small ? " sm" : ""}" style="--pk-h:${opts && opts.small ? SMALL : ITEM}px;--pk-n:${opts && opts.small ? 3 : VISIBLE}">
     <span class="pk-band" aria-hidden="true"></span>
     ${cols.map(c => `<div class="pk-col">
       <div class="pk-list" data-wheel="${esc(c.id)}" role="listbox" tabindex="0" aria-label="${esc(c.aria)}">
@@ -24,7 +25,7 @@
     (root || document).querySelectorAll(".pk-list").forEach(list => {
       if (list.__wheel) return;
       list.__wheel = true;
-      const items = [...list.querySelectorAll(".pk-item")];
+      const items = [...list.querySelectorAll(".pk-item")], ITEM = rowOf(list);
       let idx = Math.max(0, items.findIndex(i => i.getAttribute("aria-selected") === "true"));
       list.scrollTop = idx * ITEM;
       const paint = () => {
@@ -67,6 +68,6 @@
   App.setWheel = (root, id, value) => {
     const list = (root || document).querySelector(`.pk-list[data-wheel="${id}"]`); if (!list) return;
     const items = [...list.querySelectorAll(".pk-item")], i = items.findIndex(it => Number(it.dataset.v) === value);
-    if (i >= 0) list.scrollTo({ top: i * ITEM, behavior: "smooth" });
+    if (i >= 0) list.scrollTo({ top: i * rowOf(list), behavior: "smooth" });
   };
 })();

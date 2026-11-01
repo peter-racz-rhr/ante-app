@@ -59,6 +59,9 @@
     const head = App.BLOCK
       ? `<header class="topbar">${App.backBtn("toBlock", `Back to ${App.CTX.label}`)}<div class="grow"><p class="eyebrow">Playing with ${esc(App.CTX.label)} time</p><h1 class="h2">Tables</h1></div>${App.soundBtn()}</header>`
       : `<header class="topbar"><div class="grow"><h1 class="h1">Play</h1><p class="muted">Stake minutes. Wins go back to that app; losses are gone for today.</p></div>${App.soundBtn()}</header>`;
+    if (!App.tablesOn()) {
+      return `<div class="screen" id="screen">${head}<section class="panel"><h2 class="h3">The tables are off</h2><p class="muted">Ante works as a plain blocker. Turn the tables back on in Settings.</p></section></div>`;
+    }
     if (!l || l.leftSec < 60) {
       return `<div class="screen" id="screen">${head}<section class="panel"><h2 class="h3">Nothing to stake</h2><p class="muted">${S.limits.length ? "Every limited app is under a minute for today. Budgets reset at midnight." : "Add a limit on Home first. Its minutes are your chips."}</p></section></div>`;
     }
@@ -67,6 +70,7 @@
         <span class="gtext"><span class="gname">${g.name}</span><span class="grule">${g.rule}</span></span>
         <span class="rtp"><span class="num">${g.rtp}</span> back</span></button>`).join("");
     return `<div class="screen" id="screen">${head}
+      ${App.freeSpinCard()}
       <section class="games" aria-label="Tables">${games}</section>
       <p class="fine">No real money. "Back" is the average share of a stake each table returns, so the house keeps a little every round.</p>
     </div>`;
@@ -97,7 +101,7 @@
         ui.flick = { dir, power }; b.click(); return true;
       } }); }
     if (ui.game === "slots") { table = FX.Slots(el, ["seven", "bell", "cherry"]); paytableSlots(el); }
-    if (ui.game === "blackjack") { ui.shoe = ui.shoe && ui.shoe.length > 30 ? ui.shoe : G.newShoe(); table = FX.Blackjack(el); }
+    if (ui.game === "blackjack") table = FX.Blackjack(el);
     if (ui.game === "poker") {
       table = FX.Poker(el, i => {
         if (ui.round && ui.round.phase === "dealt" && !ui.busy) { ui.round.held[i] = !ui.round.held[i]; table.setHold(i, ui.round.held[i]); App.haptic("tap"); App.SFX.play("chip"); }
@@ -238,29 +242,31 @@
   }
   App.exitFocusNow = () => exitFocus(0);
 
-  /* ---------- rounds ---------- */
+  /* ---------- rounds ----------
+     Every round is decided by A.play / A.bj* / A.pk* (natively on the phone, since 0.6.0): the
+     stake comes off, the result is drawn and paid in one step, and the page only animates it. */
   const INVALID_SETTLE = -2147483648;
-  function takeStake(sec, game) {
-    if (!A.bet(ui.stakePkg, sec)) { App.toast(`Not enough ${App.labelOf(ui.stakePkg)} time for that stake.`); return false; }
-    ui.pending = { game, stake: (ui.pending ? ui.pending.stake : 0) + sec };
-    App.refresh(); return true;
+  /** Starts a round, or explains why it couldn't. */
+  function start(r) {
+    if (r && r.ok) { App.refresh(); return true; }
+    const why = r && r.error;
+    App.toast(why === "stake" ? `Not enough ${App.labelOf(ui.stakePkg)} time for that stake.` : why === "round" ? "That hand is already over." : "That bet isn't on the table.");
+    return false;
   }
-  /** Runs a round. If anything throws after the stake was taken, the stake goes back. */
+  /** Runs a round. If the animation breaks, the result still counts and is shown. */
   function guarded(fn) {
     return async function () {
       try { await fn.apply(this, arguments); }
       catch (err) {
         console.warn("round failed", err);
-        if (ui.pending) { A.settle(ui.stakePkg, ui.pending.game, ui.pending.stake, ui.pending.stake); ui.pending = null; }
-        ui.busy = false; ui.round = null; ui.res = { tone: "loss", text: "That round broke. Your stake is back." };
+        ui.busy = false; ui.round = null; ui.res = { tone: "loss", text: "The animation broke. Your balance is up to date." };
         App.refresh(); App.renderControls(); exitFocus(0);
       }
     };
   }
-  function finish(gameName, stake, multiple, prefix) {
-    const ret = Math.round(stake * multiple);
-    const net = A.settle(ui.stakePkg, gameName, stake, ret);
-    ui.pending = null;
+  /** Shows a settled round [r] ({stake, ret, net, multiple}). */
+  function finish(r, prefix) {
+    const { stake, ret, net, multiple } = r;
     App.refresh();
     ui.busy = false; ui.round = null;
     if (net === INVALID_SETTLE) {
@@ -275,93 +281,92 @@
       else if (net < 0) { App.haptic("loss"); App.SFX.play("lose"); }
       else App.SFX.play("push");
     }
-    const r = document.getElementById("result"); if (r) r.textContent = ui.res.text;
+    const el = document.getElementById("result"); if (el) el.textContent = ui.res.text;
     App.renderControls();
     exitFocus(1700);
   }
   async function begin() { ui.busy = true; ui.res = null; App.renderControls(); await enterFocus(); }
 
   async function coinFlip() {
-    const stake = ui.stake; if (!takeStake(stake, "Coin flip")) return;
+    const r = A.play(ui.stakePkg, "coin", ui.stake, { pick: ui.pick }); if (!start(r)) return;
     await begin();
-    const r = G.coinFlip(ui.pick);
     await table.flip(r.result);
-    finish("Coin flip", stake, r.multiple, r.result === "H" ? "Heads. " : "Tails. ");
+    finish(r, r.result === "H" ? "Heads. " : "Tails. ");
   }
   async function rSpin() {
-    const bets = (ui.rbets || []).filter(G.isRouletteBet), per = ui.stake;
+    const bets = [...new Set((ui.rbets || []).filter(G.isRouletteBet))];
     const flick = ui.flick; ui.flick = null; // set when the wheel was flicked by hand
     if (!bets.length) return;
-    const stake = per * bets.length; if (!takeStake(stake, "Roulette")) return;
+    const r = A.play(ui.stakePkg, "roulette", ui.stake, { bets }); if (!start(r)) return;
     await begin();
-    const n = G.rouletteSpin();
+    const n = r.n;
     let ticks = 0;
     await table.spin(n, () => { if (++ticks % 2 === 0) App.haptic("tick"); }, flick);
     ui.hist = [n, ...(ui.hist || [])].slice(0, 10);
     const won = bets.filter(b => G.rouletteReturn([b], n) > 0).map(b => b.startsWith("n:") ? b.slice(2) : G.ROULETTE_BETS[b].label);
     const hits = bets.length > 1 && won.length ? `${won.join(", ")} ${won.length === 1 ? "hits" : "hit"}. ` : "";
-    finish("Roulette", stake, G.rouletteReturn(bets, n) / bets.length, `${n} ${G.pocketColor(n)}. ${hits}`);
+    finish(r, `${n} ${G.pocketColor(n)}. ${hits}`);
   }
   async function sSpin() {
-    const stake = ui.stake; if (!takeStake(stake, "Slots")) return;
+    const r = A.play(ui.stakePkg, "slots", ui.stake, {}); if (!start(r)) return;
     await begin();
-    const reels = G.slotSpin();
-    await table.spin(reels, () => App.haptic("tick"));
-    const pay = G.slotPay(reels);
-    document.querySelectorAll(".slot-pays .sp").forEach(e => e.classList.toggle("on", e.dataset.key === pay.key));
-    if (pay.multiple >= 1) table.win();
-    finish("Slots", stake, pay.multiple, pay.multiple >= 10 ? "Jackpot row. " : "");
+    await table.spin(r.reels, () => App.haptic("tick"));
+    document.querySelectorAll(".slot-pays .sp").forEach(e => e.classList.toggle("on", e.dataset.key === r.key));
+    if (r.multiple >= 1) table.win();
+    finish(r, r.multiple >= 10 ? "Jackpot row. " : "");
   }
-  const draw = () => { if (ui.shoe.length < 20) ui.shoe = G.newShoe(); return ui.shoe.pop(); };
   async function bjDeal() {
-    const stake = ui.stake; if (!takeStake(stake, "Blackjack")) return;
-    const R = ui.round = { phase: "deal", stake, p: [draw(), draw()], d: [draw(), draw()] };
+    const r = A.bjDeal(ui.stakePkg, ui.stake); if (!start(r)) return;
+    const R = ui.round = { phase: "deal", stake: r.stake || ui.stake, p: r.p.slice(), up: r.d[0] };
     await begin();
-    table.chip(fmt(stake));
-    await table.deal(R.p, R.d, App.haptic);
-    table.values(G.handValue(R.p), G.handValue([R.d[0]]));
-    if (G.isBlackjack(R.p) || G.isBlackjack(R.d)) return bjSettle();
+    table.chip(fmt(R.stake));
+    await table.deal(R.p, [R.up], App.haptic);
+    table.values(G.handValue(R.p), G.handValue([R.up]));
+    if (r.done) return bjShow(r);
     R.phase = "play"; ui.busy = false; App.renderControls();
   }
   async function bjHit() {
     const R = ui.round; if (!R || ui.busy) return;
+    const r = A.bjHit(); if (!start(r)) return;
     ui.busy = true; App.renderControls();
-    const card = draw(); R.p.push(card);
-    await table.hit(card, App.haptic);
-    const v = G.handValue(R.p);
-    table.values(v, G.handValue([R.d[0]]));
-    if (v >= 21) return bjSettle();
+    R.p.push(r.card);
+    await table.hit(r.card, App.haptic);
+    table.values(G.handValue(R.p), G.handValue([R.up]));
+    if (r.done) return bjShow(r);
     ui.busy = false; App.renderControls();
   }
   async function bjDouble() {
     const R = ui.round; if (!R || ui.busy) return;
-    if (!takeStake(R.stake, "Blackjack")) return;
-    R.stake *= 2; table.chip(fmt(R.stake));
+    const r = A.bjDouble(); if (!start(r)) return;
+    R.stake = r.stake; table.chip(fmt(R.stake));
     ui.busy = true; App.renderControls();
-    const card = draw(); R.p.push(card);
-    await table.hit(card, App.haptic);
-    table.values(G.handValue(R.p), G.handValue([R.d[0]]));
-    await bjSettle();
+    R.p.push(r.card);
+    await table.hit(r.card, App.haptic);
+    table.values(G.handValue(R.p), G.handValue([R.up]));
+    await bjShow(r);
   }
-  async function bjSettle() {
-    const R = ui.round; ui.busy = true; App.renderControls();
-    await table.reveal(R.d[1]);
-    const pv = G.handValue(R.p);
-    if (pv <= 21 && !G.isBlackjack(R.p) && !G.isBlackjack(R.d)) {
-      while (G.handValue(R.d) < 17) { const c = draw(); R.d.push(c); table.values(pv, G.handValue(R.d)); await table.dealer(c, App.haptic); }
-    }
-    table.values(pv, G.handValue(R.d));
-    const res = G.blackjackMultiple(R.p, R.d), dv = G.handValue(R.d);
+  async function bjStand() {
+    const R = ui.round; if (!R || ui.busy) return;
+    const r = A.bjStand(); if (!start(r)) return;
+    await bjShow(r);
+  }
+  /** Turns the hole card, plays out the dealer's draws, and shows the settled hand [r]. */
+  async function bjShow(r) {
+    ui.busy = true; App.renderControls();
+    const d = r.d, pv = G.handValue(r.p);
+    await table.reveal(d[1]);
+    for (let i = 2; i < d.length; i++) { table.values(pv, G.handValue(d.slice(0, i))); await table.dealer(d[i], App.haptic); }
+    const dv = G.handValue(d);
+    table.values(pv, dv);
     const words = { blackjack: "Blackjack!", "dealer-blackjack": "Dealer blackjack", bust: "Bust", "dealer-bust": "Dealer busts", win: "You win", push: "Push", lose: "Dealer wins" };
-    table.banner(words[res.outcome], res.multiple > 1 ? "win" : res.multiple === 1 ? "" : "loss");
-    const prefix = res.outcome === "win" ? `${pv} beats ${dv}. ` : res.outcome === "lose" ? `Dealer's ${dv} beats ${pv}. ` : res.outcome === "bust" ? `Bust at ${pv}. ` : res.outcome === "dealer-bust" ? `Dealer busts at ${dv}. ` : "";
-    finish("Blackjack", R.stake, res.multiple, prefix);
+    table.banner(words[r.outcome], r.multiple > 1 ? "win" : r.multiple === 1 ? "" : "loss");
+    const prefix = r.outcome === "win" ? `${pv} beats ${dv}. ` : r.outcome === "lose" ? `Dealer's ${dv} beats ${pv}. ` : r.outcome === "bust" ? `Bust at ${pv}. ` : r.outcome === "dealer-bust" ? `Dealer busts at ${dv}. ` : "";
+    finish(r, prefix);
     table.chip("");
   }
   async function pDeal() {
-    const stake = ui.stake; if (!takeStake(stake, "Poker")) return;
-    const deck = G.shuffledDeck();
-    const R = ui.round = { phase: "deal", stake, deck, hand: deck.splice(0, 5), held: [false, false, false, false, false] };
+    const r = A.pkDeal(ui.stakePkg, ui.stake); if (!start(r)) return;
+    const R = ui.round = { phase: "deal", stake: ui.stake, hand: r.hand, held: [false, false, false, false, false] };
     await begin();
     await table.deal(R.hand, App.haptic);
     table.highlight(G.pokerRank(R.hand));
@@ -369,12 +374,12 @@
   }
   async function pDraw() {
     const R = ui.round; if (!R || ui.busy) return;
+    const r = A.pkDraw(R.held.reduce((m, h, i) => (h ? m | (1 << i) : m), 0)); if (!start(r)) return;
     ui.busy = true; table.enable(false); App.renderControls();
-    R.hand = R.hand.map((c, i) => (R.held[i] ? c : R.deck.shift()));
+    R.hand = r.hand;
     await table.draw(R.hand, R.held, App.haptic);
-    const res = G.pokerMultiple(R.hand);
-    table.highlight(res.rank);
-    finish("Poker", R.stake, res.multiple, res.rank ? `${res.rank}. ` : "No pair of jacks or better. ");
+    table.highlight(r.rank);
+    finish(r, r.rank ? `${r.rank}. ` : "No pair of jacks or better. ");
   }
 
   /* ---------- block screen ---------- */
@@ -431,7 +436,7 @@
         <p class="eyebrow">Open for</p>
         <div class="chips">${opts.map(([v, t]) => `<button class="chip" data-a="pickOpen" data-v="${v}" aria-pressed="${ui.openPick === v}" ${v > l.leftSec ? "disabled" : ""}>${t}</button>`).join("")}</div>
         <button class="btn primary" id="open-app" data-a="openApp" ${breathLeft() > 0 ? "disabled" : ""}>${breathLeft() > 0 ? `Take a breath · ${breathLeft()}` : `Open ${label} · ${fmt(ui.openPick)}`}</button>
-        <button class="btn quiet" data-a="toTables" ${l.leftSec < 60 ? "disabled" : ""}>Play for more time</button>
+        ${App.tablesOn() ? `<button class="btn quiet" data-a="toTables" ${l.leftSec < 60 ? "disabled" : ""}>Play for more time</button>` : ""}
       </section>
       <button class="btn ghost" data-a="closeBlock">Not now</button>
     </div>`;
@@ -462,7 +467,7 @@
     rClear() { ui.rbets = []; App.chipFx(); App.renderControls(); },
     rTab(d) { ui.rTab = d.v === "numbers" ? "numbers" : "outside"; App.chipFx(); App.renderControls(); },
     coinFlip: guarded(coinFlip), rSpin: guarded(rSpin), sSpin: guarded(sSpin),
-    bjDeal: guarded(bjDeal), bjHit: guarded(bjHit), bjStand: guarded(async () => { if (!ui.busy) await bjSettle(); }),
+    bjDeal: guarded(bjDeal), bjHit: guarded(bjHit), bjStand: guarded(bjStand),
     bjDouble: guarded(bjDouble), pDeal: guarded(pDeal), pDraw: guarded(pDraw),
     pickOpen(d) { ui.openPick = Number(d.v); App.chipFx(); App.render(); },
     openApp() {
