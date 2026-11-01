@@ -81,6 +81,23 @@ Strict mode and onboarding.
 To check a built copy, run `E2E_URL=http://localhost:8787/index.html node web-tests/e2e.js`
 against any local server.
 
+## Release signing
+
+Debug builds (Android Studio's Run button) use your computer's debug key, which is fine for your own
+phone. Before you give an APK to anyone else, sign it with your own key:
+
+1. **Build → Generate Signed App Bundle / APK → Create new…** and save the `.jks` file outside this
+   repository. Keep it and its passwords safe: without them you can never update the app.
+2. Create `keystore.properties` next to `settings.gradle.kts` (git ignores it):
+   ```
+   storeFile=../ante-release.jks
+   storePassword=…
+   keyAlias=ante
+   keyPassword=…
+   ```
+3. Build the release variant. Add the release key's SHA-1 as a second Android client in Google Cloud,
+   or Google sign-in fails in that APK.
+
 ## Focus and Strict mode
 
 - **Focus** (Home → Focus, or Profile → Blocking): every limited app stays covered for 25 min to
