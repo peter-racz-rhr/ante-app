@@ -1,4 +1,4 @@
-// Makes the Google Play and Instagram images from the real app (browser demo), so they always
+// Makes the Instagram images (Google Play: scripts/store-play.js) from the real app (browser demo), so they always
 // match the current UI. Usage: node scripts/store-art.js
 // Writes docs/store/ (5 phone screenshots, the feature graphic, the 512 px icon) and
 // docs/instagram/ (profile picture and the first carousel post).
@@ -207,7 +207,7 @@ async function instagram(b, S) {
 (async () => {
   const b = await chromium.launch();
   const S = await capture(b);
-  await store(b, S);
+  // Google Play art now comes from scripts/store-play.js (casino-felt set).
   await instagram(b, S);
   await b.close();
   console.log("Wrote", fs.readdirSync(STORE).length, "store images and", fs.readdirSync(INSTA).length, "Instagram images");
