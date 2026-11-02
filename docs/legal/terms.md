@@ -24,7 +24,7 @@ Signing in with Google is optional. It puts your name and email on this phone, a
 
 ## 6. Ante Supporter (Ko-fi donations)
 
-Ante is free. You can donate any amount on Ko-fi (ko-fi.com), once or more often. A donation is a voluntary gift to the developer: Ko-fi and its payment providers handle the payment, refunds and receipts under their own terms. As a thank-you, a donation made with the same email as your Google sign-in in Ante makes you an Ante Supporter: you get the Supporter badge, a gold ring round your profile picture and the extra looks (themes, clock fonts, table felts and card backs). Supporter never unlocks blocking features, minutes or better odds, and everything needed to manage your screen time stays free. Supporter status is a thank-you, not a purchase; it stays as long as Ante's supporter check is running, and is checked again about once a week.
+Ante is free. You can donate any amount on Ko-fi (ko-fi.com), once or more often. A donation is a voluntary gift to the developer: Ko-fi and its payment providers handle the payment, refunds and receipts under their own terms. As a thank-you, a donation made with the same email as your Google sign-in in Ante makes you an Ante Supporter: you get the Supporter badge and a gold ring round your profile picture, and nothing else: every feature and every look in Ante is free for everyone, and Supporter never unlocks blocking features, minutes or better odds. Supporter status is a thank-you, not a purchase; it stays as long as Ante's supporter check is running, and is checked again about once a week.
 
 ## 7. Use at your own risk
 

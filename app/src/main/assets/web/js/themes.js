@@ -37,7 +37,7 @@
     vt323: { name: "VT323", family: "VT323", lg: 400, sm: 400, vary: "normal" },
   };
 
-  /* Table felt and card backs (Supporter looks). "theme" keeps the felt in the flavour's colours. */
+  /* Table felt and card backs. "theme" keeps the felt in the flavour's colours. */
   const FELTS = {
     theme: { name: "Theme" },
     emerald: { name: "Emerald", felt: "#0f4a35", deep: "#06261b" },

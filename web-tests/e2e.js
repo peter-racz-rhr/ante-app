@@ -26,6 +26,7 @@ async function page(browser, query, opts = {}) {
   if (!opts.newTerms && !/onboard=1/.test(query)) await ctx.addInitScript(() => {
     try { const p = JSON.parse(localStorage.getItem("ante-prefs") || "{}"); if (!p.terms) { p.terms = { v: 99, at: 1 }; localStorage.setItem("ante-prefs", JSON.stringify(p)); } } catch (e) { /* storage blocked */ }
   });
+  await ctx.addInitScript(() => { window.__anteNoBadgePop = true; }); // badge moments are tested on their own
   const p = await ctx.newPage();
   p.errors = [];
   p.on("pageerror", e => p.errors.push(e.message));
@@ -571,24 +572,25 @@ async function noOverflow(p, label) {
     await pl2.click('[data-t="profile"]'); await pl2.waitForTimeout(200); await pl2.click('[data-a="openSettings"]'); await pl2.waitForTimeout(250);
     await pl2.click('[data-a="tablesOn"]'); await pl2.waitForTimeout(250);
     check(!!(await pl2.$('[data-t="tables"]')), "turning the tables back on brings the Play tab back");
-    // Ante Supporter: extra looks are locked until you donate on Ko-fi; blocking never is.
-    check(await pl2.isVisible('[data-a="clock"][data-v="sixtyfour"] .lock-mark'), "Supporter fonts show a lock");
+    // Nothing is locked: every look is free for everyone.
+    check(!(await pl2.$(".lock-mark")), "no look shows a lock");
     await pl2.click('[data-a="clock"][data-v="sixtyfour"]'); await pl2.waitForTimeout(300);
-    check(await pl2.isVisible('.sheet [data-a="kofi"]'), "a locked look opens the Supporter sheet with a Ko-fi button");
-    check(await pl2.evaluate(() => window.AntePrefs.get().clock) !== "sixtyfour", "a locked font isn't applied");
-    await shot(pl2, "26d-supporter");
+    check(await pl2.evaluate(() => window.AntePrefs.get().clock) === "sixtyfour", "any clock font can be picked without donating");
+    await pl2.click('[data-a="felt"][data-v="navy"]');
+    check(await pl2.evaluate(() => window.AntePrefs.get().felt) === "navy", "any table felt can be picked without donating");
     // Ko-fi: donating with the Google email, then "check" finds it (the demo finds one for any signed-in account).
     await pl2.evaluate(() => new Promise(res => { const was = window.anteAuth; window.anteAuth = r => { if (was) was(r); res(); }; window.App.A.signInWithGoogle(); }));
     await pl2.evaluate(() => { window.App.ui.sheet = { type: "supporter" }; window.App.paintOverlay(); }); await pl2.waitForTimeout(200);
-    await pl2.click('.sheet [data-a="supCheck"]');
+    // Signing in already asks once; otherwise "I donated, check" asks.
+    for (let k = 0; k < 20 && !(await pl2.evaluate(() => window.App.isSupporter())); k++) {
+      const b = await pl2.$('.sheet [data-a="supCheck"]:not([disabled])'); if (b) { await b.click().catch(() => {}); break; } await pl2.waitForTimeout(100);
+    }
     for (let k = 0; k < 30 && !(await pl2.evaluate(() => window.App.isSupporter())); k++) await pl2.waitForTimeout(100);
     check(await pl2.evaluate(() => window.App.isSupporter()), "the Ko-fi check makes you a Supporter");
     check(await pl2.evaluate(() => window.App.hasBadge("supporter")), "and gives the Supporter badge");
     await shot(pl2, "26g-supporter-done");
     await pl2.click('.sheet [data-a="closeSheet"].btn'); await pl2.waitForTimeout(250);
-    check(!(await pl2.$('[data-a="clock"][data-v="sixtyfour"] .lock-mark')), "for a Supporter, the locks are gone");
-    await pl2.click('[data-a="felt"][data-v="navy"]');
-    check(await pl2.evaluate(() => window.AntePrefs.get().felt) === "navy", "a Supporter can pick a table felt");
+    check(await pl2.evaluate(() => window.App.views.profile().includes("me-photo gold")), "a Supporter gets the gold ring");
     // Language: Hungarian everywhere, English again on the way back.
     await pl2.click('[data-a="lang"][data-v="hu"]'); await pl2.waitForTimeout(300);
     check(await pl2.isVisible("text=Beállítások"), "switching to Magyar translates the screen");
@@ -775,6 +777,14 @@ async function noOverflow(p, label) {
   await w.click('.sheet [data-a="badgeShow"]'); await w.waitForTimeout(300);
   check(await w.isVisible(".me-card .badge-row .badge-mini"), "a chosen badge shows under the name");
   await shot(w, "28b-milestones");
+  await w.evaluate(() => { window.__anteNoBadgePop = false; window.App.celebrateBadge("streak30"); });
+  await w.waitForSelector(".bpop.in", { timeout: 3000 }).catch(() => {});
+  await w.waitForTimeout(1300);
+  check(await w.isVisible(".bpop .bpop-name"), "a new badge pops up in the middle of the screen");
+  await shot(w, "28c-badge-pop");
+  await w.click('.bpop [data-pop="show"]'); await w.waitForTimeout(500);
+  check(!(await w.$(".bpop")) && (await w.evaluate(() => window.AntePrefs.get().badges[0])) === "streak30", "Show on profile puts it under the name");
+  await w.evaluate(() => { window.__anteNoBadgePop = true; });
   check(w.errors.length === 0, "no console errors in filter, categories and milestones: " + w.errors.join(" | "));
   await w.context().close();
 

@@ -3,7 +3,7 @@
 (function () {
   "use strict";
   const App = window.App, A = App.A, esc = App.esc, ui = App.ui;
-  const RESTORABLE = ["theme", "accent", "clock", "name", "sound", "haptics", "lang", "tables", "felt", "back", "seenIntro", "earned", "badges"];
+  const RESTORABLE = ["theme", "accent", "clock", "name", "sound", "haptics", "lang", "tables", "felt", "back", "seenIntro", "earned", "badges", "stats"];
   let busy = null; // "backup" | "restore" | "delete" while waiting for Google
 
   /* The page's settings live in this browser's storage; hand a copy to the phone for backups. */
@@ -55,7 +55,7 @@
       try { Object.keys(localStorage).filter(k => k.startsWith("ante-")).forEach(k => localStorage.removeItem(k)); } catch (e) { /* storage blocked */ }
       location.reload(); return;
     }
-    if (r.ok && r.op === "backup") App.toast("Backed up to your Google Drive.");
+    if (r.ok && r.op === "backup") { App.toast("Backed up to your Google Drive."); App.milestone("backup"); }
     else if (r.ok && r.op === "restore") {
       const p = r.prefs || {}, patch = {};
       RESTORABLE.forEach(k => { if (k in p) patch[k] = p[k]; });

@@ -213,6 +213,7 @@
     if (ui.view === "tables") App.afterTables();
     if (ui.view === "welcome") App.afterWelcome();
     if (ui.view === "settings" && App.afterProfile) App.afterProfile();
+    if (ui.view === "profile" && App.afterMilestones) App.afterMilestones();
     if (App.syncMilestones) App.syncMilestones();
     if (ui.view === "settings" && App.afterHow) App.afterHow();
     App.paintOverlay();

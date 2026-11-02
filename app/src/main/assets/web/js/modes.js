@@ -226,11 +226,13 @@
       if (sh.mode === "strict") {
         const days = pickOf(sh);
         if (!A.startStrict || !A.startStrict(days)) { App.toast("Install the new app version (0.5.0) for timed Strict mode."); return; }
+        App.milestone("strict", { days });
         App.refresh(); ui.sheet = null; App.render(); App.haptic("win");
         App.toast(`Strict mode is on until ${when(App.modes().strictUntil)}.`);
       } else {
         const min = pickOf(sh);
         if (!A.startFocus || !A.startFocus(min)) { App.toast("Install the new app version (0.5.0) to use Focus."); return; }
+        App.milestone("focus");
         App.refresh(); ui.sheet = null; App.render(); App.haptic("win");
         App.toast(`Focus is on until ${when(App.modes().focusUntil)}.`);
       }

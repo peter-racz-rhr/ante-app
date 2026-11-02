@@ -1,7 +1,7 @@
-/* Milestones: badges you earn by using Ante (limits, streaks, hours given back, Focus, Strict
-   mode, schedules, a big win) plus the Supporter badge. Earned badges are kept in prefs.earned
-   ({id: time}) so they stay even when the reason goes away, and up to three of them (prefs.badges)
-   show under your name on Profile. */
+/* Milestones: 53 badges you earn by using Ante (limits, categories, streaks, hours given back,
+   Focus, Strict mode, the website filter, the tables) plus the Supporter badge. Earned badges are
+   kept in prefs.earned ({id: time}); counters for events live in prefs.stats. Up to three badges
+   (prefs.badges) show under your name. A new badge gets a full-screen moment. */
 (function () {
   "use strict";
   const App = window.App, esc = App.esc, ui = App.ui;
@@ -26,28 +26,76 @@
     chip: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.2"/><path d="M12 4v3M12 17v3M4 12h3M17 12h3"/>',
     spin: '<circle cx="12" cy="12" r="8"/><path d="M12 4v8l5.6 5.6M12 12 4.6 9.2"/>',
     heart: '<path d="M12 19.5s-7.5-4.4-7.5-10A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.5c0 5.6-7.5 10-7.5 10z" fill="currentColor"/>',
+    trophy: '<path d="M8 4h8v4a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 12v4M9 20h6M10 16h4v4h-4z"/>',
+    shield: '<path d="M12 3.5 5 6.3v5.4c0 4.3 3 7.4 7 8.8 4-1.4 7-4.5 7-8.8V6.3z"/><path d="m9 12 2.2 2.2L15.3 10"/>',
+    globe: '<circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c2.3 2.3 3.4 5 3.4 8s-1.1 5.7-3.4 8c-2.3-2.3-3.4-5-3.4-8s1.1-5.7 3.4-8z"/>',
+    user: '<circle cx="12" cy="9" r="3.5"/><path d="M5.5 19.5c1-3.5 3.6-5 6.5-5s5.5 1.5 6.5 5"/>',
+    cloud: '<path d="M7.5 18h9a4 4 0 0 0 .4-8 5.5 5.5 0 0 0-10.6 1.4A3.3 3.3 0 0 0 7.5 18z"/>',
+    star: '<path d="m12 4 2.4 5 5.4.6-4 3.7 1.1 5.3L12 16l-4.9 2.6 1.1-5.3-4-3.7 5.4-.6z"/>',
+    cards: '<rect x="4" y="6" width="10" height="14" rx="2"/><path d="M10 4h8a2 2 0 0 1 2 2v12"/>',
+    palette: '<path d="M12 4a8 8 0 1 0 0 16c1.2 0 1.6-.8 1.3-1.7-.4-1 .2-2.3 1.5-2.3H17a3 3 0 0 0 3-3c0-5-3.6-9-8-9z"/><circle cx="8" cy="11" r="1" fill="currentColor"/><circle cx="11" cy="7.5" r="1" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1" fill="currentColor"/>',
+    chat: '<path d="M5 6h14v9H10l-4 3.5V15H5z"/>',
+    snow: '<path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9"/>',
     moon: '<path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z"/>',
   };
 
-  /* Every badge: tier, glyph, name, how to earn it, and a test on the current state (c). */
+  const n = (k, c) => (c.stats[k] || 0);
+  const streak = (id, d, tier) => ({ id, tier, g: "flame", name: d === 7 ? "A week" : d === 30 ? "A month" : d === 365 ? "A whole year" : `${d} days`, how: `Stay within your limits ${d} days in a row.`, test: c => c.streak >= d });
+  const hours = (id, h, tier) => ({ id, tier, g: "clock", name: h === 1 ? "First hour" : `${h} hours`, how: `Get ${h} ${h === 1 ? "hour" : "hours"} back for your real life.`, test: c => c.hours >= h });
+  /* Every badge: tier, glyph, name, how to earn it, and a test on the facts (c). */
   const BADGES = [
     { id: "supporter", tier: "gold", g: "heart", name: "Supporter", how: "Donated on Ko-fi to keep Ante free.", test: () => App.isSupporter && App.isSupporter(), crest: true },
-    { id: "first", tier: "bronze", g: "limit", name: "First limit", how: "Set your first daily limit.", test: c => c.limits > 0 },
-    { id: "category", tier: "bronze", g: "cat", name: "Sorted", how: "Limit a whole category of apps.", test: c => c.groups > 0 },
-    { id: "schedule", tier: "bronze", g: "cal", name: "On schedule", how: "Set up a Focus schedule.", test: c => c.schedules > 0 },
-    { id: "focus", tier: "silver", g: "focus", name: "In the zone", how: "Start a Focus session.", test: c => c.focus },
-    { id: "strict", tier: "gold", g: "lock", name: "No way out", how: "Turn on Strict mode.", test: c => c.strict },
-    { id: "streak3", tier: "bronze", g: "flame", name: "3 days", how: "Stay within your limits 3 days in a row.", test: c => c.streak >= 3 },
-    { id: "streak7", tier: "silver", g: "flame", name: "A week", how: "Stay within your limits 7 days in a row.", test: c => c.streak >= 7 },
-    { id: "streak30", tier: "gold", g: "flame", name: "A month", how: "Stay within your limits 30 days in a row.", test: c => c.streak >= 30 },
-    { id: "streak100", tier: "diamond", g: "flame", name: "100 days", how: "Stay within your limits 100 days in a row.", test: c => c.streak >= 100 },
-    { id: "hours1", tier: "bronze", g: "clock", name: "First hour", how: "Get 1 hour back for your real life.", test: c => c.hours >= 1 },
-    { id: "hours10", tier: "silver", g: "clock", name: "10 hours", how: "Get 10 hours back for your real life.", test: c => c.hours >= 10 },
-    { id: "hours50", tier: "gold", g: "clock", name: "50 hours", how: "Get 50 hours back for your real life.", test: c => c.hours >= 50 },
-    { id: "hours100", tier: "diamond", g: "clock", name: "100 hours", how: "Get 100 hours back for your real life.", test: c => c.hours >= 100 },
-    { id: "nnn", tier: "special", g: "moon", name: "No Nut November", how: "Lock the adult site filter for all of November.", test: c => c.nnn },
-    { id: "spin", tier: "bronze", g: "spin", name: "Lucky spin", how: "Take the daily spin.", test: () => false },
-    { id: "bigwin", tier: "silver", g: "chip", name: "High roller", how: "Win 10× your stake or more at a table.", test: () => false },
+    // Getting set up
+    { id: "first", tier: "bronze", g: "limit", name: "First limit", how: "Set your first daily limit.", test: c => c.limits >= 1 },
+    { id: "limits5", tier: "silver", g: "limit", name: "Five apps", how: "Put limits on 5 apps or categories.", test: c => c.limits >= 5 },
+    { id: "limits10", tier: "gold", g: "limit", name: "Full control", how: "Put limits on 10 apps or categories.", test: c => c.limits >= 10 },
+    { id: "category", tier: "bronze", g: "cat", name: "Sorted", how: "Limit a whole category of apps.", test: c => c.groups >= 1 },
+    { id: "categories3", tier: "silver", g: "cat", name: "Organised", how: "Limit 3 categories.", test: c => c.groups >= 3 },
+    { id: "schedule", tier: "bronze", g: "cal", name: "On schedule", how: "Set up a Focus schedule.", test: c => c.schedules >= 1 },
+    { id: "schedules3", tier: "silver", g: "cal", name: "Routine", how: "Set up 3 Focus schedules.", test: c => c.schedules >= 3 },
+    { id: "named", tier: "bronze", g: "user", name: "Hello", how: "Give yourself a name.", test: c => c.named },
+    { id: "photo", tier: "bronze", g: "user", name: "Say cheese", how: "Add a profile picture.", test: c => c.photo },
+    { id: "signin", tier: "bronze", g: "cloud", name: "Connected", how: "Sign in with Google.", test: c => c.signedIn },
+    { id: "backup", tier: "silver", g: "cloud", name: "Safe and sound", how: "Back up to your Google Drive.", test: c => n("backup", c) >= 1 },
+    { id: "stylist", tier: "bronze", g: "palette", name: "Stylist", how: "Change the colour or flavour.", test: c => n("theme", c) >= 1 },
+    { id: "polyglot", tier: "bronze", g: "chat", name: "Polyglot", how: "Switch the language.", test: c => n("lang", c) >= 1 },
+    { id: "recap", tier: "bronze", g: "star", name: "Look back", how: "Open your week in one card.", test: c => n("recap", c) >= 1 },
+    // Focus and Strict mode
+    { id: "focus", tier: "silver", g: "focus", name: "In the zone", how: "Start a Focus session.", test: c => c.focus || n("focus", c) >= 1 },
+    { id: "focus10", tier: "gold", g: "focus", name: "Deep work", how: "Start 10 Focus sessions.", test: c => n("focus", c) >= 10 },
+    { id: "focus50", tier: "diamond", g: "focus", name: "Monk mode", how: "Start 50 Focus sessions.", test: c => n("focus", c) >= 50 },
+    { id: "strict", tier: "gold", g: "lock", name: "No way out", how: "Turn on Strict mode.", test: c => c.strict || n("strict", c) >= 1 },
+    { id: "strict7", tier: "gold", g: "lock", name: "Locked in", how: "Lock Strict mode for 7 days or more.", test: c => n("strictMax", c) >= 7 },
+    { id: "strict30", tier: "diamond", g: "lock", name: "Iron will", how: "Lock Strict mode for 30 days or more.", test: c => n("strictMax", c) >= 30 },
+    { id: "tablesoff", tier: "silver", g: "snow", name: "Cold turkey", how: "Switch the tables off.", test: c => c.tablesOff },
+    // Streaks
+    streak("streak3", 3, "bronze"), streak("streak7", 7, "silver"), streak("streak14", 14, "silver"), streak("streak30", 30, "gold"),
+    streak("streak60", 60, "gold"), streak("streak100", 100, "diamond"), streak("streak365", 365, "diamond"),
+    // Hours back
+    hours("hours1", 1, "bronze"), hours("hours10", 10, "bronze"), hours("hours25", 25, "silver"), hours("hours50", 50, "silver"),
+    hours("hours100", 100, "gold"), hours("hours250", 250, "gold"), hours("hours500", 500, "diamond"),
+    // Website filter
+    { id: "web", tier: "bronze", g: "globe", name: "Clean feed", how: "Turn on the website filter.", test: c => c.web },
+    { id: "webgamble", tier: "silver", g: "shield", name: "No bets", how: "Block gambling sites.", test: c => c.webGambling },
+    { id: "websites5", tier: "silver", g: "globe", name: "Gatekeeper", how: "Block 5 sites of your own.", test: c => c.webCustom >= 5 },
+    { id: "weblock7", tier: "gold", g: "shield", name: "Promise kept", how: "Lock adult sites for 7 days or more.", test: c => n("webLockMax", c) >= 7 },
+    { id: "weblock30", tier: "diamond", g: "shield", name: "Unshakeable", how: "Lock adult sites for 30 days or more.", test: c => n("webLockMax", c) >= 30 },
+    { id: "nnn", tier: "special", g: "moon", name: "No Nut November", how: "Keep the No Nut November lock until 1 December.", test: c => c.nnn },
+    { id: "nnnstart", tier: "special", g: "moon", name: "Challenge accepted", how: "Start No Nut November.", test: c => c.nnnStarted },
+    // The tables
+    { id: "round1", tier: "bronze", g: "chip", name: "First bet", how: "Play a round at any table.", test: c => n("round", c) >= 1 },
+    { id: "round100", tier: "silver", g: "chip", name: "Regular", how: "Play 100 rounds.", test: c => n("round", c) >= 100 },
+    { id: "round1000", tier: "gold", g: "chip", name: "Night owl", how: "Play 1,000 rounds.", test: c => n("round", c) >= 1000 },
+    { id: "win1", tier: "bronze", g: "trophy", name: "Beginner's luck", how: "Win a round.", test: c => n("win", c) >= 1 },
+    { id: "win50", tier: "silver", g: "trophy", name: "On a roll", how: "Win 50 rounds.", test: c => n("win", c) >= 50 },
+    { id: "win500", tier: "gold", g: "trophy", name: "Card shark", how: "Win 500 rounds.", test: c => n("win", c) >= 500 },
+    { id: "bigwin", tier: "silver", g: "chip", name: "High roller", how: "Win 10× your stake or more.", test: c => n("bigwin", c) >= 1 },
+    { id: "bigwin10", tier: "gold", g: "chip", name: "Jackpot hunter", how: "Win 10× your stake 10 times.", test: c => n("bigwin", c) >= 10 },
+    { id: "games5", tier: "silver", g: "cards", name: "Explorer", how: "Play 5 different tables.", test: c => c.games >= 5 },
+    { id: "games10", tier: "gold", g: "cards", name: "Seen it all", how: "Play all 10 tables.", test: c => c.games >= 10 },
+    { id: "spin", tier: "bronze", g: "spin", name: "Lucky spin", how: "Take the daily spin.", test: c => n("spin", c) >= 1 },
+    { id: "spin7", tier: "silver", g: "spin", name: "Spin week", how: "Take the daily spin 7 times.", test: c => n("spin", c) >= 7 },
+    { id: "spin30", tier: "gold", g: "spin", name: "Spin month", how: "Take the daily spin 30 times.", test: c => n("spin", c) >= 30 },
   ];
   const byId = Object.fromEntries(BADGES.map(b => [b.id, b]));
   App.BADGES = BADGES;
@@ -74,37 +122,93 @@
 
   /* ---------- earning ---------- */
   function facts() {
-    const S = App.S, m = App.modes ? App.modes() : {};
+    const S = App.S, m = App.modes ? App.modes() : {}, p = App.P.get(), ACC = App.ACC || {};
+    const w = (App.webStatus && App.webStatus()) || {};
     return {
+      stats: p.stats || {}, games: ((p.stats || {}).games || []).length,
       limits: (S.limits || []).length, groups: Object.keys(S.groups || {}).length, schedules: (S.schedules || []).length,
       focus: !!m.focus, strict: !!m.strict, streak: App.streak ? App.streak() : 0, hours: App.hoursAdded ? App.hoursAdded() : 0,
-      nnn: !!(App.nnnDone && App.nnnDone()),
+      named: !!p.name, photo: !!ACC.photo, signedIn: !!ACC.signedIn, tablesOff: App.tablesOn ? !App.tablesOn() : false,
+      web: !!w.on, webGambling: !!(w.on && w.gambling), webCustom: (w.custom || []).length,
+      nnn: !!w.nnnDone, nnnStarted: !!w.nnnUntil,
     };
   }
   const earned = () => Object.assign({}, App.P.get().earned || {});
   App.hasBadge = id => !!earned()[id] || (id === "supporter" && App.isSupporter && App.isSupporter());
 
+  /** Gives [ids]; [quiet] skips the celebration (someone updating with lots already done). */
   function award(ids, quiet) {
     if (!ids.length) return;
     const e = earned(), now = Date.now();
     ids.forEach(id => { e[id] = now; });
     App.P.set({ earned: e });
-    if (quiet) return;
-    const b = byId[ids[ids.length - 1]];
-    const say = () => { App.toast(ids.length > 1 ? `${ids.length} new badges on your profile.` : `New badge: ${b.name}`); App.haptic("win"); };
-    // Never talk over another message (an update note, a win): wait until it's gone.
-    const later = () => (App.ui.toast ? setTimeout(later, 900) : say());
-    setTimeout(later, 400);
+    if (!quiet) ids.forEach(id => celebrate(id));
   }
-  /** Gives the badges whose condition is true now. Someone updating with lots already done gets
-      them quietly instead of a pile of toasts. Writes nothing when nothing changed. */
+  /** Gives the badges whose condition is true now. Writes nothing when nothing changed. */
   App.syncMilestones = () => {
     const p = App.P.get(), have = p.earned || {}, c = facts();
     const fresh = BADGES.filter(b => !have[b.id] && b.id !== "supporter" && b.test(c)).map(b => b.id);
     award(fresh, !p.earned && fresh.length > 1);
   };
-  /** Event badges: "spin", "bigwin", "supporter". */
-  App.milestone = id => { if (byId[id] && !earned()[id]) award([id]); };
+  /**
+   * Counts an event and gives any badge it completes: "round" ({game}), "win", "bigwin", "spin",
+   * "focus", "strict" ({days}), "webLock" ({days}), "backup", "theme", "lang", "recap", "supporter".
+   */
+  App.milestone = (ev, x) => {
+    if (ev === "supporter") { if (!earned().supporter) award(["supporter"]); return; }
+    const p = App.P.get(), st = Object.assign({}, p.stats || {});
+    st[ev] = (st[ev] || 0) + 1;
+    if (ev === "round" && x && x.game && !(st.games || []).includes(x.game)) st.games = (st.games || []).concat([String(x.game).slice(0, 20)]).slice(0, 20);
+    if (ev === "strict" && x) st.strictMax = Math.max(st.strictMax || 0, x.days | 0);
+    if (ev === "webLock" && x) st.webLockMax = Math.max(st.webLockMax || 0, x.days | 0);
+    App.P.set({ stats: st });
+    App.syncMilestones();
+  };
+
+  /* ---------- the big moment ---------- */
+  const queue = [];
+  let showing = false;
+  function celebrate(id) {
+    if (!byId[id] || window.__anteNoBadgePop) return; // automated tests turn the moment off
+
+    queue.push(id);
+    if (!showing) setTimeout(next, 350);
+  }
+  function next() {
+    const id = queue.shift();
+    if (!id) { showing = false; return; }
+    showing = true;
+    const b = byId[id], left = queue.length;
+    const el = document.createElement("div");
+    el.className = "bpop"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); el.setAttribute("aria-labelledby", "bpop-h");
+    el.style.setProperty("--glow", TIER[b.tier][1]);
+    const sparks = Array.from({ length: 14 }, (_, i) => `<i style="--a:${(i * 360) / 14}deg;--d:${(0.15 + (i % 5) * 0.06).toFixed(2)}s"></i>`).join("");
+    el.innerHTML = `<div class="bpop-rays" aria-hidden="true"></div>
+      <div class="bpop-card">
+        <p class="bpop-eye">Badge unlocked</p>
+        <div class="bpop-medal"><span class="bpop-glow" aria-hidden="true"></span><span class="bpop-sparks" aria-hidden="true">${sparks}</span>${App.badgeSvg(id, 148)}</div>
+        <h2 class="bpop-name" id="bpop-h">${esc(b.name)}</h2>
+        <p class="bpop-how">${esc(b.how)}</p>
+        <div class="bpop-btns">${id === "supporter" ? "" : `<button class="btn quiet" data-pop="show">Show on profile</button>`}<button class="btn primary" data-pop="ok">${left ? "Next" : "Nice"}</button></div>
+      </div>`;
+    document.body.appendChild(el);
+    requestAnimationFrame(() => el.classList.add("in"));
+    App.haptic("win"); if (App.SFX) App.SFX.play("bigWin");
+    const FX = window.AnteFX; if (FX && FX.burst) setTimeout(() => FX.burst(el.querySelector(".bpop-medal"), { power: 1.4, count: 70 }), 380);
+    const close = () => { el.classList.remove("in"); el.classList.add("out"); setTimeout(() => { el.remove(); next(); }, 260); };
+    el.addEventListener("click", e => {
+      const t = e.target.closest("[data-pop]");
+      if (!t) return;
+      if (t.dataset.pop === "show") showOnProfile(id);
+      close();
+    });
+  }
+  App.celebrateBadge = celebrate;
+  function showOnProfile(id) {
+    const cur = (App.P.get().badges || []).filter(x => byId[x] && x !== id);
+    App.P.set({ badges: [id].concat(cur).slice(0, SHOW_MAX) });
+    if (ui.view === "profile") App.render();
+  }
 
   /* ---------- on Profile ---------- */
   /** The badges chosen to show under your name; the Supporter badge leads when you have it. */
@@ -120,16 +224,21 @@
       : `<span class="badge-mini" title="${esc(byId[id].name)}">${App.badgeSvg(id, 24)}</span>`).join("")}</button>`;
   };
   App.milestonesCard = () => {
-    const n = BADGES.filter(b => App.hasBadge(b.id)).length;
-    const tiles = BADGES.map(b => {
-      const on = App.hasBadge(b.id);
-      return `<button class="mbadge${on ? " on" : ""}" data-a="badge" data-v="${b.id}" aria-label="${esc(b.name)}${on ? "" : " (locked)"}">${App.badgeSvg(b.id, 46, !on)}<span class="mb-name">${esc(b.name)}</span></button>`;
-    }).join("");
+    const list = BADGES.map(b => ({ b, on: App.hasBadge(b.id) })).sort((x, y) => (y.on - x.on));
+    const got = list.filter(x => x.on).length;
+    const tiles = list.map(({ b, on }) =>
+      `<button class="mbadge${on ? " on" : ""}" data-a="badge" data-v="${b.id}" aria-label="${esc(b.name)}${on ? "" : " (locked)"}">${App.badgeSvg(b.id, 46, !on)}<span class="mb-name">${esc(b.name)}</span></button>`).join("");
     return `<section class="panel pcard" aria-labelledby="pm-h">
       <div class="panel-head"><div class="fc-h"><span class="sicon" style="--ic:#f5c542" aria-hidden="true">${App.ICON.star || App.ICON.heart}</span><h2 class="h3" id="pm-h">Milestones</h2></div>
-        <span class="streak"><span class="dotnum">${n}</span>/${BADGES.length}</span></div>
-      <div class="mgrid">${tiles}</div>
+        <span class="streak"><span class="dotnum">${got}</span>/${BADGES.length}</span></div>
+      <div class="mgrid-wrap"><div class="mgrid" id="mgrid">${tiles}</div></div>
       <p class="sitem-sub">Tap a badge you've earned to show it under your name.</p></section>`;
+  };
+  /** The fade at the bottom of the badge box goes away once you've scrolled to the end. */
+  App.afterMilestones = () => {
+    const g = document.getElementById("mgrid"); if (!g) return;
+    const upd = () => g.parentElement.classList.toggle("end", g.scrollTop + g.clientHeight >= g.scrollHeight - 4);
+    g.addEventListener("scroll", upd, { passive: true }); upd();
   };
 
   App.sheetViews = App.sheetViews || {};
@@ -150,7 +259,7 @@
 
   Object.assign(App.act, {
     badge(d) { if (!byId[d.v]) return; ui.sheet = { type: "badge", id: d.v }; App.SFX.play("tap"); App.paintOverlay(); },
-    badges() { const el = document.querySelector(".mgrid"); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); },
+    badges() { const el = document.querySelector(".mgrid-wrap"); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); },
     badgeShow(d) {
       if (!byId[d.v] || d.v === "supporter" || !App.hasBadge(d.v)) return;
       const cur = (App.P.get().badges || []).filter(id => byId[id]);

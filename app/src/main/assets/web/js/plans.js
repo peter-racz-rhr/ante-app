@@ -205,7 +205,7 @@
       App.haptic("tap"); reopenList();
     },
     freeSpin: spin,
-    recap() { ui.sheet = { type: "recap" }; App.SFX.play("tap"); App.paintOverlay(); },
+    recap() { ui.sheet = { type: "recap" }; App.SFX.play("tap"); App.paintOverlay(); App.milestone("recap"); },
     tablesOn() {
       const on = !App.tablesOn();
       App.P.set({ tables: on });

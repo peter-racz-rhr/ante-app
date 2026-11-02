@@ -24,7 +24,7 @@ Die Anmeldung mit Google ist freiwillig. Sie speichert deinen Namen und deine E-
 
 ## 6. Ante Supporter (Spenden über Ko-fi)
 
-Ante ist kostenlos. Du kannst auf Ko-fi (ko-fi.com) einen beliebigen Betrag spenden, einmal oder öfter. Eine Spende ist ein freiwilliges Geschenk an den Entwickler: Zahlung, Erstattungen und Belege wickeln Ko-fi und seine Zahlungsanbieter nach ihren eigenen Bedingungen ab. Als Dank wirst du Ante Supporter, wenn du mit derselben E-Mail spendest, mit der du dich in Ante bei Google anmeldest: Du bekommst das Supporter-Abzeichen, einen goldenen Ring um dein Profilbild und die zusätzlichen Looks (Themen, Uhr-Schriften, Tischfilze und Kartenrücken). Supporter schaltet nie Sperrfunktionen, Minuten oder bessere Chancen frei, und alles, was du für deine Bildschirmzeit brauchst, bleibt kostenlos. Der Supporter-Status ist ein Dankeschön, kein Kauf; er bleibt, solange Antes Supporter-Prüfung läuft, und wird etwa einmal pro Woche erneut geprüft.
+Ante ist kostenlos. Du kannst auf Ko-fi (ko-fi.com) einen beliebigen Betrag spenden, einmal oder öfter. Eine Spende ist ein freiwilliges Geschenk an den Entwickler: Zahlung, Erstattungen und Belege wickeln Ko-fi und seine Zahlungsanbieter nach ihren eigenen Bedingungen ab. Als Dank wirst du Ante Supporter, wenn du mit derselben E-Mail spendest, mit der du dich in Ante bei Google anmeldest: Du bekommst das Supporter-Abzeichen und einen goldenen Ring um dein Profilbild, sonst nichts: Alle Funktionen und Looks von Ante sind für alle kostenlos, und Supporter schaltet nie Sperrfunktionen, Minuten oder bessere Chancen frei. Der Supporter-Status ist ein Dankeschön, kein Kauf; er bleibt, solange Antes Supporter-Prüfung läuft, und wird etwa einmal pro Woche erneut geprüft.
 
 ## 7. Haftung
 

@@ -240,7 +240,7 @@ ${App.supportCard()}
   const SETTINGS = { acc: () => A.openAccessibilitySettings(), battery: () => A.openBatterySettings(), date: () => A.openDateSettings(), info: () => A.openAppInfo() };
 
   Object.assign(App.act, {
-    theme(d) { if (App.locked("theme", d.v)) return App.act.supporter(); App.P.set({ theme: d.v }); App.SFX.play("tap"); App.render(); },
+    theme(d) { App.P.set({ theme: d.v }); App.SFX.play("tap"); App.render(); App.milestone("theme"); },
     photoPick() {
       if (!A.pickPhoto || A.pickPhoto() === false) App.toast("Install the new app version (0.3.0) to add a photo.");
     },
@@ -249,13 +249,12 @@ ${App.supportCard()}
     closeSettings() { ui.view = "profile"; App.render(); },
     clock(d) {
       if (!App.P.CLOCKS[d.v]) return;
-      if (App.locked("clock", d.v)) return App.act.supporter();
       App.P.set({ clock: d.v }); App.SFX.play("tap"); App.haptic("tap"); App.render();
       // The font loads on first use; fit the big clocks again once it's there.
       const k = App.P.CLOCKS[d.v];
       if (document.fonts && document.fonts.load) document.fonts.load(`40px "${k.family}"`).then(() => App.fitText && App.fitText()).catch(() => {});
     },
-    accent(d) { App.P.set({ accent: d.v }); App.SFX.play("tap"); App.render(); },
+    accent(d) { App.P.set({ accent: d.v }); App.SFX.play("tap"); App.render(); App.milestone("theme"); },
     haptics() { App.P.set({ haptics: !App.P.get().haptics }); App.haptic("win"); /* a clear buzz confirms it works */ App.render(); },
     sound() {
       App.SFX.toggle();

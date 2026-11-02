@@ -24,7 +24,7 @@ A Google-bejelentkezés nem kötelező. A neved és e-mail-címed kerül vele er
 
 ## 6. Ante Támogató (Ko-fi-támogatás)
 
-Az Ante ingyenes. A Ko-fin (ko-fi.com) bármekkora összeggel támogathatod, egyszer vagy többször. A támogatás önkéntes ajándék a fejlesztőnek: a fizetést, a visszatérítést és a nyugtákat a Ko-fi és a fizetési szolgáltatói kezelik a saját feltételeik szerint. Köszönetként, ha a támogatást ugyanazzal az e-mail-címmel adod, amellyel az Ante-ba Google-lel bejelentkeztél, Ante Támogató leszel: megkapod a Támogató jelvényt, egy arany keretet a profilképed köré és a további megjelenéseket (témák, óra-betűtípusok, asztalposztók és kártyahátlapok). A Támogató státusz soha nem old fel tiltó funkciókat, perceket vagy jobb esélyeket, és minden, ami a képernyőidőd kezeléséhez kell, ingyenes marad. A Támogató státusz köszönet, nem vásárlás; addig marad meg, amíg az Ante támogató-ellenőrzése működik, és nagyjából hetente újra ellenőrződik.
+Az Ante ingyenes. A Ko-fin (ko-fi.com) bármekkora összeggel támogathatod, egyszer vagy többször. A támogatás önkéntes ajándék a fejlesztőnek: a fizetést, a visszatérítést és a nyugtákat a Ko-fi és a fizetési szolgáltatói kezelik a saját feltételeik szerint. Köszönetként, ha a támogatást ugyanazzal az e-mail-címmel adod, amellyel az Ante-ba Google-lel bejelentkeztél, Ante Támogató leszel: megkapod a Támogató jelvényt és egy arany keretet a profilképed köré, mást nem: az Ante minden funkciója és megjelenése mindenkinek ingyenes, és a Támogató státusz soha nem old fel tiltó funkciókat, perceket vagy jobb esélyeket. A Támogató státusz köszönet, nem vásárlás; addig marad meg, amíg az Ante támogató-ellenőrzése működik, és nagyjából hetente újra ellenőrződik.
 
 ## 7. Felelősség
 

@@ -63,6 +63,7 @@ const sheet = (p, s) => p.evaluate(s => { window.App.ui.sheet = s; window.App.pa
   for (const lang of ["en", "hu", "de"]) for (const width of [360, 412]) {
     const tag = `${lang} ${width}px`;
     const ctx = await browser.newContext({ viewport: { width, height: 860 }, deviceScaleFactor: 1 });
+    await ctx.addInitScript(() => { window.__anteNoBadgePop = true; });
     const p = await ctx.newPage(); const errors = [];
     p.on("pageerror", e => errors.push(e.message));
     await p.goto(INDEX + "?acc=1&reset=1"); await p.waitForSelector(".screen");

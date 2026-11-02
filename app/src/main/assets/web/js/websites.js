@@ -129,6 +129,7 @@
       const sh = ui.sheet; if (!sh || sh.type !== "web" || sh.confirm == null) return;
       if (!A.webFilterLock(sh.confirm)) { App.toast("That lock can't start right now."); return; }
       App.haptic("win"); App.SFX.play("win");
+      App.milestone("webLock", { days: sh.confirm === 0 ? 29 : sh.confirm });
       App.toast(sh.confirm === 0 ? "No Nut November is on. You've got this." : "Adult sites are locked.");
       ui.sheet = { type: "web" };
       const s = load(); if (s && !s.consented) A.webFilterConsent();

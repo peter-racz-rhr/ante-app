@@ -105,22 +105,17 @@ sign-in. Answer:
 
 ## 7. Ante Supporter (Ko-fi donations)
 
-There is no Play Billing any more. Anyone who donates on Ko-fi, any amount, even once, with the
-same email as their Google sign-in becomes an Ante Supporter: the badge, a gold ring round their
-photo and the exclusive looks (Frappé and Macchiato, four clock fonts, four table felts, three card
-backs). Blocking, Focus, Strict mode, schedules, categories, the website filter and the tables stay
-free for everyone.
+There is no Play Billing any more, and nothing in Ante is locked: every feature and every look is
+free for everyone. Anyone who donates on Ko-fi, any amount, even once, with the same email as
+their Google sign-in becomes an Ante Supporter and gets only the Supporter badge and a gold ring
+round their profile picture.
 
 Set-up: `server/kofi-supporters/README.md` (a free Cloudflare Worker, about 10 minutes). Then put
 the Worker address in `app/src/main/res/values/supporter.xml` → `supporter_server` and your Ko-fi
 page in `kofi_url`.
 
-**Play policy warning.** Google Play's Payments policy says digital features unlocked inside an app
-must be bought through Play Billing. Unlocking looks for Ko-fi donors from the Play version is a
-grey zone and could get an update rejected. Safe options, if Play complains: (a) in the Play build,
-give donors only the badge and the gold ring (thank-you, not a feature) and unlock every look for
-everyone, or (b) bring back Play Billing for the looks. The website/APK version can keep Ko-fi
-unlocks as they are.
+Play policy: donations that unlock no features are allowed outside Play Billing, as long as the
+listing doesn't promise paid features. A badge as a thank-you is fine; keep it that way.
 
 ## 7a. Website filter (VpnService declaration)
 
@@ -169,7 +164,7 @@ address or a mail-forwarding address, and use the same one in the Imprint.
   limit you set. It never reads your screen."); Play requires this. Then the hook and the features: daily limits per app, the block
   screen, Focus and schedules, timed Strict mode, the tables (no real money; the house edge means
   you play your scrolling away), the widget, privacy (no ads, no tracking, nothing leaves your
-  phone), and Supporter looks.
+  phone), and a Supporter badge for Ko-fi donors.
 - **App icon:** 512×512 PNG, in `docs/store/icon-512.png` (made from `docs/brand/ante-logo.svg`).
 - **Feature graphic:** 1024×500, in `docs/store/feature-graphic.png`.
 - **Phone screenshots:** the five in `docs/store/` (1080×1920).

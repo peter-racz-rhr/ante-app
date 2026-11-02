@@ -71,7 +71,7 @@
     return `<div class="lang-grid" role="radiogroup" aria-label="Language">${Object.entries(App.LANGS).map(([id, name]) =>
       `<button role="radio" class="chip" data-a="lang" data-v="${id}" aria-pressed="${cur === id}" aria-checked="${cur === id}">${name}</button>`).join("")}</div>`;
   };
-  App.act.lang = d => { if (!App.LANGS[d.v]) return; App.P.set({ lang: d.v }); App.setLang(d.v); App.render(); };
+  App.act.lang = d => { if (!App.LANGS[d.v]) return; App.P.set({ lang: d.v }); App.setLang(d.v); App.render(); if (App.milestone) App.milestone("lang"); };
   App.t = translate; // for text set from code that the observer can't see (none so far)
   App.setLang(App.P.get().lang || "auto");
 })();
