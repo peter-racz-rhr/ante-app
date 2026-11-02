@@ -13,8 +13,8 @@ android {
         applicationId = "com.ante.app"
         minSdk = 26
         targetSdk = 36 // Google Play requires API 36 for new apps and updates since 31 Aug 2026
-        versionCode = 8
-        versionName = "0.8.0"
+        versionCode = 9
+        versionName = "0.9.0"
     }
 
     // Release signing: put your own keystore details in keystore.properties (never commit it;

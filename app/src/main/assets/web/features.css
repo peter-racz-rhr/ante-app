@@ -138,3 +138,62 @@
 /* Screens without the navbar (block screen) end right after their content. */
 .screen.block { padding-bottom: max(var(--s4), env(safe-area-inset-bottom, 0px)); }
 .stats-recap { display: block; }
+
+/* ---------- The five newer tables ---------- */
+.xg-note { margin: 0; font-size: var(--t-xs); }
+.xg-h { margin: 0; }
+.xg-chips { display: grid; gap: var(--s2); }
+.xg-chips.six { grid-template-columns: repeat(6, 1fr); }
+.xg-chips.three { grid-template-columns: repeat(3, 1fr); }
+.xg-chips .chip { min-height: 44px; padding-inline: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; }
+.xg-chips .chip[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); box-shadow: none; }
+.xg-chips .chip .pays { font-size: var(--t-xs); opacity: .7; }
+
+.plk { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 8px; }
+.plk-board { position: relative; width: 100%; aspect-ratio: 1 / .9; }
+.plk-board .peg { position: absolute; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: color-mix(in oklab, var(--ivory) 55%, transparent); }
+.plk-ball { position: absolute; left: 50%; top: -4%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, var(--accent) 60%); box-shadow: 0 0 12px color-mix(in oklab, var(--accent) 70%, transparent); opacity: 0; z-index: 1; }
+.plk-slots { display: grid; grid-template-columns: repeat(13, 1fr); gap: 2px; padding: 0 3.5%; }
+.plk-slot { border-radius: 6px; padding: 5px 0; text-align: center; font-size: 9px; font-weight: 750; color: #11111b; letter-spacing: -.02em; transition: transform .25s var(--spring); }
+.plk-slot.hot { background: #f38ba8; } .plk-slot.warm { background: #fab387; } .plk-slot.even { background: #f9e2af; } .plk-slot.cold { background: #a6adc8; }
+.plk-slot.hit { transform: translateY(4px) scale(1.12); box-shadow: 0 0 0 2px var(--ivory); }
+
+.crash { position: relative; width: 100%; max-width: 380px; aspect-ratio: 2 / 1.25; display: grid; place-items: center; }
+.crash-plot { position: absolute; inset: 0; width: 100%; height: 100%; }
+.crash-line { fill: none; stroke: var(--win); stroke-width: 3; vector-effect: non-scaling-stroke; }
+.crash-area { fill: var(--win); opacity: .12; }
+.crash-x { position: relative; margin: 0; font-size: clamp(44px, 15vw, 72px); color: var(--ivory); }
+.crash-note { position: absolute; bottom: 4%; margin: 0; font-size: var(--t-sm); font-weight: 650; color: var(--win); }
+.crash.crashed .crash-line { stroke: var(--loss); } .crash.crashed .crash-area { fill: var(--loss); }
+.crash.crashed:not(.cashed) .crash-x, .crash.crashed:not(.cashed) .crash-note { color: var(--loss); }
+
+.dice { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: var(--s3); align-items: center; }
+.dice-roll { margin: 0; font-size: clamp(52px, 18vw, 84px); color: var(--ivory); }
+.dice.won .dice-roll { color: var(--win); } .dice.lost .dice-roll { color: var(--loss); }
+.dice-bar { position: relative; width: 100%; height: 14px; border-radius: 7px; background: color-mix(in oklab, var(--loss) 45%, var(--surface-3)); }
+.dice-win { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 7px 0 0 7px; background: color-mix(in oklab, var(--win) 70%, var(--surface-3)); transition: width .2s var(--ease); }
+.dice-mark { position: absolute; top: -8px; width: 4px; height: 30px; margin-left: -2px; border-radius: 2px; background: var(--ivory); opacity: 0; transition: left .5s var(--spring), opacity .2s ease; }
+.dice-mark.on { opacity: 1; }
+.dice-ticks { width: 100%; display: flex; justify-content: space-between; font-size: var(--t-xs); color: var(--ivory-3); }
+.dice-set { display: flex; justify-content: space-between; align-items: baseline; gap: var(--s2); font-size: var(--t-sm); }
+
+.bac { width: 100%; display: flex; flex-direction: column; align-items: center; gap: var(--s3); }
+.bac-rule { margin: 0; font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--ivory-3); font-weight: 700; }
+.bac-side { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px; border-radius: 18px; transition: box-shadow .3s ease, background .3s ease; }
+.bac-side.win { background: color-mix(in oklab, var(--win) 14%, transparent); box-shadow: inset 0 0 0 2px color-mix(in oklab, var(--win) 60%, transparent); }
+.bac-h { margin: 0; display: flex; gap: 10px; align-items: baseline; font-weight: 650; color: var(--ivory-2); }
+.bac-t { font-size: 22px; color: var(--ivory); }
+.bac-row { display: flex; justify-content: center; min-height: calc(56px * 1.4); }
+.bac-row .card { --cw: 56px; }
+.bac-row .card + .card { margin-left: -14px; }
+.bac-row .card.bac-in { animation: bac-in .38s var(--spring) both; }
+@keyframes bac-in { from { transform: translateY(-40px) rotate(-8deg); opacity: 0; } }
+.bac-banner { margin: 0; min-height: 1.4em; font-weight: 700; color: var(--ivory); }
+
+.keno { width: 100%; max-width: 380px; }
+.keno-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; }
+.kn { aspect-ratio: 1; border-radius: 10px; background: color-mix(in oklab, var(--surface-3) 80%, transparent); color: var(--ivory-2); font-weight: 650; font-size: 13px; font-variant-numeric: tabular-nums; transition: background .2s ease, color .2s ease, transform .2s var(--spring); }
+.kn[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.kn.drawn { box-shadow: inset 0 0 0 2px var(--ivory); transform: scale(1.06); }
+.kn.drawn:not([aria-pressed="true"]) { background: color-mix(in oklab, var(--ivory) 22%, var(--surface-3)); color: var(--ivory); }
+.kn.hit { background: var(--win); color: #11111b; }

@@ -172,13 +172,84 @@
     return { rank, multiple: row ? row[1] : 0 };
   }
 
+  /* ---------- plinko: 12 rows, the ball goes left or right at every peg ---------- */
+  const PLINKO_ROWS = 12;
+  const PLINKO_PAYS = [33, 11, 4, 2, 1.1, 0.6, 0.2, 0.6, 1.1, 2, 4, 11, 33];
+  /** A path of PLINKO_ROWS bits (1 = right); the slot is the number of rights. */
+  function plinkoDrop(rng) { return Array.from({ length: PLINKO_ROWS }, () => ((rng || Math.random)() < 0.5 ? 0 : 1)); }
+  const plinkoSlot = path => path.reduce((a, b) => a + b, 0);
+  function plinkoReturn() {
+    let c = 1, sum = 0; // binomial coefficients C(12, k)
+    for (let k = 0; k <= PLINKO_ROWS; k++) { sum += c * PLINKO_PAYS[k]; c = c * (PLINKO_ROWS - k) / (k + 1); }
+    return sum / 2 ** PLINKO_ROWS;
+  }
+
+  /* ---------- crash: pick a cash-out; it pays if the multiplier climbs that far ---------- */
+  const CRASH_EDGE = 0.97;
+  const CRASH_TARGETS = [1.5, 2, 3, 5, 10, 50];
+  /** The crash point, two decimals: it reaches t with chance exactly 0.97 / t. */
+  function crashPoint(rng) { const u = 1 - (rng || Math.random)(); return Math.max(1, Math.floor((100 * CRASH_EDGE) / u) / 100); }
+  const isCrashTarget = t => CRASH_TARGETS.includes(t);
+
+  /* ---------- dice: roll 0.00–99.99, win under your number ---------- */
+  const DICE_MIN = 2, DICE_MAX = 95;
+  const diceMultiple = under => Math.floor(9700 / under) / 100;
+  const diceRoll = rng => Math.floor((rng || Math.random)() * 10000) / 100;
+
+  /* ---------- baccarat: 8 decks, the standard third-card rules ---------- */
+  const BACCARAT_BETS = { player: { label: "Player", multiple: 2 }, banker: { label: "Banker", multiple: 1.95 }, tie: { label: "Tie", multiple: 9 } };
+  const bacValue = c => (c.r >= 10 ? 0 : c.r);
+  const bacTotal = cards => cards.reduce((a, c) => a + bacValue(c), 0) % 10;
+  /** Plays a coup with draw(): returns the hands and who won. */
+  function baccaratCoup(draw) {
+    const p = [draw()], b = [draw()]; p.push(draw()); b.push(draw());
+    const pt = bacTotal(p), bt = bacTotal(b);
+    if (pt < 8 && bt < 8) {
+      let p3 = null;
+      if (pt <= 5) { p3 = draw(); p.push(p3); }
+      const v = p3 ? bacValue(p3) : null;
+      const bankerDraws = p3 === null ? bt <= 5
+        : bt <= 2 || (bt === 3 && v !== 8) || (bt === 4 && v >= 2 && v <= 7) || (bt === 5 && v >= 4 && v <= 7) || (bt === 6 && (v === 6 || v === 7));
+      if (bankerDraws) b.push(draw());
+    }
+    const P = bacTotal(p), B = bacTotal(b);
+    return { p, b, winner: P > B ? "player" : B > P ? "banker" : "tie" };
+  }
+  /** Return multiple for a bet on a coup's winner: a tie pushes Player and Banker bets. */
+  function baccaratMultiple(bet, winner) {
+    if (winner === "tie") return bet === "tie" ? BACCARAT_BETS.tie.multiple : 1;
+    return bet === winner ? BACCARAT_BETS[bet].multiple : 0;
+  }
+
+  /* ---------- keno: pick 5 of 40, 10 are drawn ---------- */
+  const KENO_N = 40, KENO_DRAW = 10, KENO_PICKS = 5;
+  const KENO_PAYS = [0, 0, 1.1, 4, 24, 250]; // by hits
+  function kenoDraw(rng) {
+    const pool = Array.from({ length: KENO_N }, (_, i) => i + 1);
+    for (let i = pool.length - 1; i > 0; i--) { const j = rand(i + 1, rng); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+    return pool.slice(0, KENO_DRAW);
+  }
+  const isKenoPicks = picks => Array.isArray(picks) && picks.length === KENO_PICKS && new Set(picks).size === KENO_PICKS && picks.every(n => Number.isInteger(n) && n >= 1 && n <= KENO_N);
+  const kenoHits = (picks, drawn) => picks.filter(n => drawn.includes(n)).length;
+  function kenoReturn() {
+    const C = (n, k) => { let r = 1; for (let i = 0; i < k; i++) r = r * (n - i) / (i + 1); return r; };
+    let sum = 0;
+    for (let h = 0; h <= KENO_PICKS; h++) sum += (C(KENO_DRAW, h) * C(KENO_N - KENO_DRAW, KENO_PICKS - h) / C(KENO_N, KENO_PICKS)) * KENO_PAYS[h];
+    return sum;
+  }
+
   /* ---------- catalogue ---------- */
   const GAMES = [
-    { id: "roulette", name: "Roulette", rule: "Single zero. Straight up pays 36×.", rtp: "97.3%" },
+    { id: "roulette", name: "Roulette", rule: "Single zero. Straight up pays 36×.", rtp: "97.3%", feature: true },
     { id: "blackjack", name: "Blackjack", rule: "Beat the dealer. Blackjack pays 3 to 2.", rtp: "≈99%" },
     { id: "slots", name: "Slots", rule: "Three reels. Three 7s pay 100×.", rtp: "93%" },
     { id: "poker", name: "Poker", rule: "Five-card draw. Jacks or better.", rtp: "≈96%" },
     { id: "coin", name: "Coin flip", rule: "Call it. Pays 1.9×.", rtp: "95%" },
+    { id: "plinko", name: "Plinko", rule: "Drop the ball. Edges pay 33×.", rtp: "96.7%", feature: true },
+    { id: "crash", name: "Crash", rule: "Cash out before it crashes.", rtp: "97%" },
+    { id: "baccarat", name: "Baccarat", rule: "Player, Banker or Tie. Tie pays 9×.", rtp: "≈99%" },
+    { id: "keno", name: "Keno", rule: "Pick 5 of 40. Five hits pay 250×.", rtp: "≈95%" },
+    { id: "dice", name: "Dice", rule: "Roll under your number.", rtp: "97%" },
   ];
 
   const api = {
@@ -188,6 +259,11 @@
     SUITS, rankLabel, isRed, shuffledDeck,
     handValue, isBlackjack, newShoe, dealerPlay, blackjackMultiple,
     POKER_PAYS, pokerRank, pokerMultiple,
+    PLINKO_ROWS, PLINKO_PAYS, plinkoDrop, plinkoSlot, plinkoReturn,
+    CRASH_EDGE, CRASH_TARGETS, crashPoint, isCrashTarget,
+    DICE_MIN, DICE_MAX, diceMultiple, diceRoll,
+    BACCARAT_BETS, bacValue, bacTotal, baccaratCoup, baccaratMultiple,
+    KENO_N, KENO_DRAW, KENO_PICKS, KENO_PAYS, kenoDraw, isKenoPicks, kenoHits, kenoReturn,
   };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.AnteGames = api;

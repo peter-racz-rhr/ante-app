@@ -72,7 +72,7 @@ const sheet = (p, s) => p.evaluate(s => { window.App.ui.sheet = s; window.App.pa
       await go(p, v); await audit(p, `${tag} ${v}`, lang);
       if (width === 412) await p.screenshot({ path: path.join(OUT, `${lang}-${v}.png`), fullPage: true });
     }
-    for (const g of ["coin", "roulette", "slots", "blackjack", "poker"]) { await go(p, "game", { game: g, stakePkg: "com.instagram.android", stake: 300 }); await audit(p, `${tag} game ${g}`, lang); if (width === 412) await p.screenshot({ path: path.join(OUT, `${lang}-game-${g}.png`) }); }
+    for (const g of ["coin", "roulette", "slots", "blackjack", "poker", "plinko", "crash", "baccarat", "keno", "dice"]) { await go(p, "game", { game: g, stakePkg: "com.instagram.android", stake: 300 }); await audit(p, `${tag} game ${g}`, lang); if (width === 412) await p.screenshot({ path: path.join(OUT, `${lang}-game-${g}.png`) }); }
     await go(p, "home");
     const sheets = [{ type: "pick", apps: [], q: "" }, { type: "edit", pkg: "com.instagram.android", label: "Instagram", limit: 1200 }, { type: "strict" }, { type: "consent" },
       { type: "schedules" }, { type: "schedEdit", draft: { id: 0, label: "", days: 31, startMin: 540, endMin: 1020, on: true } }, { type: "recap" }, { type: "supporter" }, { type: "deleteData", drive: true }, { type: "terms" }, { type: "receipt", receipt: { product: "Ante Supporter", price: "€4.99", at: 1793500000000 } },

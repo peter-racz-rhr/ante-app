@@ -440,6 +440,29 @@ async function noOverflow(p, label) {
     check(await sc.evaluate(() => getComputedStyle(document.getElementById("screen")).overflowY) === "hidden", "the page behind an open sheet is locked");
     await sc.context().close();
   }
+  /* The five newer tables: one round each, paid from the budget */
+  {
+    const nt = await page(browser, "?acc=1&reset=1");
+    await tab(nt, "tables"); await nt.waitForTimeout(300);
+    check((await nt.$$(".games .game")).length === 10, "Play lists ten tables");
+    for (const [g, act, prep] of [["plinko", "plDrop"], ["crash", "crGo", '[data-a="crTarget"][data-v="3"]'], ["dice", "dcRoll"], ["baccarat", "bcDeal", '[data-a="bcBet"][data-v="player"]'], ["keno", "knDraw", '[data-a="knQuick"]']]) {
+      await tab(nt, "tables"); await nt.waitForTimeout(250);
+      await nt.click(`[data-a="game"][data-id="${g}"]`); await nt.waitForTimeout(400);
+      if (prep) { await nt.click(prep); await nt.waitForTimeout(150); }
+      const before = await nt.evaluate(() => window.Ante.state().limits.reduce((a, l) => a + l.leftSec, 0));
+      await nt.click(`[data-a="${act}"]`);
+      await nt.waitForSelector(`[data-a="${act}"]:not([disabled])`, { timeout: 12000 });
+      const res = (await nt.textContent("#result")).trim();
+      const after = await nt.evaluate(() => window.Ante.state().limits.reduce((a, l) => a + l.leftSec, 0));
+      const last = await nt.evaluate(() => window.Ante.state().ledger[0]);
+      check(res.length > 0 && last && after - before === last.deltaSec, `${g}: a round settles and the budget moves by its result (${res})`);
+      await shot(nt, `26i-${g}`);
+      await nt.waitForTimeout(1900);
+      await nt.click('[data-a="leave"]').catch(() => {}); await nt.waitForTimeout(200);
+    }
+    check(nt.errors.length === 0, "no console errors at the new tables: " + nt.errors.join(" | "));
+    await nt.context().close();
+  }
   /* Changed Terms: shown once to people who accepted an older version */
   {
     const tm = await page(browser, "?acc=1&reset=1", { newTerms: true });

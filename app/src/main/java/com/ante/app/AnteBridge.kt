@@ -205,6 +205,15 @@ class AnteBridge(
                     Bank.dealer.roulette(b, pkg, stakeSec, bets, now)
                 }
                 "slots" -> Bank.dealer.slots(b, pkg, stakeSec, now)
+                "plinko" -> Bank.dealer.plinko(b, pkg, stakeSec, now)
+                "crash" -> Bank.dealer.crash(b, pkg, stakeSec, a.optDouble("target", 0.0), now)
+                "dice" -> Bank.dealer.dice(b, pkg, stakeSec, a.optInt("under", 0), now)
+                "baccarat" -> Bank.dealer.baccarat(b, pkg, stakeSec, a.optString("bet", ""), now)
+                "keno" -> {
+                    val arr = a.optJSONArray("picks")
+                    val picks = if (arr == null) emptyList() else (0 until minOf(arr.length(), 10)).map { arr.optInt(it, 0) }
+                    Bank.dealer.keno(b, pkg, stakeSec, picks, now)
+                }
                 else -> JSONObject(BAD)
             }
         }.toString()

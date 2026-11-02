@@ -128,4 +128,75 @@ object Games {
     }
 
     fun pokerMultiple(hand: List<Card>): Int = pokerRank(hand)?.let { POKER_PAYS[it] } ?: 0
+
+    /* ---------- plinko: 12 rows; the slot is the number of right bounces ---------- */
+    const val PLINKO_ROWS = 12
+    val PLINKO_PAYS = listOf(33.0, 11.0, 4.0, 2.0, 1.1, 0.6, 0.2, 0.6, 1.1, 2.0, 4.0, 11.0, 33.0)
+
+    fun plinkoReturn(): Double {
+        var c = 1.0; var sum = 0.0
+        for (k in 0..PLINKO_ROWS) { sum += c * PLINKO_PAYS[k]; c = c * (PLINKO_ROWS - k) / (k + 1) }
+        return sum / (1 shl PLINKO_ROWS)
+    }
+
+    /* ---------- crash: reaches t with chance exactly 0.97 / t ---------- */
+    const val CRASH_EDGE = 0.97
+    val CRASH_TARGETS = listOf(1.5, 2.0, 3.0, 5.0, 10.0, 50.0)
+
+    fun crashPoint(rng: Random): Double {
+        val u = 1.0 - rng.nextDouble() // (0, 1]
+        return maxOf(1.0, kotlin.math.floor(100 * CRASH_EDGE / u) / 100)
+    }
+
+    /* ---------- dice: roll 0.00–99.99, win under your number ---------- */
+    val DICE_RANGE = 2..95
+    fun diceMultiple(under: Int): Double = kotlin.math.floor(9700.0 / under) / 100
+
+    /* ---------- baccarat: 8 decks, the standard third-card rules ---------- */
+    val BACCARAT_PAYS = mapOf("player" to 2.0, "banker" to 1.95, "tie" to 9.0)
+    fun bacValue(c: Card) = if (c.r >= 10) 0 else c.r
+    fun bacTotal(cards: List<Card>) = cards.sumOf { bacValue(it) } % 10
+
+    data class Coup(val player: List<Card>, val banker: List<Card>, val winner: String)
+
+    fun baccaratCoup(draw: () -> Card): Coup {
+        val p = mutableListOf(draw()); val b = mutableListOf(draw()); p.add(draw()); b.add(draw())
+        val pt = bacTotal(p); val bt = bacTotal(b)
+        if (pt < 8 && bt < 8) {
+            var p3: Card? = null
+            if (pt <= 5) { p3 = draw(); p.add(p3) }
+            val v = p3?.let { bacValue(it) }
+            val bankerDraws = if (v == null) bt <= 5 else when (bt) {
+                0, 1, 2 -> true
+                3 -> v != 8
+                4 -> v in 2..7
+                5 -> v in 4..7
+                6 -> v == 6 || v == 7
+                else -> false
+            }
+            if (bankerDraws) b.add(draw())
+        }
+        val pv = bacTotal(p); val bv = bacTotal(b)
+        return Coup(p, b, if (pv > bv) "player" else if (bv > pv) "banker" else "tie")
+    }
+
+    /** A tie pushes bets on Player and Banker. */
+    fun baccaratMultiple(bet: String, winner: String): Double = when {
+        winner == "tie" -> if (bet == "tie") BACCARAT_PAYS.getValue("tie") else 1.0
+        bet == winner -> BACCARAT_PAYS.getValue(bet)
+        else -> 0.0
+    }
+
+    /* ---------- keno: pick 5 of 40, 10 are drawn ---------- */
+    const val KENO_N = 40
+    const val KENO_DRAW = 10
+    const val KENO_PICKS = 5
+    val KENO_PAYS = listOf(0.0, 0.0, 1.1, 4.0, 24.0, 250.0)
+
+    fun isKenoPicks(picks: List<Int>) = picks.size == KENO_PICKS && picks.toSet().size == KENO_PICKS && picks.all { it in 1..KENO_N }
+
+    fun kenoReturn(): Double {
+        fun c(n: Int, k: Int): Double { var r = 1.0; for (i in 0 until k) r = r * (n - i) / (i + 1); return r }
+        return (0..KENO_PICKS).sumOf { h -> c(KENO_DRAW, h) * c(KENO_N - KENO_DRAW, KENO_PICKS - h) / c(KENO_N, KENO_PICKS) * KENO_PAYS[h] }
+    }
 }

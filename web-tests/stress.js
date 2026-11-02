@@ -110,7 +110,7 @@ const sheet = (p, s) => p.evaluate(s => { window.App.ui.sheet = s; window.App.pa
         if (v === "home" && width === 360) await p.screenshot({ path: path.join(OUT, `home-${theme}.png`), fullPage: true });
       }
       for (const doc of ["terms", "privacy", "imprint"]) { await go(p, "legal", { doc, back: "settings" }); await audit(p, `${tag} legal ${doc}`); }
-      for (const g of ["coin", "roulette", "slots", "blackjack", "poker"]) {
+      for (const g of ["coin", "roulette", "slots", "blackjack", "poker", "plinko", "crash", "baccarat", "keno", "dice"]) {
         await go(p, "tables"); await go(p, "game", { game: g, stakePkg: pkgOf(0), stake: 3540000 });
         await audit(p, `${tag} game ${g}`);
         const f = await p.evaluate(() => { const s = document.getElementById("screen"); return s.scrollHeight - s.clientHeight; });
@@ -140,7 +140,7 @@ const sheet = (p, s) => p.evaluate(s => { window.App.ui.sheet = s; window.App.pa
   {
     const p = await open(browser, 320, "?acc=1", { lang: "hu" });
     for (const v of ["home", "screentime", "results", "tables", "profile", "settings"]) { await go(p, v); await audit(p, `320px hu ${v}`); }
-    for (const g of ["coin", "roulette", "slots", "blackjack", "poker"]) { await go(p, "game", { game: g, stakePkg: pkgOf(0), stake: 3540000 }); await audit(p, `320px hu game ${g}`); }
+    for (const g of ["coin", "roulette", "slots", "blackjack", "poker", "plinko", "crash", "baccarat", "keno", "dice"]) { await go(p, "game", { game: g, stakePkg: pkgOf(0), stake: 3540000 }); await audit(p, `320px hu game ${g}`); }
     await go(p, "home");
     for (const s of [{ type: "schedules" }, { type: "recap" }, { type: "supporter" }, { type: "consent" }, { type: "strict" }]) { await sheet(p, s); await audit(p, `320px hu sheet ${s.type}`); }
     for (const mode of ["strict", "focus"]) for (const step of [0, 1, 2]) { await sheet(p, { type: "explain", mode, step, pick: null }); await audit(p, `320px hu explain ${mode} ${step}`); }

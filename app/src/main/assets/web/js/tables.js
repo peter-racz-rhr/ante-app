@@ -65,7 +65,7 @@
     if (!l || l.leftSec < 60) {
       return `<div class="screen" id="screen">${head}<section class="panel"><h2 class="h3">Nothing to stake</h2><p class="muted">${S.limits.length ? "Every limited app is under a minute for today. Budgets reset at midnight." : "Add a limit on Home first. Its minutes are your chips."}</p></section></div>`;
     }
-    const games = G.GAMES.map((g, i) => `<button class="game ${i === 0 ? "feature" : ""} g-${g.id}" data-a="game" data-id="${g.id}">
+    const games = G.GAMES.map(g => `<button class="game ${g.feature ? "feature" : ""} g-${g.id}" data-a="game" data-id="${g.id}">
         <span class="art" aria-hidden="true">${FX.GAME_ART[g.id]()}</span>
         <span class="gtext"><span class="gname">${g.name}</span><span class="grule">${g.rule}</span></span>
         <span class="rtp"><span class="num">${g.rtp}</span> back</span></button>`).join("");
@@ -102,6 +102,7 @@
       } }); }
     if (ui.game === "slots") { table = FX.Slots(el, ["seven", "bell", "cherry"]); paytableSlots(el); }
     if (ui.game === "blackjack") table = FX.Blackjack(el);
+    if (App.extraGames && App.extraGames[ui.game]) { App.extraGameDefaults(); table = App.extraGames[ui.game].mount(el); }
     if (ui.game === "poker") {
       table = FX.Poker(el, i => {
         if (ui.round && ui.round.phase === "dealt" && !ui.busy) { ui.round.held[i] = !ui.round.held[i]; table.setHold(i, ui.round.held[i]); App.haptic("tap"); App.SFX.play("chip"); }
@@ -189,6 +190,8 @@
           <button class="btn quiet" data-a="bjDouble" ${ui.busy || !canDouble ? "disabled" : ""}>Double</button></div>
           <p class="stake-from center">Stake <span class="num">${fmt(R.stake)}</span> on the table</p>`;
       } else html = stakeRow(locked, "bjDeal", { label: "Deal" });
+    } else if (App.extraGames && App.extraGames[ui.game]) {
+      html = App.extraGames[ui.game].controls(locked);
     } else if (ui.game === "poker") {
       const R = ui.round;
       if (R && R.phase === "dealt") {
@@ -250,6 +253,7 @@
   function start(r) {
     if (r && r.ok) { App.refresh(); return true; }
     const why = r && r.error;
+    if (why === "bet" && A.native && App.extraGames && App.extraGames[ui.game] && !A.has09) { App.toast("Install the new app version (0.9.0) for this table."); return false; }
     App.toast(why === "stake" ? `Not enough ${App.labelOf(ui.stakePkg)} time for that stake.` : why === "round" ? "That hand is already over." : "That bet isn't on the table.");
     return false;
   }
@@ -286,6 +290,8 @@
     exitFocus(1700);
   }
   async function begin() { ui.busy = true; ui.res = null; App.renderControls(); await enterFocus(); }
+  // For the extra tables in js/tables2.js.
+  App.Tables = { start, begin, finish, guarded, stakeRow: (...a) => stakeRow(...a), table: () => table };
 
   async function coinFlip() {
     const r = A.play(ui.stakePkg, "coin", ui.stake, { pick: ui.pick }); if (!start(r)) return;

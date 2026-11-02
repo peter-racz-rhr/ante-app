@@ -11,8 +11,12 @@
   if (N) {
     const has = name => typeof N[name] === "function";
     const D = has("play") ? null : window.AnteDealer((pkg, sec) => N.bet(pkg, sec | 0), (pkg, game, stake, ret) => N.settle(pkg, game, stake | 0, Math.round(ret)));
+    // Plinko, Crash, Dice, Baccarat and Keno are dealt natively from 0.9.0.
+    const appVersion = (() => { try { return String(parse(N.versions(), {}).app || ""); } catch (e) { return ""; } })();
+    const atLeast = (v, want) => { const a = v.split(".").map(Number), b = want.split(".").map(Number); for (let i = 0; i < 3; i++) { if ((a[i] || 0) !== b[i]) return (a[i] || 0) > b[i]; } return true; };
     window.Ante = {
       native: true,
+      has09: atLeast(appVersion, "0.9.0"),
       state: () => parse(N.state(), { limits: [], ledger: [] }),
       context: () => parse(N.context(), { mode: "main" }),
       apps: () => parse(N.apps(), []),

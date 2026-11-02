@@ -12,6 +12,8 @@
       return { ok: true, stake, ret, multiple, net: settle(pkg, game, stake, ret) };
     };
     const draw = () => { if (shoe.length < 20) shoe = G.newShoe(); return shoe.pop(); };
+    let bacShoe = [];
+    const bacDraw = () => { if (bacShoe.length < 20) bacShoe = G.newShoe(null, 8); return bacShoe.pop(); };
     function bjFinish(r) {
       bj = null;
       if (G.handValue(r.p) <= 21 && !G.isBlackjack(r.p) && !G.isBlackjack(r.d)) G.dealerPlay(r.d, draw);
@@ -33,6 +35,39 @@
           if (!bet(pkg, stake * bets.length)) return fail("stake");
           const n = G.rouletteSpin();
           return Object.assign(pay(pkg, "Roulette", stake * bets.length, G.rouletteReturn(bets, n) / bets.length), { n, bets });
+        }
+        if (game === "plinko") {
+          if (!bet(pkg, stake)) return fail("stake");
+          const path = G.plinkoDrop(), slot = G.plinkoSlot(path);
+          return Object.assign(pay(pkg, "Plinko", stake, G.PLINKO_PAYS[slot]), { path, slot });
+        }
+        if (game === "crash") {
+          const target = Number(args.target);
+          if (!G.isCrashTarget(target)) return fail("bet");
+          if (!bet(pkg, stake)) return fail("stake");
+          const point = G.crashPoint();
+          return Object.assign(pay(pkg, "Crash", stake, point >= target ? target : 0), { point, target });
+        }
+        if (game === "dice") {
+          const under = args.under | 0;
+          if (under < G.DICE_MIN || under > G.DICE_MAX) return fail("bet");
+          if (!bet(pkg, stake)) return fail("stake");
+          const roll = G.diceRoll();
+          return Object.assign(pay(pkg, "Dice", stake, roll < under ? G.diceMultiple(under) : 0), { roll, under });
+        }
+        if (game === "baccarat") {
+          const b = args.bet;
+          if (!Object.prototype.hasOwnProperty.call(G.BACCARAT_BETS, b)) return fail("bet");
+          if (!bet(pkg, stake)) return fail("stake");
+          const coup = G.baccaratCoup(bacDraw);
+          return Object.assign(pay(pkg, "Baccarat", stake, G.baccaratMultiple(b, coup.winner)), { p: coup.p, b: coup.b, winner: coup.winner, bet: b });
+        }
+        if (game === "keno") {
+          const picks = (args.picks || []).map(Number);
+          if (!G.isKenoPicks(picks)) return fail("bet");
+          if (!bet(pkg, stake)) return fail("stake");
+          const drawn = G.kenoDraw(), hits = G.kenoHits(picks, drawn);
+          return Object.assign(pay(pkg, "Keno", stake, G.KENO_PAYS[hits]), { drawn, hits });
         }
         if (game === "slots") {
           if (!bet(pkg, stake)) return fail("stake");

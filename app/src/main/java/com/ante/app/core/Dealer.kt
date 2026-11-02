@@ -52,6 +52,54 @@ class Dealer(private val rng: Random = SecureRandom()) {
         return settle(bank, pkg, "Slots", stake, multiple, nowMs).put("reels", JSONArray(reels)).put("key", key)
     }
 
+    /* ---------- plinko, crash, dice, baccarat, keno: one call each ---------- */
+
+    fun plinko(bank: TimeBank, pkg: String, stake: Int, nowMs: Long): JSONObject {
+        if (!bank.placeBet(pkg, stake)) return fail("stake")
+        val path = List(Games.PLINKO_ROWS) { if (rng.nextBoolean()) 1 else 0 }
+        val slot = path.sum()
+        return settle(bank, pkg, "Plinko", stake, Games.PLINKO_PAYS[slot], nowMs).put("path", JSONArray(path)).put("slot", slot)
+    }
+
+    /** Auto cash-out at [target]: pays target× when the crash point reaches it. */
+    fun crash(bank: TimeBank, pkg: String, stake: Int, target: Double, nowMs: Long): JSONObject {
+        if (Games.CRASH_TARGETS.none { it == target }) return fail("bet")
+        if (!bank.placeBet(pkg, stake)) return fail("stake")
+        val point = Games.crashPoint(rng)
+        return settle(bank, pkg, "Crash", stake, if (point >= target) target else 0.0, nowMs).put("point", point).put("target", target)
+    }
+
+    fun dice(bank: TimeBank, pkg: String, stake: Int, under: Int, nowMs: Long): JSONObject {
+        if (under !in Games.DICE_RANGE) return fail("bet")
+        if (!bank.placeBet(pkg, stake)) return fail("stake")
+        val roll = rng.nextInt(10_000) / 100.0
+        return settle(bank, pkg, "Dice", stake, if (roll < under) Games.diceMultiple(under) else 0.0, nowMs).put("roll", roll).put("under", under)
+    }
+
+    fun baccarat(bank: TimeBank, pkg: String, stake: Int, bet: String, nowMs: Long): JSONObject {
+        if (bet !in Games.BACCARAT_PAYS) return fail("bet")
+        if (!bank.placeBet(pkg, stake)) return fail("stake")
+        val coup = Games.baccaratCoup { bacDraw() }
+        return settle(bank, pkg, "Baccarat", stake, Games.baccaratMultiple(bet, coup.winner), nowMs)
+            .put("p", cards(coup.player)).put("b", cards(coup.banker)).put("winner", coup.winner).put("bet", bet)
+    }
+
+    fun keno(bank: TimeBank, pkg: String, stake: Int, picks: List<Int>, nowMs: Long): JSONObject {
+        if (!Games.isKenoPicks(picks)) return fail("bet")
+        if (!bank.placeBet(pkg, stake)) return fail("stake")
+        val pool = (1..Games.KENO_N).toMutableList()
+        for (i in pool.size - 1 downTo 1) { val j = rng.nextInt(i + 1); val t = pool[i]; pool[i] = pool[j]; pool[j] = t }
+        val drawn = pool.take(Games.KENO_DRAW)
+        val hits = picks.count { it in drawn }
+        return settle(bank, pkg, "Keno", stake, Games.KENO_PAYS[hits], nowMs).put("drawn", JSONArray(drawn)).put("hits", hits)
+    }
+
+    private var bacShoe: MutableList<Games.Card> = mutableListOf()
+    private fun bacDraw(): Games.Card {
+        if (bacShoe.size < RESHUFFLE_AT) bacShoe = Games.deck(rng, BACCARAT_DECKS)
+        return bacShoe.removeAt(bacShoe.size - 1)
+    }
+
     /* ---------- blackjack: 6-deck shoe, dealer stands on all 17s, blackjack pays 3 to 2 ---------- */
 
     fun bjDeal(bank: TimeBank, pkg: String, stake: Int, nowMs: Long): JSONObject {
@@ -156,6 +204,7 @@ class Dealer(private val rng: Random = SecureRandom()) {
 
     companion object {
         const val SHOE_DECKS = 6
+        const val BACCARAT_DECKS = 8
         const val RESHUFFLE_AT = 20
         const val MAX_ROULETTE_BETS = 46 // every outside bet and every number
         /** Free spin prizes in seconds, and how often each comes up (out of 100). */

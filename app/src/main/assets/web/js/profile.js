@@ -48,7 +48,7 @@
   }
 
   /** The native part (APK) is older than this UI needs for full screen and vibration. */
-  const NATIVE_WANTED = [0, 8, 0];
+  const NATIVE_WANTED = [0, 9, 0];
   function nativeOutdated() {
     if (!A.native) return false;
     const v = (A.versions && A.versions()) || {};
@@ -76,7 +76,7 @@
       <section class="update-note" role="status">
         <span class="sicon" style="--ic:var(--warn)" aria-hidden="true">${App.ICON.info}</span>
         <div><p class="sitem-title">Install the new app version once</p>
-        <p class="sitem-sub">This phone runs Ante ${esc((A.versions().app) || "")}. Google Drive backup, purchase receipts and the never-blocked phone and emergency apps need 0.8.0. Open the <b>ante-app</b> project in Android Studio and press Run.</p></div>
+        <p class="sitem-sub">This phone runs Ante ${esc((A.versions().app) || "")}. Plinko, Crash, Baccarat, Keno, Dice, Google Drive backup and purchase receipts need 0.9.0. Open the <b>ante-app</b> project in Android Studio and press Run.</p></div>
       </section>` : "";
   }
 

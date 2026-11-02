@@ -46,3 +46,19 @@ test("blackjack and poker rounds settle exactly once", () => {
   }
   assert.equal(b.open, 0);
 });
+
+test("the five new tables settle and refuse bad bets", () => {
+  const b = bank(1e9), D = window.AnteDealer(b.bet, b.settle);
+  const bets = [["plinko", {}], ["crash", { target: 2 }], ["dice", { under: 40 }], ["baccarat", { bet: "banker" }], ["keno", { picks: [1, 2, 3, 4, 5] }]];
+  for (let i = 0; i < 400; i++) {
+    const [g, args] = bets[i % bets.length], before = b.left;
+    const r = D.play("p", g, 100, args);
+    assert.ok(r.ok, g);
+    assert.equal(b.left, before + r.net, g);
+  }
+  assert.equal(D.play("p", "crash", 100, { target: 2.5 }).error, "bet");
+  assert.equal(D.play("p", "dice", 100, { under: 99 }).error, "bet");
+  assert.equal(D.play("p", "baccarat", 100, { bet: "nope" }).error, "bet");
+  assert.equal(D.play("p", "keno", 100, { picks: [1, 1, 2, 3, 4] }).error, "bet");
+  assert.equal(b.open, 0);
+});
