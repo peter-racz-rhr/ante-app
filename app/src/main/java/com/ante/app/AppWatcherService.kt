@@ -64,8 +64,18 @@ class AppWatcherService : AccessibilityService() {
         val ignored = pkg in IGNORED || pkg == currentKeyboard() || panel || Exempt.isExempt(this, pkg)
         val isActivity = !ignored && isActivityWindow(pkg, cls)
         val action = Bank.editAt { bank, now -> watcher.onWindow(bank, pkg, isActivity, ignored, pkg in homePackages, now) }
+        keepWebFilter()
         act(action)
         scheduleExpiry()
+    }
+
+    /** At most once a minute: restart the website filter if it should run but was stopped. */
+    private var webCheckedAt = 0L
+    private fun keepWebFilter() {
+        val now = System.currentTimeMillis()
+        if (now - webCheckedAt < WEB_CHECK_MS) return
+        webCheckedAt = now
+        try { WebFilter.ensure(this) } catch (e: Exception) { /* never break the watcher */ }
     }
 
     override fun onInterrupt() = Unit
@@ -150,6 +160,7 @@ class AppWatcherService : AccessibilityService() {
 
     companion object {
         private const val BLOCK_DELAY_MS = 120L
+        private const val WEB_CHECK_MS = 60_000L
         private val IGNORED = setOf("com.android.systemui", "android")
 
         /** Strict mode: open for two minutes after a 30 s wait. Places where blocking could be switched off. */

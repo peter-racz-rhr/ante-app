@@ -29,11 +29,36 @@ object AppCatalog {
         }.sortedBy { it.second.lowercase() }
 
         val out = JSONArray()
-        for ((pkg, label, _) in rows) {
+        for ((pkg, label, info) in rows) {
             val cached = synchronized(iconCache) { iconCache[pkg] } ?: ""
-            out.put(JSONObject().put("pkg", pkg).put("label", label).put("icon", cached))
+            out.put(JSONObject().put("pkg", pkg).put("label", label).put("icon", cached).put("cat", categoryOf(pkg, info.activityInfo?.applicationInfo)))
         }
         return out
+    }
+
+    /* Categories for category limits: Android's own tag where the app sets one, plus the
+       well-known apps that don't. "" when it's none of these. */
+    private val KNOWN = mapOf(
+        "social" to setOf("com.instagram.android", "com.zhiliaoapp.musically", "com.ss.android.ugc.trill", "com.facebook.katana", "com.facebook.lite",
+            "com.twitter.android", "com.reddit.frontpage", "com.snapchat.android", "com.instagram.barcelona", "com.pinterest", "com.linkedin.android",
+            "com.bereal.ft", "com.tumblr", "org.joinmastodon.android", "xyz.blueskyweb.app", "com.discord", "com.vkontakte.android"),
+        "video" to setOf("com.google.android.youtube", "com.netflix.mediaclient", "tv.twitch.android.app", "com.disney.disneyplus", "com.amazon.avod.thirdpartyclient",
+            "com.hbo.hbonow", "com.wbd.stream", "com.google.android.apps.youtube.kids", "com.zhiliaoapp.musically.go", "com.kick.mobile", "com.vimeo.android.videoapp"),
+        "news" to setOf("com.google.android.apps.magazines", "flipboard.app", "com.bbc.news", "com.cnn.mobile.android.phone", "com.nytimes.android"),
+        "shopping" to setOf("com.amazon.mShop.android.shopping", "com.einnovation.temu", "com.zzkko", "com.alibaba.aliexpresshd", "com.ebay.mobile", "com.shein.android"),
+    )
+
+    @Suppress("DEPRECATION") // FLAG_IS_GAME: older games set only this
+    fun categoryOf(pkg: String, ai: android.content.pm.ApplicationInfo?): String {
+        KNOWN.entries.firstOrNull { pkg in it.value }?.let { return it.key }
+        if (ai == null) return ""
+        return when (ai.category) {
+            android.content.pm.ApplicationInfo.CATEGORY_GAME -> "games"
+            android.content.pm.ApplicationInfo.CATEGORY_SOCIAL -> "social"
+            android.content.pm.ApplicationInfo.CATEGORY_VIDEO -> "video"
+            android.content.pm.ApplicationInfo.CATEGORY_NEWS -> "news"
+            else -> if ((ai.flags and android.content.pm.ApplicationInfo.FLAG_IS_GAME) != 0) "games" else ""
+        }
     }
 
     fun labelFor(context: Context, pkg: String): String = try {

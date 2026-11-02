@@ -37,7 +37,9 @@
 
   /* ---------- state helpers ---------- */
   App.refresh = () => { App.S = A.state(); App.ACC = A.account(); };
-  App.lim = pkg => App.S.limits.find(l => l.pkg === pkg);
+  /** The limit an app spends from: its category's shared budget when it is in one (S.groups), else its own. */
+  App.keyOf = pkg => { const g = App.S.groups || {}; for (const k in g) if ((g[k] || []).includes(pkg)) return k; return pkg; };
+  App.lim = pkg => { const k = App.keyOf(pkg); return App.S.limits.find(l => l.pkg === k); };
   App.labelOf = pkg => (App.lim(pkg) || {}).label || (pkg === CTX.pkg ? CTX.label : pkg);
   App.displayName = () => App.P.get().name || App.ACC.name || "";
   /** The profile picture if there is one, else initials. Only data: images (made by the app) are used. */
@@ -57,6 +59,7 @@
   };
   /** The phone's real app icon (from Android), or a monogram in the browser demo. */
   App.appIcon = (pkg, cls) => {
+    if (/^cat:/.test(pkg) && App.catIcon) return App.catIcon(pkg, cls);
     const src = App.iconOf(pkg), l = App.labelOf(pkg);
     return src
       ? `<img class="appicon ${cls || ""}" src="${App.esc(src)}" alt="" width="44" height="44">`

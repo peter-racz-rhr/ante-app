@@ -21,7 +21,7 @@ Péter Rácz
 
 ## Unternehmensangaben
 
-Antes Sperrfunktionen sind kostenlos. Registrierung und Steuernummer werden hier angegeben, bevor eine kostenpflichtige Funktion in den Verkauf geht. Ante Supporter und Trinkgelder verkauft Google Play, das bei Käufern in der EU die Umsatzsteuer erhebt.
+Ante ist kostenlos, und darin wird nichts verkauft. Spenden über Ko-fi sind freiwillige Geschenke an den Entwickler. Sollte sich das ändern, stehen Registrierung und Steuernummer zuerst hier.
 
 ## Verbraucherbeschwerden
 

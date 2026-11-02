@@ -21,7 +21,7 @@ Péter Rácz
 
 ## Vállalkozási adatok
 
-Az Ante tiltó funkciói ingyenesek. A nyilvántartási adatok és az adószám itt jelennek meg, mielőtt bármilyen fizetős funkció elérhetővé válik. Az Ante Támogatót és a borravalót a Google Play értékesíti, amely az EU-s vásárlóktól beszedi az áfát.
+Az Ante ingyenes, és semmi sincs benne eladó. A Ko-fi-támogatások önkéntes ajándékok a fejlesztőnek. Ha ez változik, előbb itt jelennek meg a nyilvántartási adatok és az adószám.
 
 ## Fogyasztói panaszok
 

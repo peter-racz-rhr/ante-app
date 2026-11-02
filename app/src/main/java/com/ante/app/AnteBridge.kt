@@ -12,6 +12,7 @@ import android.webkit.WebView
 import com.ante.app.core.Codec
 import com.ante.app.core.Schedule
 import com.ante.app.core.TimeBank
+import org.json.JSONArray
 import org.json.JSONObject
 
 /**
@@ -68,7 +69,7 @@ class AnteBridge(
     /** Opens one of a fixed set of outside links (Ko-fi, the contact email) in the right app. */
     @JavascriptInterface
     fun openLink(url: String): Boolean {
-        if (url !in OUTSIDE_LINKS) return false
+        if (url !in OUTSIDE_LINKS && url != Supporter.kofiUrl(ctx)) return false
         activity.runOnUiThread {
             try {
                 activity.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
@@ -141,6 +142,7 @@ class AnteBridge(
     @JavascriptInterface
     fun signOut() {
         Account.clear(ctx)
+        Supporter.forget(ctx) // the supporter status belongs to the email
         activity.runOnUiThread { GoogleAuth.forgetGoogleChoice(activity) }
     }
 
@@ -173,9 +175,17 @@ class AnteBridge(
         return true
     }
 
+    /** A category with one shared budget: [key] like "cat:social", [members] a JSON list of packages. */
+    @JavascriptInterface
+    fun setGroup(key: String, label: String, members: String, limitSec: Int): Boolean {
+        val list = try { org.json.JSONArray(members).let { a -> (0 until minOf(a.length(), 80)).map { a.optString(it, "") } } } catch (e: Exception) { return false }
+        val apps = list.filter { validPkg(it) && !Exempt.isExempt(ctx, it) }
+        return Bank.editAt { b, now -> b.setGroup(key, label.take(40).ifBlank { "Category" }, apps, limitSec, now) }
+    }
+
     @JavascriptInterface
     fun removeLimit(pkg: String): Boolean {
-        if (!validPkg(pkg)) return false
+        if (!validPkg(pkg) && !com.ante.app.core.TimeBank.isGroupKey(pkg)) return false
         val now = Bank.now()
         if (!Bank.read { it.canRemoveLimits(now) }) return false
         Bank.editAt { b, now -> b.removeLimit(pkg, now) }
@@ -245,27 +255,42 @@ class AnteBridge(
     fun freeSpin(pkg: String): String =
         if (!validPkg(pkg)) BAD else Bank.editAt { b, now -> Bank.dealer.freeSpin(b, pkg, now) }.toString()
 
-    /* ---- Ante Supporter (Google Play): looks only, never blocking features ---- */
+    /* ---- Ante Supporter: Ko-fi donors (see Supporter.kt) ---- */
 
-    /** {available, supporter, prices: {productId: "€4.99"}}. */
+    /** {supporter, since, checkedAt, configured, kofi, email}. */
     @JavascriptInterface
-    fun supporter(): String {
-        Supporter.onResult = { json -> activity.runOnUiThread { webView.evaluateJavascript("window.anteBilling && window.anteBilling(" + JSONObject.quote(json) + ")", null) } }
-        return Supporter.status(ctx).toString()
+    fun supporter(): String = Supporter.status(ctx).toString()
+
+    /** Asks the supporter server now; the answer arrives as window.anteSupporter(result). */
+    @JavascriptInterface
+    fun checkSupporter() {
+        Supporter.check(ctx) { r -> activity.runOnUiThread { webView.evaluateJavascript("window.anteSupporter && window.anteSupporter(" + JSONObject.quote(r.toString()) + ")", null) } }
     }
 
-    /** Opens Google Play's purchase sheet; the result arrives as window.anteBilling(result). */
+    /* ---- Website filter (see WebFilter.kt and WebFilterService.kt) ---- */
+
+    /** {available, on, adult, gambling, custom, lockUntil, nnnUntil, nnnDone, november, running, consented, strict}. */
     @JavascriptInterface
-    fun buy(productId: String): Boolean {
-        var ok = false
-        val latch = java.util.concurrent.CountDownLatch(1)
-        activity.runOnUiThread { ok = Supporter.buy(activity, productId); latch.countDown() }
-        latch.await(3, java.util.concurrent.TimeUnit.SECONDS)
-        return ok
+    fun webFilter(): String = WebFilter.status(ctx).toString()
+
+    /** New settings; false when refused (turning something off while locked or in Strict mode). */
+    @JavascriptInterface
+    fun setWebFilter(on: Boolean, adult: Boolean, gambling: Boolean, customJson: String): Boolean {
+        val custom = try { JSONArray(customJson).let { a -> List(minOf(a.length(), 400)) { a.optString(it).take(300) } } } catch (e: Exception) { return false }
+        return WebFilter.set(ctx, on, adult, gambling, custom)
     }
 
+    /** Locks the adult filter: 1, 7 or 30 days, or 0 for No Nut November (until 1 December). */
     @JavascriptInterface
-    fun restorePurchases() { Supporter.restore() }
+    fun webFilterLock(days: Int): Boolean = WebFilter.lock(ctx, days)
+
+    /** Asks Android for the VPN permission once; the result arrives as window.anteWeb(status). */
+    @JavascriptInterface
+    fun webFilterConsent(): Boolean {
+        val main = activity as? MainActivity ?: return false
+        main.runOnUiThread { main.askVpnConsent() }
+        return true
+    }
 
     /* ---- Your data: Google Drive backup, download, delete (GDPR Art. 15, 17, 20) ---- */
 
@@ -360,13 +385,15 @@ class AnteBridge(
     @JavascriptInterface
     fun deleteAllData(alsoDrive: Boolean): Boolean {
         val now = Bank.now()
-        if (Bank.read { it.isStrict(now) || it.isFocus(now) }) return false
+        if (Bank.read { it.isStrict(now) || it.isFocus(now) } || !WebFilter.canForget(ctx)) return false
         val wipe = {
             Bank.editAt { b, t -> b.wipe(java.time.Instant.ofEpochMilli(t).atZone(java.time.ZoneId.systemDefault()).toLocalDate().toString()) }
             Account.clear(ctx); Account.setPhoto(ctx, null)
             ctx.getSharedPreferences("ante-account", android.content.Context.MODE_PRIVATE).edit().clear().apply()
             ctx.getSharedPreferences(UI_PREFS, android.content.Context.MODE_PRIVATE).edit().clear().apply()
             Drive.forget(ctx)
+            Supporter.forget(ctx)
+            WebFilter.forget(ctx)
             say("anteDrive", JSONObject().put("op", "deleted").put("ok", true))
         }
         if (!alsoDrive) { wipe(); return true }

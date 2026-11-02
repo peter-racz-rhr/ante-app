@@ -1,6 +1,6 @@
 # Felhasználási feltételek
 
-Ezek a feltételek az Ante alkalmazásra és a webes demóra vonatkoznak. Utolsó módosítás: 2026. november 1.. Az Ante első megnyitásakor az „Elmúltam 18 éves, és elfogadom” gombbal fogadod el őket.
+Ezek a feltételek az Ante alkalmazásra és a webes demóra vonatkoznak. Utolsó módosítás: 2026. november 2.. Az Ante első megnyitásakor az „Elmúltam 18 éves, és elfogadom” gombbal fogadod el őket.
 
 ## 1. Mi az Ante
 
@@ -16,15 +16,15 @@ Legalább 18 évesnek kell lenned, mert az asztalok kaszinójátékokat szimulá
 
 ## 4. A telefonod és a beállításai
 
-A tiltáshoz az Android kisegítő engedélye kell, amelyet a Beállításokban bármikor ki- és bekapcsolhatsz. Az Ante a limitektől függetlenül soha nem takarja le a telefon alkalmazást, az üzenetküldőt és a segélyhívást. Az Ante nem garantálja, hogy minden alkalmazás minden helyzetben le lesz tiltva, például az alkalmazások webes változatai vagy a kép a képben videó. Szigorú módban a Beállítások, a Play Áruház és az eltávolítás előtt 30 másodperces várakozás van. A saját magad által indított, időzített Szigorú zárolást az alkalmazásban nem lehet idő előtt kikapcsolni; a választott időpontban magától ér véget. A Google Playről telepített változatban a várakozás után az Ante mindig eltávolítható; a Google Playen kívülről telepített változatok a zárolás végéig letakarva tartják az eltávolító képernyőt. Ez általad vállalt akadály, nem garancia: az Android mindig elindítható csökkentett módban.
+A tiltáshoz az Android kisegítő engedélye kell, amelyet a Beállításokban bármikor ki- és bekapcsolhatsz. Az Ante a limitektől függetlenül soha nem takarja le a telefon alkalmazást, az üzenetküldőt és a segélyhívást. Az Ante nem garantálja, hogy minden alkalmazás minden helyzetben le lesz tiltva, például az alkalmazások webes változatai vagy a kép a képben videó. Szigorú módban a Beállítások, a Play Áruház és az eltávolítás előtt 30 másodperces várakozás van. A saját magad által indított, időzített Szigorú zárolást az alkalmazásban nem lehet idő előtt kikapcsolni; a választott időpontban magától ér véget. A Google Playről telepített változatban a várakozás után az Ante mindig eltávolítható; a Google Playen kívülről telepített változatok a zárolás végéig letakarva tartják az eltávolító képernyőt. Ez általad vállalt akadály, nem garancia: az Android mindig elindítható csökkentett módban. A weboldalszűrő név alapján tilt, és nem fog meg mindent: a saját Biztonságos DNS-t használó böngészők, egy másik VPN vagy egy szolgáltató nevére állított Privát DNS megkerülheti.
 
 ## 5. A fiókod és az adataid
 
 A Google-bejelentkezés nem kötelező. A neved és e-mail-címed kerül vele erre a telefonra, és lehetővé teszi, hogy az adataidat a saját Google Drive-odra mentsd és másik telefonon visszaállítsd. Bármikor kijelentkezhetsz, letöltheted vagy törölheted az összes adatodat: Beállítások → Az adataid. A törlés megvárja, amíg az általad indított Szigorú zárolás vagy Fókusz véget ér.
 
-## 6. Ante Támogató és borravaló
+## 6. Ante Támogató (Ko-fi-támogatás)
 
-Az Ante Támogató a Google Playen keresztül vásárolható, nem kötelező, egyszeri vásárlás, amely további megjelenéseket old fel (témák, óra-betűtípusok, asztalposztók, kártyahátlapok és egy jelvény). Soha nem old fel tiltó funkciót, perceket vagy jobb esélyeket. A Google Playen vagy a Ko-fin adott borravaló önkéntes ajándék, és semmit nem old fel. A fizetést, a visszatérítést és az adókat a Google Play intézi a saját feltételei szerint. A Támogató vásárlás a Google-fiókodhoz kötődik, és új telefonon visszaállítható. Elállási jog: az Ante Támogató azonnal teljesített digitális tartalom. A vásárlással kéred az azonnali teljesítést, és tudomásul veszed, hogy ezzel elveszíted a 14 napos elállási jogot. A digitális tartalomra vonatkozó szavatossági jogaidat ez nem érinti. Vásárlás után az Ante visszaigazolást mutat a termékkel, az árral, a dátummal és az azonnali teljesítés kérésével, amelyet elmenthetsz vagy megoszthatsz; a Beállítások → Az Ante támogatása → Nyugta alatt is megtalálod.
+Az Ante ingyenes. A Ko-fin (ko-fi.com) bármekkora összeggel támogathatod, egyszer vagy többször. A támogatás önkéntes ajándék a fejlesztőnek: a fizetést, a visszatérítést és a nyugtákat a Ko-fi és a fizetési szolgáltatói kezelik a saját feltételeik szerint. Köszönetként, ha a támogatást ugyanazzal az e-mail-címmel adod, amellyel az Ante-ba Google-lel bejelentkeztél, Ante Támogató leszel: megkapod a Támogató jelvényt, egy arany keretet a profilképed köré és a további megjelenéseket (témák, óra-betűtípusok, asztalposztók és kártyahátlapok). A Támogató státusz soha nem old fel tiltó funkciókat, perceket vagy jobb esélyeket, és minden, ami a képernyőidőd kezeléséhez kell, ingyenes marad. A Támogató státusz köszönet, nem vásárlás; addig marad meg, amíg az Ante támogató-ellenőrzése működik, és nagyjából hetente újra ellenőrződik.
 
 ## 7. Felelősség
 

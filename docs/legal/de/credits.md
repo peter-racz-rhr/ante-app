@@ -10,6 +10,10 @@ Geist (Oberfläche) von Vercel. Uhr-Schriften: Bitcount von Petr van Blokland, D
 
 Die Themen Latte, Frappé, Macchiato und Mocha nutzen die Catppuccin-Paletten (MIT-Lizenz).
 
+## Website-Listen
+
+Die Listen der Erwachsenen- und Glücksspielseiten stammen vom The Block List Project (github.com/blocklistproject/Lists) und aus Steven Blacks hosts (github.com/StevenBlack/hosts), beide unter der MIT-Lizenz.
+
 ## Icons
 
 Linien-Icons für Ante gezeichnet; das Zahnrad folgt Lucides „settings“-Icon (ISC-Lizenz).

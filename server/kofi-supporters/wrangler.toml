@@ -1,0 +1,9 @@
+name = "ante-supporters"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+
+# Create it once with: npx wrangler kv namespace create SUPPORTERS
+# then paste the id it prints here.
+[[kv_namespaces]]
+binding = "SUPPORTERS"
+id = "PASTE_THE_KV_NAMESPACE_ID_HERE"

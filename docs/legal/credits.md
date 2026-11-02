@@ -10,6 +10,10 @@ Geist (interface) by Vercel. Clock fonts: Bitcount by Petr van Blokland, Doto by
 
 The Latte, Frappé, Macchiato and Mocha themes use the Catppuccin palettes (MIT licence).
 
+## Website lists
+
+The adult and gambling site lists come from The Block List Project (github.com/blocklistproject/Lists) and Steven Black's hosts (github.com/StevenBlack/hosts), both under the MIT licence.
+
 ## Icons
 
 Line icons drawn for Ante; the settings cog follows Lucide's "settings" icon (ISC licence).

@@ -281,7 +281,7 @@
       else if (net === 0) ui.res = { tone: "", text: `${prefix}Push. Your stake comes back.` };
       else if (ret > 0) ui.res = { tone: "loss", text: `${prefix}${fmt(ret)} comes back. Net ${signed(net)}.` };
       else ui.res = { tone: "loss", text: `${prefix}You lose ${fmt(stake)}.` };
-      if (net > 0) { FX.burst(document.getElementById("table"), { power: multiple >= 10 ? 1.5 : 1 }); App.haptic("win"); App.SFX.play(multiple >= 10 ? "bigWin" : "win"); }
+      if (net > 0) { FX.burst(document.getElementById("table"), { power: multiple >= 10 ? 1.5 : 1 }); App.haptic("win"); App.SFX.play(multiple >= 10 ? "bigWin" : "win"); if (multiple >= 10) App.milestone("bigwin"); }
       else if (net < 0) { App.haptic("loss"); App.SFX.play("lose"); }
       else App.SFX.play("push");
     }

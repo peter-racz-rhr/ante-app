@@ -213,7 +213,31 @@ class TimeBank(initial: BankState = BankState()) {
         if (anchor != state.clock) state = state.copy(clock = anchor)
     }
 
-    fun limitFor(pkg: String): Limit? = state.limits.firstOrNull { it.pkg == pkg }
+    fun limitFor(pkg: String): Limit? { val k = keyOf(pkg); return state.limits.firstOrNull { it.pkg == k } }
+
+    /** The budget an app spends from: its category's shared budget when it is in one, else its own. */
+    fun keyOf(pkg: String): String = state.groups.entries.firstOrNull { pkg in it.value }?.key ?: pkg
+
+    /**
+     * Sets a category with one shared budget ([key] like "cat:social") covering [members]. Apps
+     * that had their own limit move into it. Taking apps out of a category, or replacing their own
+     * limits, is refused while Focus or Strict mode runs (it could uncover them); adding apps is
+     * always fine.
+     */
+    fun setGroup(key: String, label: String, members: List<String>, limitSec: Int, nowMs: Long): Boolean {
+        if (!isGroupKey(key)) return false
+        val clean = members.distinct().filter { it.isNotEmpty() && !isGroupKey(it) }.take(MAX_GROUP_APPS)
+        if (clean.isEmpty()) return false
+        val old = state.groups[key].orEmpty()
+        val dropping = old.any { it !in clean }
+        val replacing = clean.any { m -> state.limits.any { it.pkg == m } }
+        if ((dropping || replacing) && !canRemoveLimits(nowMs)) return false
+        // A member leaves any other category it was in.
+        val others = state.groups.filterKeys { it != key }.mapValues { (_, v) -> v.filterNot { it in clean } }.filterValues { it.isNotEmpty() }
+        state = state.copy(limits = state.limits.filterNot { it.pkg in clean }, groups = others + (key to clean))
+        setLimit(key, label, limitSec)
+        return true
+    }
 
     /**
      * Adds or changes a limit. Lowering a limit takes effect now; raising one only adds time from
@@ -222,7 +246,11 @@ class TimeBank(initial: BankState = BankState()) {
      */
     fun setLimit(pkg: String, label: String, limitSec: Int): Limit {
         val clamped = limitSec.coerceIn(MIN_LIMIT_SEC, MAX_LIMIT_SEC)
-        val existing = limitFor(pkg)
+        // An app given its own limit leaves its category (it stays covered, by its own budget).
+        if (!isGroupKey(pkg) && state.groups.values.any { pkg in it }) {
+            state = state.copy(groups = state.groups.mapValues { (_, v) -> v - pkg }.filterValues { it.isNotEmpty() })
+        }
+        val existing = state.limits.firstOrNull { it.pkg == pkg }
         val updated = if (existing == null) {
             val left = state.parked[pkg]?.coerceAtMost(clamped) ?: clamped
             Limit(pkg, label, clamped, left)
@@ -239,7 +267,8 @@ class TimeBank(initial: BankState = BankState()) {
     }
 
     fun removeLimit(pkg: String, nowMs: Long? = null) {
-        val existing = limitFor(pkg) ?: return
+        if (isGroupKey(pkg)) state = state.copy(groups = state.groups - pkg)
+        val existing = state.limits.firstOrNull { it.pkg == pkg } ?: return
         val session = state.session
         if (session != null && session.pkg == pkg && nowMs != null) {
             val used = ((nowMs - session.startedAtMs).coerceAtLeast(0) / 1000L).toInt().coerceAtMost(session.grantedSec)
@@ -257,7 +286,7 @@ class TimeBank(initial: BankState = BankState()) {
 
     fun isSessionActive(pkg: String, nowMs: Long): Boolean {
         val s = state.session ?: return false
-        return s.pkg == pkg && nowMs < s.endsAtMs
+        return s.pkg == keyOf(pkg) && nowMs < s.endsAtMs
     }
 
     /** Reserves [seconds] from the app's budget. Ends any other session first. */
@@ -265,8 +294,8 @@ class TimeBank(initial: BankState = BankState()) {
         val limit = limitFor(pkg) ?: return false
         if (seconds <= 0 || seconds > limit.leftSec || isFocus(nowMs)) return false
         endSession(nowMs)
-        adjustLeft(pkg, -seconds)
-        state = state.copy(session = Session(pkg, nowMs, seconds))
+        adjustLeft(limit.pkg, -seconds)
+        state = state.copy(session = Session(limit.pkg, nowMs, seconds))
         return true
     }
 
@@ -299,7 +328,7 @@ class TimeBank(initial: BankState = BankState()) {
         val session = state.session
         val limited = limitFor(pkg) != null
         if (session != null) {
-            if (session.pkg == pkg) {
+            if (session.pkg == keyOf(pkg)) {
                 if (nowMs < session.endsAtMs) return Decision.ALLOW
                 expireSession(nowMs)
             } else if (isHome || limited) {
@@ -310,7 +339,8 @@ class TimeBank(initial: BankState = BankState()) {
     }
 
     /** Takes a stake from the app's budget. */
-    fun placeBet(pkg: String, stakeSec: Int): Boolean {
+    fun placeBet(app: String, stakeSec: Int): Boolean {
+        val pkg = keyOf(app)
         val limit = limitFor(pkg) ?: return false
         if (stakeSec <= 0 || stakeSec > limit.leftSec) return false
         adjustLeft(pkg, -stakeSec)
@@ -322,7 +352,8 @@ class TimeBank(initial: BankState = BankState()) {
      * Pays [returnSec] back for a stake placed earlier with [placeBet]. Returns the net change.
      * A settle without a matching open stake pays nothing and returns [INVALID_SETTLE]; the return is capped.
      */
-    fun settleBet(pkg: String, game: String, stakeSec: Int, returnSec: Int, nowMs: Long): Int {
+    fun settleBet(app: String, game: String, stakeSec: Int, returnSec: Int, nowMs: Long): Int {
+        val pkg = keyOf(app)
         val open = openStakes[pkg] ?: 0
         if (stakeSec <= 0 || stakeSec > open || limitFor(pkg) == null) return INVALID_SETTLE
         openStakes[pkg] = open - stakeSec
@@ -367,6 +398,9 @@ class TimeBank(initial: BankState = BankState()) {
         const val STRICT_MAX_MS = 31 * 24 * 60 * 60_000L
 
         const val FREE_SPIN_GAME = "Daily spin"
+        const val MAX_GROUP_APPS = 60
+        private val GROUP_KEY = Regex("^cat:[a-z]{1,16}$")
+        fun isGroupKey(k: String) = GROUP_KEY.matches(k)
         const val FREE_SPIN_MAX_SEC = 15 * 60
 
         /** Returned by [settleBet] when there is no matching open stake. */

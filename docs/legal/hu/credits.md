@@ -10,6 +10,10 @@ Geist (felület): Vercel. Óra-betűtípusok: Bitcount (Petr van Blokland), Doto
 
 A Latte, Frappé, Macchiato és Mocha témák a Catppuccin palettáit használják (MIT licenc).
 
+## Weboldal-listák
+
+A felnőtt és szerencsejáték-oldalak listái a The Block List Projectből (github.com/blocklistproject/Lists) és Steven Black hosts listájából (github.com/StevenBlack/hosts) származnak, mindkettő MIT licenc alatt.
+
 ## Ikonok
 
 A vonalas ikonok az Ante-hoz készültek; a beállítások fogaskereke a Lucide „settings” ikonját követi (ISC licenc).

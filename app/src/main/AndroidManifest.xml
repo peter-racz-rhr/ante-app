@@ -62,6 +62,16 @@
                 android:resource="@xml/accessibility_config" />
         </service>
 
+        <!-- Website filter: a local VPN that only carries DNS questions (adult and gambling sites, your own list). -->
+        <service
+            android:name=".WebFilterService"
+            android:exported="false"
+            android:permission="android.permission.BIND_VPN_SERVICE">
+            <intent-filter>
+                <action android:name="android.net.VpnService" />
+            </intent-filter>
+        </service>
+
         <!-- Home-screen widget: time left today. -->
         <receiver
             android:name=".TimeWidget"

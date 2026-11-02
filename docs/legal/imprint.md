@@ -21,7 +21,7 @@ Péter Rácz
 
 ## Business details
 
-Ante's blocking features are free. The registration and tax number will be shown here before any paid feature goes on sale. Ante Supporter and tips are sold through Google Play, which collects VAT for buyers in the EU.
+Ante is free, and nothing in it is for sale. Ko-fi donations are voluntary gifts to the developer. If that changes, the registration and tax number will be shown here first.
 
 ## Consumer complaints
 

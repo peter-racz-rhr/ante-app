@@ -57,6 +57,8 @@ data class BankState(
     val scheduleSkipUntilMs: Long = 0,
     /** The day the daily free spin was last used. */
     val freeSpinDay: String = "",
+    /** Categories with one shared budget: the limit's key ("cat:social") to the apps it covers. */
+    val groups: Map<String, List<String>> = emptyMap(),
 )
 
 /** One finished day, kept for the history charts. */

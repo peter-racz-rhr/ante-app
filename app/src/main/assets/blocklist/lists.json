@@ -1,0 +1,12 @@
+{
+  "built": "2026-11-02",
+  "adult": {
+    "domains": 983785,
+    "bytes": 3087581
+  },
+  "gambling": {
+    "domains": 280397,
+    "bytes": 1004026
+  },
+  "sources": "The Block List Project and Steven Black's hosts (MIT licence)"
+}

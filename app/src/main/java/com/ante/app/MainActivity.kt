@@ -17,7 +17,6 @@ class MainActivity : Activity() {
         Bank.init(this)
         web = WebHost.attach(this, mode = "main")
         GoogleAuth.onPhoto = { runOnUiThread { accountChanged(null) } }
-        Supporter.connect(this) // prices and owned purchases from Google Play (looks only)
         if (Build.VERSION.SDK_INT >= 33) {
             onBackInvokedDispatcher.registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT, backCallback)
         }
@@ -43,6 +42,11 @@ class MainActivity : Activity() {
         @Suppress("DEPRECATION")
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == Drive.REQ_AUTH) { Drive.onAuthResult(this, data); return }
+        if (requestCode == REQ_VPN) {
+            if (resultCode == RESULT_OK) WebFilter.apply(this)
+            webChanged(resultCode == RESULT_OK)
+            return
+        }
         if (requestCode != REQ_PHOTO) return
         val uri = data?.data
         if (resultCode != RESULT_OK || uri == null) return
@@ -52,6 +56,23 @@ class MainActivity : Activity() {
             if (photo != null) Account.setPhoto(app, photo)
             runOnUiThread { accountChanged(if (photo == null) "Couldn't read that picture. Try another one." else null) }
         }, "ante-photo").start()
+    }
+
+    /** Android's one-time "allow Ante to set up a VPN" dialog, for the website filter. */
+    fun askVpnConsent() {
+        val ask = try { android.net.VpnService.prepare(this) } catch (e: Exception) { null }
+        if (ask == null) { WebFilter.apply(this); webChanged(true); return }
+        try {
+            @Suppress("DEPRECATION")
+            startActivityForResult(ask, REQ_VPN)
+        } catch (e: Exception) { webChanged(false) }
+    }
+
+    private fun webChanged(ok: Boolean) {
+        val o = WebFilter.status(this).put("ok", ok)
+        // The service needs a moment to start; tell the page again once it runs.
+        web?.evaluateJavascript("window.anteWeb && window.anteWeb(" + org.json.JSONObject.quote(o.toString()) + ")", null)
+        web?.postDelayed({ web?.evaluateJavascript("window.anteWeb && window.anteWeb(" + org.json.JSONObject.quote(WebFilter.status(this).put("ok", ok).toString()) + ")", null) }, 1200)
     }
 
     /** Tells the page the account changed; [error] is shown as a message when set. */
@@ -77,6 +98,8 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
+        Supporter.checkIfDue(this) // a new Ko-fi donation shows up by itself within a week (or tap Check)
+        WebFilter.ensure(this) // the website filter comes back if it was switched off behind Ante's back
         // Coming back from Settings or from a limited app: show fresh numbers and permission state.
         WebHost.refresh(web)
         // Look for a newer UI; the page decides when to switch (never in the middle of a round).
@@ -107,5 +130,6 @@ class MainActivity : Activity() {
 
     companion object {
         private const val REQ_PHOTO = 41
+        private const val REQ_VPN = 43
     }
 }

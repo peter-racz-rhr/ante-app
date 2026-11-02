@@ -1,6 +1,6 @@
 # Nutzungsbedingungen
 
-Diese Bedingungen gelten für die Ante-App und ihre Web-Demo. Zuletzt geändert am 1. November 2026. Du nimmst sie an, indem du beim ersten Öffnen von Ante auf „Ich bin 18 oder älter und stimme zu“ tippst.
+Diese Bedingungen gelten für die Ante-App und ihre Web-Demo. Zuletzt geändert am 2. November 2026. Du nimmst sie an, indem du beim ersten Öffnen von Ante auf „Ich bin 18 oder älter und stimme zu“ tippst.
 
 ## 1. Was Ante ist
 
@@ -16,15 +16,15 @@ Du musst mindestens 18 Jahre alt sein, weil die Tische Casinospiele simulieren. 
 
 ## 4. Dein Handy und seine Einstellungen
 
-Für die Sperre braucht Ante die Bedienungshilfen-Berechtigung von Android, die du in den Einstellungen jederzeit ein- und ausschalten kannst. Ante sperrt nie deine Telefon-App, deine Nachrichten-App oder Notrufe, egal was deine Limits sagen. Ante kann nicht garantieren, dass jede App in jeder Situation gesperrt wird, zum Beispiel Web-Versionen von Apps oder Bild-im-Bild-Videos. Der strenge Modus setzt eine Wartezeit von 30 Sekunden vor die Einstellungen, den Play Store und das Deinstallieren. Eine zeitlich begrenzte Sperre, die du selbst startest, lässt sich in der App nicht vorzeitig abschalten; sie endet von selbst zur gewählten Zeit. In der Version aus Google Play kannst du Ante nach der Wartezeit immer deinstallieren; außerhalb von Google Play installierte Versionen halten den Deinstallationsbildschirm bis zum Ende der Sperre gesperrt. Es ist eine Hürde, der du zugestimmt hast, keine Garantie: Android lässt sich immer im abgesicherten Modus starten.
+Für die Sperre braucht Ante die Bedienungshilfen-Berechtigung von Android, die du in den Einstellungen jederzeit ein- und ausschalten kannst. Ante sperrt nie deine Telefon-App, deine Nachrichten-App oder Notrufe, egal was deine Limits sagen. Ante kann nicht garantieren, dass jede App in jeder Situation gesperrt wird, zum Beispiel Web-Versionen von Apps oder Bild-im-Bild-Videos. Der strenge Modus setzt eine Wartezeit von 30 Sekunden vor die Einstellungen, den Play Store und das Deinstallieren. Eine zeitlich begrenzte Sperre, die du selbst startest, lässt sich in der App nicht vorzeitig abschalten; sie endet von selbst zur gewählten Zeit. In der Version aus Google Play kannst du Ante nach der Wartezeit immer deinstallieren; außerhalb von Google Play installierte Versionen halten den Deinstallationsbildschirm bis zum Ende der Sperre gesperrt. Es ist eine Hürde, der du zugestimmt hast, keine Garantie: Android lässt sich immer im abgesicherten Modus starten. Der Webfilter sperrt Seiten nach Namen und erwischt nicht alles: Browser mit eigenem sicheren DNS, ein anderes VPN oder privates DNS mit Anbieternamen können ihn umgehen.
 
 ## 5. Dein Konto und deine Daten
 
 Die Anmeldung mit Google ist freiwillig. Sie speichert deinen Namen und deine E-Mail auf diesem Handy und erlaubt dir, deine Daten in deinem eigenen Google Drive zu sichern und auf einem anderen Handy wiederherzustellen. Du kannst dich jederzeit abmelden, deine Daten herunterladen oder alle löschen: Einstellungen → Deine Daten. Das Löschen wartet, bis eine von dir gestartete strenge Sperre oder ein Fokus vorbei ist.
 
-## 6. Ante Supporter und Trinkgeld
+## 6. Ante Supporter (Spenden über Ko-fi)
 
-Ante Supporter ist ein freiwilliger, einmaliger Kauf über Google Play, der zusätzliche Looks freischaltet (Themen, Uhr-Schriften, Tischfilze, Kartenrücken und ein Abzeichen). Er schaltet nie Sperrfunktionen, Minuten oder bessere Chancen frei. Trinkgelder über Google Play oder Ko-fi sind freiwillige Geschenke und schalten nichts frei. Zahlung, Erstattung und Steuern regelt Google Play nach seinen eigenen Bedingungen. Ein Supporter-Kauf ist an dein Google-Konto gebunden und lässt sich auf einem neuen Handy wiederherstellen. Widerrufsrecht: Ante Supporter ist ein digitaler Inhalt, der sofort bereitgestellt wird. Mit dem Kauf verlangst du die sofortige Bereitstellung und bestätigst, dass du damit dein 14-tägiges Widerrufsrecht verlierst. Deine Gewährleistungsrechte für digitale Inhalte bleiben unberührt. Nach dem Kauf zeigt Ante eine Bestätigung mit Produkt, Preis, Datum und deinem Wunsch nach sofortiger Bereitstellung, die du speichern oder teilen kannst; sie bleibt unter Einstellungen → Ante unterstützen → Beleg.
+Ante ist kostenlos. Du kannst auf Ko-fi (ko-fi.com) einen beliebigen Betrag spenden, einmal oder öfter. Eine Spende ist ein freiwilliges Geschenk an den Entwickler: Zahlung, Erstattungen und Belege wickeln Ko-fi und seine Zahlungsanbieter nach ihren eigenen Bedingungen ab. Als Dank wirst du Ante Supporter, wenn du mit derselben E-Mail spendest, mit der du dich in Ante bei Google anmeldest: Du bekommst das Supporter-Abzeichen, einen goldenen Ring um dein Profilbild und die zusätzlichen Looks (Themen, Uhr-Schriften, Tischfilze und Kartenrücken). Supporter schaltet nie Sperrfunktionen, Minuten oder bessere Chancen frei, und alles, was du für deine Bildschirmzeit brauchst, bleibt kostenlos. Der Supporter-Status ist ein Dankeschön, kein Kauf; er bleibt, solange Antes Supporter-Prüfung läuft, und wird etwa einmal pro Woche erneut geprüft.
 
 ## 7. Haftung
 

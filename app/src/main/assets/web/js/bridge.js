@@ -23,6 +23,7 @@
       icon: pkg => N.icon(pkg),
       setLimit: (pkg, label, sec) => N.setLimit(pkg, label, sec | 0),
       removeLimit: pkg => N.removeLimit(pkg), // false during Focus or Strict mode
+      setGroup: (key, label, members, sec) => (has("setGroup") ? N.setGroup(key, label, JSON.stringify(members), sec | 0) : false),
       // Table rounds: dealt by the phone since 0.6.0; older apps run them here with bet/settle.
       play: (pkg, game, stake, args) => (D ? D.play(pkg, game, stake | 0, args) : parse(N.play(pkg, game, stake | 0, JSON.stringify(args || {})), BAD)),
       bjDeal: (pkg, stake) => (D ? D.bjDeal(pkg, stake | 0) : parse(N.bjDeal(pkg, stake | 0), BAD)),
@@ -34,9 +35,14 @@
       freeSpin: pkg => (has("freeSpin") ? parse(N.freeSpin(pkg), BAD) : { ok: false, error: "old" }),
       setSchedule: sc => (has("setSchedule") ? N.setSchedule(sc.id | 0, String(sc.label || ""), sc.days | 0, sc.startMin | 0, sc.endMin | 0, sc.on !== false) : 0),
       removeSchedule: id => (has("removeSchedule") ? N.removeSchedule(id | 0) : false),
-      supporter: () => (has("supporter") ? parse(N.supporter(), { available: false, supporter: false, prices: {} }) : { available: false, supporter: false, prices: {} }),
-      buy: id => (has("buy") ? N.buy(String(id)) : false),
-      restorePurchases: () => { if (has("restorePurchases")) N.restorePurchases(); },
+      // Ko-fi supporter (0.10.0+): status, and a check that answers on window.anteSupporter.
+      supporter: () => (has("supporter") ? parse(N.supporter(), { supporter: false, configured: false }) : { supporter: false, configured: false }),
+      checkSupporter: has("checkSupporter") ? () => N.checkSupporter() : undefined,
+      // Website filter (0.10.0+).
+      webFilter: has("webFilter") ? () => parse(N.webFilter(), null) : undefined,
+      setWebFilter: (on, adult, gambling, custom) => (has("setWebFilter") ? N.setWebFilter(!!on, !!adult, !!gambling, String(custom)) : false),
+      webFilterLock: days => (has("webFilterLock") ? N.webFilterLock(days | 0) : false),
+      webFilterConsent: () => (has("webFilterConsent") ? N.webFilterConsent() : false),
       // Your data (0.7.0+): Drive backup, download, delete. Missing on older apps.
       savePrefs: json => { if (has("savePrefs")) N.savePrefs(json); },
       backupStatus: has("backupStatus") ? () => parse(N.backupStatus(), { auto: false, lastAt: 0 }) : undefined,
@@ -90,7 +96,10 @@
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect width="96" height="96" rx="22" fill="${hue}"/><text x="48" y="62" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="40" fill="#fff">${label.slice(0, 2)}</text></svg>`;
     return "data:image/svg+xml;base64," + btoa(svg);
   }
-  const apps = SAMPLE_APPS.map(([pkg, label], i) => ({ pkg, label, icon: monogram(label, HUES[i % HUES.length]) }));
+  const CATS = { "com.instagram.android": "social", "com.zhiliaoapp.musically": "social", "com.twitter.android": "social", "com.reddit.frontpage": "social", "com.snapchat.android": "social",
+    "com.google.android.youtube": "video", "com.netflix.mediaclient": "video", "com.supercell.clashroyale": "games", "com.king.candycrushsaga": "games" };
+  const apps = SAMPLE_APPS.concat([["com.supercell.clashroyale", "Clash Royale"], ["com.king.candycrushsaga", "Candy Crush"]])
+    .map(([pkg, label], i) => ({ pkg, label, icon: monogram(label, HUES[i % HUES.length]), cat: CATS[pkg] || "" }));
   const today = () => new Date().toISOString().slice(0, 10);
 
   /* Sample past days so the charts have something to show in the browser. Deterministic. */
@@ -137,7 +146,8 @@
   if (S.day !== today()) { S.day = today(); S.limits.forEach(l => { l.leftSec = l.limitSec; }); S.ledger = []; S.parked = {}; }
   const open = {};
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* private mode */ } };
-  const lim = pkg => S.limits.find(l => l.pkg === pkg);
+  const keyOf = pkg => { const g = S.groups || {}; for (const k in g) if ((g[k] || []).includes(pkg)) return k; return pkg; };
+  const lim = pkg => S.limits.find(l => l.pkg === keyOf(pkg));
   const ctx = { mode: q.get("mode") === "block" ? "block" : "main", pkg: q.get("pkg") || null, note: q.get("note") || null };
   const AKEY = "ante-mock-account";
   let ACCT = {};
@@ -178,11 +188,15 @@
   let D = null; // the JS dealer, made once the mock API below exists
   const drive = () => { try { return JSON.parse(localStorage.getItem("ante-mock-drive")) || {}; } catch (e) { return {}; } };
   const saveDrive = d => { try { localStorage.setItem("ante-mock-drive", JSON.stringify(d)); } catch (e) { /* private mode */ } };
+  const WKEY = "ante-mock-web";
+  const web = () => { try { return JSON.parse(localStorage.getItem(WKEY)) || {}; } catch (e) { return {}; } };
+  const saveWeb = w => { try { localStorage.setItem(WKEY, JSON.stringify(w)); } catch (e) { /* private mode */ } };
+  if (q.get("reset") === "1") saveWeb({});
   const SUP = { on: (() => { try { return localStorage.getItem("ante-mock-supporter") === "1" && q.get("reset") !== "1"; } catch (e) { return false; } })() };
 
   window.Ante = {
     native: false,
-    resetMock: () => { S = fresh(); save(); },
+    resetMock: () => { S = fresh(); save(); saveWeb({}); },
     state: () => {
       const now = Date.now();
       if (S.strictUntilMs && now >= S.strictUntilMs) { S.strict = false; S.strictUntilMs = 0; save(); }
@@ -206,16 +220,29 @@
     setLimit(pkg, label, sec) {
       sec = Math.max(60, Math.min(86400, sec | 0));
       S.parked = S.parked || {};
-      const l = lim(pkg);
+      if (!/^cat:/.test(pkg) && S.groups) S.groups = Object.fromEntries(Object.entries(S.groups).map(([k, v]) => [k, v.filter(m => m !== pkg)]).filter(([, v]) => v.length));
+      const l = S.limits.find(x => x.pkg === pkg);
       if (l) { l.leftSec = Math.max(0, l.leftSec - Math.max(0, l.limitSec - sec)); l.limitSec = sec; l.label = label; }
       else S.limits.push({ pkg, label, limitSec: sec, leftSec: pkg in S.parked ? Math.min(sec, S.parked[pkg]) : sec });
       delete S.parked[pkg];
       save(); return true;
     },
+    // Same rules as TimeBank.setGroup: members share the category's budget; dropping apps waits for locks to end.
+    setGroup(key, label, members, sec) {
+      if (!/^cat:[a-z]{1,16}$/.test(key) || !members.length) return false;
+      const now = Date.now(), old = (S.groups || {})[key] || [];
+      const dropping = old.some(m => !members.includes(m)), replacing = members.some(m => S.limits.some(l => l.pkg === m));
+      if ((dropping || replacing) && (focusOn(now) || strictOn(now))) return false;
+      S.groups = Object.fromEntries(Object.entries(S.groups || {}).filter(([k]) => k !== key).map(([k, v]) => [k, v.filter(m => !members.includes(m))]).filter(([, v]) => v.length));
+      S.groups[key] = members.slice();
+      S.limits = S.limits.filter(l => !members.includes(l.pkg));
+      return this.setLimit(key, label, sec);
+    },
     removeLimit(pkg) {
       const now = Date.now();
       if (focusOn(now) || strictOn(now)) return false; // same rule as TimeBank.canRemoveLimits
-      const l = lim(pkg); if (!l) return true;
+      const l = S.limits.find(x => x.pkg === pkg); if (!l) return true;
+      if (S.groups) delete S.groups[pkg];
       S.parked = S.parked || {}; S.parked[pkg] = Math.min(l.leftSec, l.limitSec);
       S.limits = S.limits.filter(x => x.pkg !== pkg); save(); return true;
     },
@@ -260,7 +287,7 @@
         window.anteAuth && window.anteAuth(JSON.stringify({ ok: true, name: ACCT.name, email: ACCT.email }));
       }, 500);
     },
-    signOut() { Object.assign(ACCT, { signedIn: false, name: "", email: "" }); saveAcct(); },
+    signOut() { Object.assign(ACCT, { signedIn: false, name: "", email: "" }); saveAcct(); SUP.on = false; try { localStorage.removeItem("ante-mock-supporter"); } catch (e) { /* private mode */ } },
     pickPhoto() {
       const input = document.createElement("input");
       input.type = "file"; input.accept = "image/*";
@@ -335,17 +362,48 @@
       S.ledger.unshift({ game: "Daily spin", pkg, deltaSec: prizeSec, atMs: Date.now() }); S.ledger = S.ledger.slice(0, 50);
       save(); return { ok: true, index, prizeSec };
     },
-    // Ante Supporter in the demo: ?supporter=1 starts unlocked; buying "succeeds" after a moment.
-    supporter: () => ({ available: true, supporter: SUP.on || q.get("supporter") === "1", prices: { ante_supporter: "€4.99", ante_tip_small: "€1.99", ante_tip_medium: "€4.99", ante_tip_large: "€9.99" } }),
-    buy(id) {
-      if (!/^ante_(supporter|tip_(small|medium|large))$/.test(id)) return false;
+    // Ko-fi supporters in the demo: ?supporter=1 starts as one; "check" finds a donation for any
+    // signed-in account (?kofi=0 finds none).
+    supporter: () => ({ supporter: SUP.on || q.get("supporter") === "1", since: SUP.on ? Date.now() : 0, configured: true, kofi: "https://ko-fi.com/peteracz", email: ACCT.email || "" }),
+    checkSupporter() {
       setTimeout(() => {
-        if (id === "ante_supporter") { SUP.on = true; try { localStorage.setItem("ante-mock-supporter", "1"); } catch (e) { /* private mode */ } }
-        window.anteBilling && window.anteBilling(JSON.stringify({ ok: true, product: id, supporter: SUP.on }));
+        if (!ACCT.signedIn) return window.anteSupporter && window.anteSupporter(JSON.stringify({ ok: false, error: "signin" }));
+        const found = q.get("kofi") !== "0";
+        if (found) { SUP.on = true; try { localStorage.setItem("ante-mock-supporter", "1"); } catch (e) { /* private mode */ } }
+        window.anteSupporter && window.anteSupporter(JSON.stringify({ ok: true, supporter: found }));
       }, 400);
+    },
+    // Website filter in the demo: state in this browser; Android's VPN permission "asks" once.
+    webFilter() {
+      const w = web(), now = Date.now(), d = new Date(now);
+      const november = d.getMonth() === 10 ? new Date(d.getFullYear(), 11, 1).getTime() : 0;
+      return { available: true, on: !!w.on, adult: w.adult !== false, gambling: !!w.gambling, custom: w.custom || [], lockUntil: (w.lockUntil || 0) > now ? w.lockUntil : 0,
+        nnnUntil: w.nnnUntil || 0, nnnDone: !!w.nnnUntil && now >= w.nnnUntil, november, running: !!w.on && !!w.consented, consented: !!w.consented, strict: strictOn(now) };
+    },
+    setWebFilter(on, adult, gambling, customJson) {
+      const w = web(), now = Date.now();
+      let custom; try { custom = JSON.parse(customJson); } catch (e) { return false; }
+      if (!Array.isArray(custom)) return false;
+      custom = [...new Set(custom.map(x => String(x).toLowerCase()).filter(x => /^[a-z0-9_.-]{3,253}$/.test(x) && x.includes(".")))].slice(0, 200);
+      const cur = { on: !!w.on, adult: w.adult !== false, gambling: !!w.gambling, custom: w.custom || [] };
+      const loosens = (cur.on && !on) || (cur.adult && !adult) || (cur.gambling && !gambling) || cur.custom.some(x => !custom.includes(x));
+      if (loosens && ((w.lockUntil || 0) > now || strictOn(now))) return false;
+      Object.assign(w, { on: !!on, adult: !!adult, gambling: !!gambling, custom }); saveWeb(w); return true;
+    },
+    webFilterLock(days) {
+      const w = web(), now = Date.now(), d = new Date(now);
+      let end;
+      if (days === 0) { if (d.getMonth() !== 10) return false; end = new Date(d.getFullYear(), 11, 1).getTime(); w.nnnUntil = Math.max(w.nnnUntil || 0, end); }
+      else if ([1, 7, 30].includes(days)) end = now + days * 86400000; else return false;
+      Object.assign(w, { on: true, adult: true, lockUntil: Math.max(w.lockUntil || 0, end) }); saveWeb(w); return true;
+    },
+    webFilterConsent() {
+      setTimeout(() => {
+        const w = web(), ok = q.get("vpn") !== "deny"; if (ok) { w.consented = true; saveWeb(w); }
+        window.anteWeb && window.anteWeb(JSON.stringify(Object.assign(window.Ante.webFilter(), { ok })));
+      }, 300);
       return true;
     },
-    restorePurchases() {},
     // Your data in the demo: the "Drive backup" lives in this browser's storage.
     savePrefs(json) { try { localStorage.setItem("ante-mock-uiprefs", json); } catch (e) { /* private mode */ } },
     backupStatus: () => { const d = drive(); return { auto: !!d.auto, lastAt: d.lastAt || 0, signedIn: !!ACCT.signedIn }; },
@@ -376,7 +434,7 @@
     shareText(subject) { say(`Opens the share sheet: ${subject}`); return true; },
     deleteAllData(alsoDrive) {
       const now = Date.now();
-      if (strictOn(now) || focusOn(now)) return false;
+      if (strictOn(now) || focusOn(now) || (web().lockUntil || 0) > now) return false;
       if (alsoDrive) { try { localStorage.removeItem("ante-mock-drive"); } catch (e) { /* private mode */ } }
       S = fresh(); S.limits = []; S.ledger = []; S.history = []; S.usedTodaySec = 0; S.usedTodayByApp = {}; save();
       ACCT = {}; saveAcct();

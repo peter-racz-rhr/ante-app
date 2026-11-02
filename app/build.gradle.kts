@@ -13,8 +13,8 @@ android {
         applicationId = "com.ante.app"
         minSdk = 26
         targetSdk = 36 // Google Play requires API 36 for new apps and updates since 31 Aug 2026
-        versionCode = 9
-        versionName = "0.9.0"
+        versionCode = 10
+        versionName = "0.10.0"
     }
 
     // Release signing: put your own keystore details in keystore.properties (never commit it;
@@ -71,9 +71,6 @@ dependencies {
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
     // Backup to the user's own Google Drive app folder (AuthorizationClient, scope drive.appdata).
     implementation("com.google.android.gms:play-services-auth:21.3.0")
-
-    // Ante Supporter (looks only) and tips. Play requires Billing Library 8+ for updates since 31 Aug 2026.
-    implementation("com.android.billingclient:billing:8.0.0")
 
     testImplementation("junit:junit:4.13.2")
     // Real org.json for JVM unit tests (the Android one is a stub there).

@@ -1,6 +1,6 @@
 # Adatvédelmi tájékoztató
 
-Hogyan kezeli az Ante az adataidat. Utolsó módosítás: 2026. november 1.. Röviden: minden a telefonodon marad, és az Ante-nak nincs szervere.
+Hogyan kezeli az Ante az adataidat. Utolsó módosítás: 2026. november 2.. Röviden: minden a telefonodon marad. Az egyetlen szerver egy kicsi, amely a Ko-fi-támogatásokat ellenőrzi, és az e-mail-címedet sosem látja.
 
 ## Az adatkezelő
 
@@ -26,25 +26,29 @@ Ha Google-fiókkal jelentkezel be, a Google a saját bejelentkező képernyőjé
 
 Hogy alkalmazásokat választhass, az Ante beolvassa a telefonodra telepített alkalmazások listáját és ikonjait. Ez a lista a telefonon marad.
 
+## Weboldalszűrő (nem kötelező)
+
+Ha bekapcsolod a weboldalszűrőt, az Android egyszer engedélyt kér az Ante VPN-jéhez. Ez csak DNS-lekérdezéseket visz: azoknak az oldalaknak a nevét, amelyeket a telefonod alkalmazásai és böngészői el akarnak érni. Az Ante minden nevet a telefonon ellenőriz az alkalmazással érkező listák alapján (felnőtt oldalak, szerencsejáték-oldalak és az általad hozzáadott oldalak). A tiltott nevekre „nincs ilyen oldal” választ ad; minden más lekérdezés a hálózatod szokásos DNS-szerveréhez megy, ugyanúgy, mint az Ante nélkül. Az Ante nem tárolja, nem naplózza és nem küldi el, milyen oldalakat látogatsz, és más forgalom nem megy rajta keresztül. Jogalap: az általad bekapcsolt funkció nyújtása (GDPR 6. cikk (1) b)).
+
 ## Webes demó
 
 A webes demó a böngésződben fut mintaadatokkal, és az állapotát a böngésző helyi tárhelyén tárolja. Bárhol is fut, a weboldal tárhelyszolgáltatója a saját szabályai szerint szokásos szervernaplókat (például IP-címeket) vezethet.
 
 ## Google Drive-mentés (nem kötelező)
 
-Ha bekapcsolod a mentést vagy a Mentésre koppintasz, az Ante hozzáférést kér a Google-tól a saját Google Drive-od egy privát alkalmazásmappájához (drive.appdata engedély: a többi fájlodat az Ante nem látja). Ide egy fájlt ment a limitjeiddel, ütemezéseiddel, előzményeiddel, asztali eredményeiddel és beállításaiddal. A fájl közvetlenül a telefonodról kerül a Google-hoz; az Ante-nak nincs szervere. Jogalap: a hozzájárulásod (GDPR 6. cikk (1) a)). Az Adataim törlése eltávolítja, és a Google-fiókodban (Biztonság → Harmadik féltől származó kapcsolatok) elveheted az Ante hozzáférését.
+Ha bekapcsolod a mentést vagy a Mentésre koppintasz, az Ante hozzáférést kér a Google-tól a saját Google Drive-od egy privát alkalmazásmappájához (drive.appdata engedély: a többi fájlodat az Ante nem látja). Ide egy fájlt ment a limitjeiddel, ütemezéseiddel, előzményeiddel, asztali eredményeiddel és beállításaiddal. A fájl közvetlenül a telefonodról kerül a Google-hoz, nem megy át az Ante szerverén. Jogalap: a hozzájárulásod (GDPR 6. cikk (1) a)). Az Adataim törlése eltávolítja, és a Google-fiókodban (Biztonság → Harmadik féltől származó kapcsolatok) elveheted az Ante hozzáférését.
 
-## Vásárlások (nem kötelező)
+## Ko-fi-támogatás és a Támogató-ellenőrzés (nem kötelező)
 
-Ha megveszed az Ante Támogatót vagy borravalót adsz, a fizetést a Google Play kezeli a saját adatvédelmi szabályai szerint. Az Ante csak egy visszaigazolást kap arról, hogy a vásárlás érvényes, és ezt a telefonodon tárolja, hogy a megjelenések feloldva maradjanak. A fizetési adataidat az Ante soha nem látja. Jogalap: szerződés teljesítése (GDPR 6. cikk (1) b)).
+Ha a Ko-fin támogatsz, a Ko-fi értesíti az Ante kis támogató-szerverét (Cloudflare Workers-en fut). A szerver csak az általad használt e-mail-cím visszafejthetetlen ujjlenyomatát (SHA-256), az első és a legutóbbi támogatásod dátumát, a támogatások számát és összegét tárolja. Nem tárolja a nevedet, az e-mail-címedet, az üzenetedet vagy fizetési adatot. Amikor a „Támogattam, ellenőrzés” gombra koppintasz (és utána nagyjából hetente), az Ante a Google-bejelentkezésed e-mail-címének ugyanilyen ujjlenyomatát küldi el a szervernek, amely csak igennel vagy nemmel válaszol. Jogalap: jogos érdek a támogatók megköszönéséhez (GDPR 6. cikk (1) f)). Ha szeretnéd, hogy töröljük a bejegyzésedet, írj a fenti e-mail-címre.
 
 ## Ko-fi
 
-A Ko-fi hivatkozás a böngésződben nyitja meg a ko-fi.com oldalt. Amit ott teszel, azt a Ko-fi a saját adatvédelmi szabályai szerint kezeli.
+A Ko-fi hivatkozás a böngésződben nyitja meg a ko-fi.com oldalt. Amit ott teszel, azt a Ko-fi a saját adatvédelmi szabályai szerint kezeli (ko-fi.com/home/privacy).
 
 ## Adattovábbítás az EU-n kívülre
 
-A Google (bejelentkezés, Drive-mentés, Google Play) és a GitHub (frissítések) amerikai vállalat. A hozzájuk kerülő adatok továbbítása az EU–USA adatvédelmi keretrendszer alapján történik, amelynek mindkettő tanúsított résztvevője, valamint általános szerződési feltételeik szerint.
+A Google (bejelentkezés, Drive-mentés), a GitHub (frissítések) és a Cloudflare (támogató-ellenőrzés) amerikai vállalat. A hozzájuk kerülő adatok továbbítása az EU–USA adatvédelmi keretrendszer alapján történik, amelynek mindhárom tagja, valamint az általános szerződési feltételeik alapján.
 
 ## Meddig
 

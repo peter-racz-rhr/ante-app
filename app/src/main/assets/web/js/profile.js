@@ -4,7 +4,6 @@
   const App = window.App;
   const { A, esc } = App;
   const ui = App.ui;
-  const KOFI = "https://ko-fi.com/peteracz";
 
   /* Appearance: a row of tiny app previews (one per accent, drawn in the current flavour's real
      colours), then a switch for the flavour itself. */
@@ -48,7 +47,7 @@
   }
 
   /** The native part (APK) is older than this UI needs for full screen and vibration. */
-  const NATIVE_WANTED = [0, 9, 0];
+  const NATIVE_WANTED = [0, 10, 0];
   function nativeOutdated() {
     if (!A.native) return false;
     const v = (A.versions && A.versions()) || {};
@@ -76,7 +75,7 @@
       <section class="update-note" role="status">
         <span class="sicon" style="--ic:var(--warn)" aria-hidden="true">${App.ICON.info}</span>
         <div><p class="sitem-title">Install the new app version once</p>
-        <p class="sitem-sub">This phone runs Ante ${esc((A.versions().app) || "")}. Plinko, Crash, Baccarat, Keno, Dice, Google Drive backup and purchase receipts need 0.9.0. Open the <b>ante-app</b> project in Android Studio and press Run.</p></div>
+        <p class="sitem-sub">This phone runs Ante ${esc((A.versions().app) || "")}. Categories and Ko-fi supporters need 0.10.0. Open the <b>ante-app</b> project in Android Studio and press Run.</p></div>
       </section>` : "";
   }
 
@@ -111,6 +110,8 @@
     return n;
   }
 
+  App.streak = streak; App.hoursAdded = hoursAdded;
+
   App.views.profile = function () {
     const S = App.S, ACC = App.ACC, name = App.displayName(), m = App.modes();
     const budget = S.limits.reduce((a, l) => a + l.limitSec, 0);
@@ -124,8 +125,8 @@
       <header class="prof-top"><h1 class="h1">Profile</h1><button class="iconbtn plain" data-a="openSettings" aria-label="Settings">${App.ICON.gear}</button></header>
       ${outdatedNote()}
       <section class="me me-card">
-        <button class="me-photo" data-a="photoPick" aria-label="${ACC.photo ? "Change profile picture" : "Add a profile picture"}">${App.avatar("xl", 'aria-hidden="true"')}<span class="cam" aria-hidden="true">${App.ICON.camera}</span></button>
-        <div class="me-t"><p class="me-name" style="--len:${Math.max(6, Array.from(name || "Your name").length)}">${esc(name || "Your name")}</p>${App.supporterBadge()}
+        <button class="me-photo${App.isSupporter() ? " gold" : ""}" data-a="photoPick" aria-label="${ACC.photo ? "Change profile picture" : "Add a profile picture"}">${App.avatar("xl", 'aria-hidden="true"')}<span class="cam" aria-hidden="true">${App.ICON.camera}</span></button>
+        <div class="me-t"><p class="me-name" style="--len:${Math.max(6, Array.from(name || "Your name").length)}">${esc(name || "Your name")}</p>${App.badgeRow()}
           <p class="me-stat"><span class="dotnum">${hText}</span><span>${h === 1 ? "hour" : "hours"}</span></p>
           <p class="sitem-sub">added to your real life</p></div>
       </section>
@@ -148,11 +149,8 @@
         ${(S.history || []).length ? `<button class="link pw-recap" data-a="recap">${App.ICON.heart}<span>Your week in one card</span>${App.ICON.chev}</button>` : ""}
       </section>
 
-      <section class="panel pcard donate" aria-labelledby="pd-h">
-        <div class="panel-head"><div class="fc-h"><span class="sicon" style="--ic:#fb923c" aria-hidden="true">${App.ICON.coffee}</span><h2 class="h3" id="pd-h">Donate</h2></div>
-          <button class="btn-sm" data-a="kofi">Ko-fi</button></div>
-        <p class="muted">Ante is free and has no ads. If it gives you time back, you can buy me a coffee.</p>
-      </section>
+${App.milestonesCard()}
+${App.supportCard()}
     </div>`;
   };
 
@@ -190,6 +188,7 @@
         ${item({ icon: "battery", tone: S.batteryOk === false ? "var(--warn)" : "#34d399", title: "Background use", trail: S.batteryOk === false ? `<button class="btn-sm" data-a="settingsGo" data-go="battery">Allow</button>` : status("good", "Allowed") })}
         ${item({ icon: "clock", tone: S.autoTime === false ? "var(--warn)" : "#60a5fa", title: "Date & time", trail: S.autoTime === false ? `<button class="btn-sm" data-a="settingsGo" data-go="date">Fix</button>` : status("good", "Automatic") })}
         ${S.accessibility ? App.modeItems(item, status) : ""}
+        ${App.webItem(item, status)}
         ${A.setSchedule ? item({ icon: "clock", tone: "#a78bfa", title: "Schedules", sub: esc(App.scheduleLine() || "Focus for work hours or sleep"), action: "schedules" }) : ""}
         ${item({ icon: "play", tone: "#f472b6", title: "Tables", sub: "Gamble minutes for more time", trail: App.toggle("tablesOn", App.tablesOn(), "Tables") })}`,
         App.modes().strict ? "Settings opens after a 30-second wait while Strict mode is on." : "")}
@@ -265,7 +264,6 @@
     },
     doc(d) { ui.back = ui.view; ui.doc = d.v; ui.view = "legal"; App.render(); },
     legalBack() { ui.view = ui.back || "profile"; ui.back = null; App.render(); },
-    kofi() { if (A.openLink(KOFI) === false) App.toast("Ko-fi: " + KOFI); },
     mail() { A.openLink("mailto:" + App.L.EMAIL); },
     signOut() { A.signOut(); App.refresh(); App.render(); App.toast("Signed out. Your limits are still here."); },
     google() {

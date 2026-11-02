@@ -56,11 +56,12 @@
           : `<p class="muted">${q ? "No app matches that name." : "Every app already has a limit."}</p>`;
       return sheet("Add an app", `${head("Add an app")}
         <input class="search" id="app-search" type="search" placeholder="Search apps" autocomplete="off" value="${esc(sh.q || "")}">
-        <div class="pick-list" id="pick-list">${body}</div>`);
+        <div class="pick-list" id="pick-list">${!q && sh.apps && App.categoryRows ? App.categoryRows(sh.apps) : ""}${body}</div>`);
     }
     const l = App.lim(sh.pkg);
     return sheet(`${sh.label} limit`, `<div class="sheet-head">${App.appIcon(sh.pkg)}<div class="grow"><h2 class="h2">${esc(sh.label)}</h2><p class="muted">${l ? `<span class="num">${fmt(l.leftSec)}</span> left today` : "New limit"}</p></div>
         <button class="iconbtn" data-a="closeSheet" aria-label="Close">${App.ICON.close}</button></div>
+      ${/^cat:/.test(sh.pkg) ? `<button class="link cat-edit" data-a="catEdit" data-pkg="${esc(sh.pkg)}">${App.ICON.user}<span>${App.catCount(sh.pkg)} apps share this budget · Choose apps</span>${App.ICON.chev}</button>` : ""}
       <p class="eyebrow">Daily limit</p>
       <div class="stake-row">
         <button class="step" data-a="limStep" data-d="-300" aria-label="Five minutes less" ${sh.limit <= 300 ? "disabled" : ""}>−</button>
@@ -212,6 +213,7 @@
     if (ui.view === "tables") App.afterTables();
     if (ui.view === "welcome") App.afterWelcome();
     if (ui.view === "settings" && App.afterProfile) App.afterProfile();
+    if (App.syncMilestones) App.syncMilestones();
     if (ui.view === "settings" && App.afterHow) App.afterHow();
     App.paintOverlay();
     if (App.afterRender) App.afterRender();
@@ -296,6 +298,7 @@
     App.refresh();
     if (r && r.ok) {
       App.toast(`Signed in as ${r.name || r.email}.`);
+      if (App.A.checkSupporter) App.A.checkSupporter(); // a Ko-fi donation with this email makes you a Supporter
       if (ui.view === "welcome") ui.welcomeStep = App.OB.apps;
       App.render();
     } else {

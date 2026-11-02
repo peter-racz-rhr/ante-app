@@ -1,4 +1,4 @@
-# Putting Ante on Google Play, and setting up Ante Supporter
+# Putting Ante on Google Play, Ko-fi supporters and the website filter
 
 Do these in order. Steps marked **you** need your Google account or your money; everything in the
 code is already done.
@@ -95,42 +95,41 @@ sign-in. Answer:
 - **Photos**: collected (profile picture), not shared, optional, *App functionality*.
 - **App activity → App interactions**: collected (which limited app was opened, for blocking),
   stays on the phone, *App functionality*.
-- **Purchase history**: collected by Google Play for Ante Supporter, *App functionality*.
+- **Website filter**: site names are checked on the phone and never stored or sent, so nothing is
+  *collected* (Play counts on-device processing as not collected).
+- **Ko-fi supporter check**: a SHA-256 fingerprint of the email goes to your Cloudflare Worker.
+  Declare *Personal info → Email address* as **collected** (hashed), purpose *App functionality*.
 - **Is data encrypted in transit?** Yes (HTTPS).
 - **Can users request deletion?** Yes: uninstalling deletes everything, and Settings → Sign out
   removes the account.
 
-## 7. Ante Supporter and tips (Play Billing)
+## 7. Ante Supporter (Ko-fi donations)
 
-The code is done: `Supporter.kt` (native) and `js/supporter.js` (UI). You create the products:
+There is no Play Billing any more. Anyone who donates on Ko-fi, any amount, even once, with the
+same email as their Google sign-in becomes an Ante Supporter: the badge, a gold ring round their
+photo and the exclusive looks (Frappé and Macchiato, four clock fonts, four table felts, three card
+backs). Blocking, Focus, Strict mode, schedules, categories, the website filter and the tables stay
+free for everyone.
 
-1. Upload any build that contains the billing library (0.6.0 or newer) to the closed test first.
-   Play only allows products once it has seen the billing permission.
-2. **Monetize → Products → In-app products → Create product**, four times. The **Product IDs must
-   match exactly**:
+Set-up: `server/kofi-supporters/README.md` (a free Cloudflare Worker, about 10 minutes). Then put
+the Worker address in `app/src/main/res/values/supporter.xml` → `supporter_server` and your Ko-fi
+page in `kofi_url`.
 
-   | Product ID | Name | Suggested price | Type |
-   |---|---|---|---|
-   | `ante_supporter` | Ante Supporter | €4.99 | one-time (Ante acknowledges it) |
-   | `ante_tip_small` | Coffee tip | €1.99 | one-time (Ante consumes it, so it can be bought again) |
-   | `ante_tip_medium` | Lunch tip | €4.99 | same |
-   | `ante_tip_large` | Dinner tip | €9.99 | same |
+**Play policy warning.** Google Play's Payments policy says digital features unlocked inside an app
+must be bought through Play Billing. Unlocking looks for Ko-fi donors from the Play version is a
+grey zone and could get an update rejected. Safe options, if Play complains: (a) in the Play build,
+give donors only the badge and the gold ring (thank-you, not a feature) and unlock every look for
+everyone, or (b) bring back Play Billing for the looks. The website/APK version can keep Ko-fi
+unlocks as they are.
 
-   Activate each one. Play converts prices into every country's currency.
-3. **Payments profile**: Console → **Settings → Payments profile** → add your bank account for
-   payouts. Google keeps 15% of the first $1M a year (you must enrol in the 15% service fee tier;
-   it is on by default for new accounts).
-4. **Test without paying**: Console → **Settings → License testing** → add your own Gmail. Install
-   Ante from the closed-test link, and the purchase sheet then says "Test card, always approves".
-5. Taxes: Google handles VAT for buyers in the EU. You still declare the payouts as income in
-   Hungary (as an individual, or through an *egyéni vállalkozó*). Ask an accountant once.
+## 7a. Website filter (VpnService declaration)
 
-What a Supporter gets: the Frappé and Macchiato flavours, four clock fonts (Workbench, Sixtyfour,
-Silkscreen, Pixelify), four table felts, three card backs and a badge. Debug builds (Android Studio
-**Run**) unlock all of it, so you can always test.
-
-Prices show in the app automatically once the products are active. Before that, the Supporter row
-says "Purchases work once Ante is installed from Google Play".
+The website filter is a local VPN that only carries DNS lookups (`WebFilterService.kt`). Play asks
+every app that uses `VpnService` to fill in the **VPN declaration** (Policy → App content →
+VpnService): core purpose *content filtering / parental-control style blocking*, data stays on
+the device, no traffic is sent to a remote server, no ads. Say it is user-started and that the
+system VPN key icon shows while it runs. The adult/gambling lists are built with
+`node scripts/build-blocklist.js` (MIT-licensed sources, credited in the app).
 
 ## 7b. Google Drive backup (you, once)
 
@@ -154,7 +153,7 @@ already used today, never ends a Strict lock or Focus, and never removes a sched
 
 ## 7c. Your public contact details (Digital Services Act)
 
-When you sell Ante Supporter you are a *trader*, and Play Console asks for your trader details
+If you ever sell anything in Ante (or Play treats Ko-fi unlocks as sales) you are a *trader*, and Play Console asks for your trader details
 (Policy → App content → Trader status). Google then shows your **name, address, email and phone
 on the store listing** in the EU. If you don't want your home address public, use a business
 address or a mail-forwarding address, and use the same one in the Imprint.

@@ -1,6 +1,6 @@
 # Datenschutzerklärung
 
-Wie Ante mit deinen Daten umgeht. Zuletzt geändert am 1. November 2026. Kurz: Alles bleibt auf deinem Handy, und Ante hat keinen Server.
+Wie Ante mit deinen Daten umgeht. Zuletzt geändert am 2. November 2026. Kurz: Alles bleibt auf deinem Handy. Der einzige Server ist ein kleiner, der Ko-fi-Spenden prüft, und er sieht deine E-Mail-Adresse nie.
 
 ## Verantwortlicher
 
@@ -26,25 +26,29 @@ Wenn du dich mit Google anmeldest, zeigt Google einen eigenen Anmeldebildschirm 
 
 Damit du Apps auswählen kannst, liest Ante die Liste der auf deinem Handy installierten Apps und ihre Icons. Diese Liste bleibt auf dem Handy.
 
+## Webfilter (freiwillig)
+
+Wenn du den Webfilter einschaltest, bittet Android dich einmal, Antes VPN zu erlauben. Es trägt nur DNS-Anfragen: die Namen der Seiten, die Apps und Browser auf deinem Handy erreichen wollen. Ante prüft jeden Namen auf dem Handy anhand von Listen, die mit der App kommen (Erwachsenenseiten, Glücksspielseiten und die Seiten, die du hinzufügst). Gesperrte Namen bekommen die Antwort „diese Seite gibt es nicht“; alle anderen Anfragen gehen an den üblichen DNS-Server deines Netzwerks, wie ohne Ante. Ante speichert, protokolliert oder sendet nicht, welche Seiten du besuchst, und kein anderer Verkehr läuft darüber. Rechtsgrundlage: Bereitstellung der Funktion, die du eingeschaltet hast (Art. 6 Abs. 1 lit. b DSGVO).
+
 ## Web-Demo
 
 Die Web-Demo läuft in deinem Browser mit Beispieldaten und speichert ihren Zustand im lokalen Speicher des Browsers. Wo auch immer sie gehostet wird, kann der Webhoster nach seiner eigenen Datenschutzerklärung übliche Serverprotokolle wie IP-Adressen führen.
 
 ## Google-Drive-Backup (freiwillig)
 
-Wenn du das Backup einschaltest oder auf Sichern tippst, bittet Ante Google um Zugriff auf einen privaten App-Ordner in deinem eigenen Google Drive (die Berechtigung drive.appdata: Ante sieht keine deiner anderen Dateien). Dort speichert Ante eine Datei mit deinen Limits, Zeitplänen, deinem Verlauf, deinen Tisch-Ergebnissen und Einstellungen. Die Datei geht direkt von deinem Handy zu Google; Ante hat keinen Server. Rechtsgrundlage: deine Einwilligung (DSGVO Art. 6 Abs. 1 lit. a). „Meine Daten löschen“ entfernt sie, und in deinem Google-Konto unter Sicherheit → Verbindungen mit Drittanbietern kannst du Ante den Zugriff entziehen.
+Wenn du das Backup einschaltest oder auf Sichern tippst, bittet Ante Google um Zugriff auf einen privaten App-Ordner in deinem eigenen Google Drive (die Berechtigung drive.appdata: Ante sieht keine deiner anderen Dateien). Dort speichert Ante eine Datei mit deinen Limits, Zeitplänen, deinem Verlauf, deinen Tisch-Ergebnissen und Einstellungen. Die Datei geht direkt von deinem Handy zu Google und läuft über keinen Server von Ante. Rechtsgrundlage: deine Einwilligung (DSGVO Art. 6 Abs. 1 lit. a). „Meine Daten löschen“ entfernt sie, und in deinem Google-Konto unter Sicherheit → Verbindungen mit Drittanbietern kannst du Ante den Zugriff entziehen.
 
-## Käufe (freiwillig)
+## Spenden über Ko-fi und die Supporter-Prüfung (freiwillig)
 
-Wenn du Ante Supporter kaufst oder Trinkgeld gibst, verarbeitet Google Play die Zahlung nach seiner eigenen Datenschutzerklärung. Ante erhält nur eine Bestätigung, dass der Kauf gültig ist, und speichert sie auf deinem Handy, damit die Looks freigeschaltet bleiben. Deine Zahlungsdaten sieht Ante nie. Rechtsgrundlage: Vertragserfüllung (DSGVO Art. 6 Abs. 1 lit. b).
+Wenn du auf Ko-fi spendest, schickt Ko-fi Antes kleinem Supporter-Server (läuft auf Cloudflare Workers) eine Mitteilung über die Spende. Der Server speichert nur einen nicht umkehrbaren Fingerabdruck (SHA-256) der verwendeten E-Mail-Adresse, das Datum deiner ersten und letzten Spende, ihre Anzahl und Summe. Er speichert weder deinen Namen noch deine E-Mail-Adresse, deine Nachricht oder Zahlungsdaten. Wenn du auf „Gespendet, prüfen“ tippst (und danach etwa einmal pro Woche), schickt Ante denselben Fingerabdruck der E-Mail deiner Google-Anmeldung an den Server, der nur mit Ja oder Nein antwortet. Rechtsgrundlage: berechtigtes Interesse, Unterstützern zu danken (Art. 6 Abs. 1 lit. f DSGVO). Wenn dein Eintrag gelöscht werden soll, schreib an die E-Mail-Adresse oben.
 
 ## Ko-fi
 
-Der Ko-fi-Link öffnet ko-fi.com in deinem Browser. Was du dort tust, verarbeitet Ko-fi nach seiner eigenen Datenschutzerklärung.
+Der Ko-fi-Link öffnet ko-fi.com in deinem Browser. Was du dort tust, verarbeitet Ko-fi nach seiner eigenen Datenschutzerklärung (ko-fi.com/home/privacy).
 
 ## Übermittlungen außerhalb der EU
 
-Google (Anmeldung, Drive-Backup, Google Play) und GitHub (Updates) sind US-Unternehmen. Daten, die sie erreichen, werden auf Grundlage des EU-US-Datenschutzrahmens, für den beide zertifiziert sind, und ihrer Standardvertragsklauseln übermittelt.
+Google (Anmeldung, Drive-Backup), GitHub (Updates) und Cloudflare (Supporter-Prüfung) sind US-Unternehmen. Daten, die sie erreichen, werden auf Grundlage des EU-US Data Privacy Framework, nach dem alle drei zertifiziert sind, und ihrer Standardvertragsklauseln übermittelt.
 
 ## Wie lange
 

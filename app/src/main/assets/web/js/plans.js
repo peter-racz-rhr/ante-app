@@ -132,7 +132,7 @@
       await new Promise(res => setTimeout(res, dur + 150));
       track.children[target].classList.add("hit");
     }
-    App.haptic("win"); App.SFX.play(r.prizeSec >= 600 ? "bigWin" : "win");
+    App.haptic("win"); App.SFX.play(r.prizeSec >= 600 ? "bigWin" : "win"); App.milestone("spin");
     App.toast(`+${prizeText(r.prizeSec)} of ${App.labelOf(ui.stakePkg)}`);
     setTimeout(() => { App.refresh(); App.render(); }, 900);
   }

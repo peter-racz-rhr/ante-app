@@ -37,6 +37,7 @@ object Codec {
         })
         put("scheduleSkipUntilMs", s.scheduleSkipUntilMs)
         put("freeSpinDay", s.freeSpinDay)
+        put("groups", JSONObject().apply { s.groups.forEach { (k, v) -> put(k, JSONArray(v)) } })
         put("clock", JSONObject().put("wallMs", s.clock.wallMs).put("elapsedMs", s.clock.elapsedMs).put("lastTrustedMs", s.clock.lastTrustedMs).put("bootCount", s.clock.bootCount))
         val session = s.session
         if (session != null) {
@@ -83,6 +84,11 @@ object Codec {
                 }.filter { it.valid }.take(Schedule.MAX),
                 scheduleSkipUntilMs = o.optLong("scheduleSkipUntilMs", 0),
                 freeSpinDay = o.optString("freeSpinDay", ""),
+                groups = o.optJSONObject("groups")?.let { j ->
+                    j.keys().asSequence().filter { TimeBank.isGroupKey(it) }.associateWith { k ->
+                        val a = j.optJSONArray(k); if (a == null) emptyList() else (0 until a.length()).map { a.optString(it, "") }.filter { it.isNotEmpty() }
+                    }
+                } ?: emptyMap(),
                 clock = o.optJSONObject("clock")?.let { j ->
                     ClockAnchor(j.optLong("wallMs", 0), j.optLong("elapsedMs", 0), j.optLong("lastTrustedMs", 0), j.optInt("bootCount", -1))
                 } ?: ClockAnchor(),

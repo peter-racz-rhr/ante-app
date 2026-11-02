@@ -488,6 +488,8 @@ async function noOverflow(p, label) {
     await shot(dt, "27a-your-data");
     // A "new phone": fresh data, restore from the backup.
     await dt.evaluate(() => { window.Ante.resetMock(); const S = JSON.parse(localStorage.getItem("ante-mock-v2")); S.limits = []; localStorage.setItem("ante-mock-v2", JSON.stringify(S)); window.AntePrefs.set({ theme: "latte" }); });
+    const hasFile = () => dt.evaluate(() => { try { return !!JSON.parse(localStorage.getItem("ante-mock-drive")).file; } catch (e) { return false; } });
+    for (let k = 0; k < 60 && !(await hasFile()); k++) { if (k === 30) await dt.evaluate(() => window.Ante.backupNow()); await dt.waitForTimeout(100); }
     await dt.evaluate(() => { const d = JSON.parse(localStorage.getItem("ante-mock-drive")); d.file.prefs.theme = "mocha"; localStorage.setItem("ante-mock-drive", JSON.stringify(d)); });
     await dt.goto(INDEX + "?acc=1"); await dt.waitForSelector(".screen");
     await tab(dt, "profile"); await dt.click('[data-a="openSettings"]'); await dt.waitForTimeout(250);
@@ -508,9 +510,9 @@ async function noOverflow(p, label) {
     await tab(dt, "profile"); await dt.click('[data-a="openSettings"]'); await dt.waitForTimeout(250);
     await dt.click('[data-a="dataDelete"]'); await dt.waitForTimeout(300);
     await dt.click('[data-a="dataDeleteNow"]');
-    for (let i = 0; i < 40 && !(await dt.evaluate(() => !localStorage.getItem("ante-mock-drive") && !JSON.parse(localStorage.getItem("ante-prefs") || "{}").theme).catch(() => false)); i++) await dt.waitForTimeout(100);
+    for (let i = 0; i < 40 && !(await dt.evaluate(() => !localStorage.getItem("ante-mock-drive") && (JSON.parse(localStorage.getItem("ante-prefs") || "{}").theme || "neutral") === "neutral").catch(() => false)); i++) await dt.waitForTimeout(100);
     await dt.waitForSelector(".screen");
-    check(await dt.evaluate(() => !window.Ante.account().signedIn && !localStorage.getItem("ante-mock-drive") && !JSON.parse(localStorage.getItem("ante-prefs") || "{}").theme), "delete wipes the account, settings and Drive backup");
+    check(await dt.evaluate(() => !window.Ante.account().signedIn && !localStorage.getItem("ante-mock-drive") && (JSON.parse(localStorage.getItem("ante-prefs") || "{}").theme || "neutral") === "neutral"), "delete wipes the account, settings and Drive backup");
     check(dt.errors.length === 0, "no console errors in Your data: " + dt.errors.join(" | "));
     await dt.context().close();
   }
@@ -569,18 +571,22 @@ async function noOverflow(p, label) {
     await pl2.click('[data-t="profile"]'); await pl2.waitForTimeout(200); await pl2.click('[data-a="openSettings"]'); await pl2.waitForTimeout(250);
     await pl2.click('[data-a="tablesOn"]'); await pl2.waitForTimeout(250);
     check(!!(await pl2.$('[data-t="tables"]')), "turning the tables back on brings the Play tab back");
-    // Ante Supporter: extra looks are locked until bought; blocking never is.
+    // Ante Supporter: extra looks are locked until you donate on Ko-fi; blocking never is.
     check(await pl2.isVisible('[data-a="clock"][data-v="sixtyfour"] .lock-mark'), "Supporter fonts show a lock");
     await pl2.click('[data-a="clock"][data-v="sixtyfour"]'); await pl2.waitForTimeout(300);
-    check(await pl2.isVisible('[data-a="buySupporter"]'), "a locked look opens the Supporter sheet");
+    check(await pl2.isVisible('.sheet [data-a="kofi"]'), "a locked look opens the Supporter sheet with a Ko-fi button");
     check(await pl2.evaluate(() => window.AntePrefs.get().clock) !== "sixtyfour", "a locked font isn't applied");
     await shot(pl2, "26d-supporter");
-    await pl2.click('[data-a="buySupporter"]'); await pl2.waitForTimeout(900);
-    check(await pl2.evaluate(() => window.App.isSupporter()), "buying unlocks Supporter");
-    check(await pl2.isVisible(".receipt") && await pl2.isVisible("text=lose the 14-day right of withdrawal"), "after buying, a confirmation with the withdrawal waiver is shown");
-    await shot(pl2, "26g-receipt");
+    // Ko-fi: donating with the Google email, then "check" finds it (the demo finds one for any signed-in account).
+    await pl2.evaluate(() => new Promise(res => { const was = window.anteAuth; window.anteAuth = r => { if (was) was(r); res(); }; window.App.A.signInWithGoogle(); }));
+    await pl2.evaluate(() => { window.App.ui.sheet = { type: "supporter" }; window.App.paintOverlay(); }); await pl2.waitForTimeout(200);
+    await pl2.click('.sheet [data-a="supCheck"]');
+    for (let k = 0; k < 30 && !(await pl2.evaluate(() => window.App.isSupporter())); k++) await pl2.waitForTimeout(100);
+    check(await pl2.evaluate(() => window.App.isSupporter()), "the Ko-fi check makes you a Supporter");
+    check(await pl2.evaluate(() => window.App.hasBadge("supporter")), "and gives the Supporter badge");
+    await shot(pl2, "26g-supporter-done");
     await pl2.click('.sheet [data-a="closeSheet"].btn'); await pl2.waitForTimeout(250);
-    check(!(await pl2.$('[data-a="clock"][data-v="sixtyfour"] .lock-mark')), "after buying, the locks are gone");
+    check(!(await pl2.$('[data-a="clock"][data-v="sixtyfour"] .lock-mark')), "for a Supporter, the locks are gone");
     await pl2.click('[data-a="felt"][data-v="navy"]');
     check(await pl2.evaluate(() => window.AntePrefs.get().felt) === "navy", "a Supporter can pick a table felt");
     // Language: Hungarian everywhere, English again on the way back.
@@ -735,6 +741,42 @@ async function noOverflow(p, label) {
   await noOverflow(s, "poker at 340px");
   await shot(s, "22-small-poker");
   check(s.errors.length === 0, "no console errors at 340px: " + s.errors.join(" | "));
+
+  /* Website filter, categories and milestones */
+  const w = await page(browser, "?acc=1&reset=1");
+  await w.evaluate(() => window.App.act.web()); await w.waitForTimeout(300);
+  check(await w.isVisible('.sheet [data-a="webOn"]'), "the website filter sheet opens");
+  await w.click('.sheet [data-a="webOn"]');
+  for (let k = 0; k < 20 && !(await w.evaluate(() => window.Ante.webFilter().running)); k++) await w.waitForTimeout(100);
+  check(await w.evaluate(() => window.Ante.webFilter().on && window.Ante.webFilter().consented), "turning it on asks Android once and starts it");
+  await w.fill("#web-input", "https://www.Reddit.com/r/all"); await w.click('.sheet [data-a="webAdd"]'); await w.waitForTimeout(200);
+  check(await w.evaluate(() => window.Ante.webFilter().custom.join()) === "reddit.com", "a typed address becomes a plain site name");
+  await w.fill("#web-input", "not a site"); await w.click('.sheet [data-a="webAdd"]'); await w.waitForTimeout(200);
+  check(await w.evaluate(() => window.Ante.webFilter().custom.length) === 1, "rubbish isn't added");
+  await w.click('.sheet [data-a="webLock"][data-v="7"]'); await w.waitForTimeout(250);
+  await w.click('.sheet [data-a="webLockGo"]'); await w.waitForTimeout(250);
+  check(await w.evaluate(() => window.Ante.webFilter().lockUntil > Date.now()), "a 7-day lock starts");
+  check(await w.isDisabled('.sheet [data-a="webDel"]'), "while locked, sites can't be removed");
+  await w.click('.sheet [data-a="webOn"]'); await w.waitForTimeout(200);
+  check(await w.evaluate(() => window.Ante.webFilter().on), "while locked, the filter can't be switched off");
+  check(await w.evaluate(() => window.Ante.deleteAllData(false)) === false, "while locked, Delete my data waits");
+  await shot(w, "28a-web-locked");
+  await w.evaluate(() => { window.App.ui.sheet = null; window.App.paintOverlay(); });
+  // Categories: one shared budget for social media.
+  await w.evaluate(() => window.App.act.catOpen({ v: "social" })); await w.waitForTimeout(300);
+  check(await w.isVisible('.sheet [data-a="catSave"]'), "a category opens with its apps");
+  await w.click('.sheet [data-a="catSave"]'); await w.waitForTimeout(300);
+  check(await w.evaluate(() => (window.App.lim("com.twitter.android") || {}).pkg === "cat:social" && (window.App.lim("com.reddit.frontpage") || {}).pkg === "cat:social"), "social apps share one budget");
+  check(await w.evaluate(() => window.App.lim("com.instagram.android").pkg === "com.instagram.android"), "an app with its own limit keeps it unless ticked");
+  // Milestones: earned badges show on Profile and can be put under the name.
+  await tab(w, "profile"); await w.waitForTimeout(300);
+  check(await w.evaluate(() => window.App.hasBadge("first") && window.App.hasBadge("category")), "first-limit and category badges are earned");
+  await w.click('[data-a="badge"][data-v="category"]'); await w.waitForTimeout(300);
+  await w.click('.sheet [data-a="badgeShow"]'); await w.waitForTimeout(300);
+  check(await w.isVisible(".me-card .badge-row .badge-mini"), "a chosen badge shows under the name");
+  await shot(w, "28b-milestones");
+  check(w.errors.length === 0, "no console errors in filter, categories and milestones: " + w.errors.join(" | "));
+  await w.context().close();
 
   /* Over-the-air update: waits during a round, switches when calm, says so after the reload */
   const u = await page(browser, "?acc=1");
