@@ -344,6 +344,9 @@ async function noOverflow(p, label) {
   check(await snd.evaluate(() => !window.AnteSFX.muted), "sound starts on");
   await snd.click('[data-a="sound"]');
   check(await snd.evaluate(() => window.AnteSFX.muted), "sound button mutes");
+  // Let the round's closing animation finish and the setting land in storage before reloading.
+  for (let i = 0; i < 30 && (await snd.evaluate(() => localStorage.getItem("ante-sound-muted"))) !== "1"; i++) await snd.waitForTimeout(100);
+  await snd.waitForTimeout(2000);
   await snd.reload(); await snd.waitForSelector(".screen");
   check(await snd.evaluate(() => window.AnteSFX.muted), "mute survives a reload");
   await snd.evaluate(() => window.AnteSFX.toggle());
