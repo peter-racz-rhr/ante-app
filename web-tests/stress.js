@@ -45,7 +45,7 @@ const ACCOUNT = { signedIn: true, onboarded: true, name: "Bartholomew-Maximilian
 
 async function open(browser, width, query, prefs) {
   const ctx = await browser.newContext({ viewport: { width, height: 800 }, deviceScaleFactor: 1 });
-  await ctx.addInitScript(() => { window.__anteNoBadgePop = true; });
+  await ctx.addInitScript(() => { window.__anteNoBadgePop = true; window.__anteNoLetter = true; });
   const p = await ctx.newPage();
   p.errors = [];
   p.on("pageerror", e => p.errors.push(e.message));

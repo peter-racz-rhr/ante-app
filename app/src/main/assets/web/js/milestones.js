@@ -134,7 +134,8 @@
     };
   }
   const earned = () => Object.assign({}, App.P.get().earned || {});
-  App.hasBadge = id => !!earned()[id] || (id === "supporter" && App.isSupporter && App.isSupporter());
+  // The Supporter badge is only ever as real as the signed Supporter status, never a stored flag.
+  App.hasBadge = id => (id === "supporter" ? !!(App.isSupporter && App.isSupporter()) : !!earned()[id]);
 
   /** Gives [ids]; [quiet] skips the celebration (someone updating with lots already done). */
   function award(ids, quiet) {
@@ -175,6 +176,8 @@
     if (!showing) setTimeout(next, 350);
   }
   function next() {
+    // Péter's letter goes first; the badge waits until it's closed.
+    if (document.querySelector(".ltr")) { setTimeout(next, 600); return; }
     const id = queue.shift();
     if (!id) { showing = false; return; }
     showing = true;
@@ -223,23 +226,20 @@
       ? `<span class="sup-badge">${App.badgeSvg(id, 18)}<span>Supporter</span></span>`
       : `<span class="badge-mini" title="${esc(byId[id].name)}">${App.badgeSvg(id, 24)}</span>`).join("")}</button>`;
   };
+  const SHORT = 12; // three rows of four; the third fades out under "Show all"
   App.milestonesCard = () => {
     const list = BADGES.map(b => ({ b, on: App.hasBadge(b.id) })).sort((x, y) => (y.on - x.on));
-    const got = list.filter(x => x.on).length;
-    const tiles = list.map(({ b, on }) =>
+    const got = list.filter(x => x.on).length, all = !!ui.badgesAll;
+    const tiles = (all ? list : list.slice(0, SHORT)).map(({ b, on }) =>
       `<button class="mbadge${on ? " on" : ""}" data-a="badge" data-v="${b.id}" aria-label="${esc(b.name)}${on ? "" : " (locked)"}">${App.badgeSvg(b.id, 46, !on)}<span class="mb-name">${esc(b.name)}</span></button>`).join("");
     return `<section class="panel pcard" aria-labelledby="pm-h">
       <div class="panel-head"><div class="fc-h"><span class="sicon" style="--ic:#f5c542" aria-hidden="true">${App.ICON.star || App.ICON.heart}</span><h2 class="h3" id="pm-h">Milestones</h2></div>
         <span class="streak"><span class="dotnum">${got}</span>/${BADGES.length}</span></div>
-      <div class="mgrid-wrap"><div class="mgrid" id="mgrid">${tiles}</div></div>
+      <div class="mgrid-wrap${all ? " all" : ""}"><div class="mgrid" id="mgrid">${tiles}</div></div>
+      <button class="btn quiet mgrid-more" data-a="badgesMore" aria-expanded="${all}">${all ? "Show fewer" : `Show all ${BADGES.length}`}</button>
       <p class="sitem-sub">Tap a badge you've earned to show it under your name.</p></section>`;
   };
-  /** The fade at the bottom of the badge box goes away once you've scrolled to the end. */
-  App.afterMilestones = () => {
-    const g = document.getElementById("mgrid"); if (!g) return;
-    const upd = () => g.parentElement.classList.toggle("end", g.scrollTop + g.clientHeight >= g.scrollHeight - 4);
-    g.addEventListener("scroll", upd, { passive: true }); upd();
-  };
+  App.afterMilestones = () => {};
 
   App.sheetViews = App.sheetViews || {};
   App.sheetViews.badge = (sh, sheet, head) => {
@@ -260,6 +260,10 @@
   Object.assign(App.act, {
     badge(d) { if (!byId[d.v]) return; ui.sheet = { type: "badge", id: d.v }; App.SFX.play("tap"); App.paintOverlay(); },
     badges() { const el = document.querySelector(".mgrid-wrap"); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); },
+    badgesMore() {
+      ui.badgesAll = !ui.badgesAll; App.SFX.play("tap"); App.render();
+      if (!ui.badgesAll) { const el = document.querySelector(".mgrid-wrap"); if (el) el.scrollIntoView({ block: "center" }); }
+    },
     badgeShow(d) {
       if (!byId[d.v] || d.v === "supporter" || !App.hasBadge(d.v)) return;
       const cur = (App.P.get().badges || []).filter(id => byId[id]);

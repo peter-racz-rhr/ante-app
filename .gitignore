@@ -12,3 +12,7 @@ node_modules/
 keystore.properties
 *.jks
 *.keystore
+
+# Supporter signing key (scripts/supporter-keys.mjs): secret, never commit
+*.jwk
+supporter-private*

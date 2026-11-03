@@ -6,6 +6,10 @@ Ante is built by one person with the help of free, open work by others. Thank yo
 
 Geist (interface) by Vercel. Clock fonts: Bitcount by Petr van Blokland, Doto by Óliver Lalan, DotGothic16 by Fontworks, Handjet by Rosetta, Workbench and Sixtyfour by Jens Kutilek, Silkscreen by Jason Kottke, Pixelify Sans by Stefie Justprince, VT323 by Peter Hull. All under the SIL Open Font License 1.1.
 
+## Handwriting
+
+Péter's letter to Supporters is set in Caveat by Pablo Impallari (SIL Open Font License 1.1).
+
 ## Colours
 
 The Latte, Frappé, Macchiato and Mocha themes use the Catppuccin palettes (MIT licence).

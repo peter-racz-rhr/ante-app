@@ -5,4 +5,7 @@
     <!-- The supporter server (server/kofi-supporters), e.g. https://ante-supporters.<you>.workers.dev.
          Empty until you deploy it: the app then says the supporter check isn't set up yet. -->
     <string name="supporter_server" translatable="false"></string>
+    <!-- Checks Supporter tokens and codes (scripts/supporter-keys.mjs public). Only the public half:
+         the private key that makes tokens stays with Péter and the supporter server. -->
+    <string name="supporter_public_key" translatable="false">MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEHSM6RZB728p4OoLFkLbbL0sIMSMkw26bbXvcZj3ChL2TDfKtQSwBJRqvIrQ18GMEGUvGON+BeZ89RSGyZRhIYw==</string>
 </resources>

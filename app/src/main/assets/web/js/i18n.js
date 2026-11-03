@@ -23,7 +23,7 @@
   /* ---------- applying it to the page ---------- */
   const ATTRS = ["aria-label", "placeholder", "title"];
   let lang = "en";
-  const SKIP = "svg,style,script,.dotnum,.dotclock,.legal-body,input,textarea";
+  const SKIP = "svg,style,script,.dotnum,.dotclock,.legal-body,.no-tr,input,textarea";
   function fixText(node) {
     const raw = node.nodeValue, t = raw.trim();
     if (!t || !/[A-Za-z]/.test(t) || (node.parentElement && node.parentElement.closest(SKIP))) return;
@@ -37,7 +37,7 @@
     if (!pack || !root) return;
     if (root.nodeType === 3) return fixText(root);
     if (root.nodeType !== 1) return;
-    if (root.closest && root.closest(".legal-body")) return;
+    if (root.closest && root.closest(".legal-body, .no-tr")) return;
     fixEl(root);
     const it = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
     for (let n = it.nextNode(); n; n = it.nextNode()) { if (n.nodeType === 3) fixText(n); else fixEl(n); }

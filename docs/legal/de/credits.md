@@ -6,6 +6,10 @@ Ante baut eine einzelne Person, mit Hilfe freier, offener Arbeit anderer. Danke.
 
 Geist (Oberfläche) von Vercel. Uhr-Schriften: Bitcount von Petr van Blokland, Doto von Óliver Lalan, DotGothic16 von Fontworks, Handjet von Rosetta, Workbench und Sixtyfour von Jens Kutilek, Silkscreen von Jason Kottke, Pixelify Sans von Stefie Justprince, VT323 von Peter Hull. Alle unter der SIL Open Font License 1.1.
 
+## Handschrift
+
+Péters Brief an Supporter ist in Caveat von Pablo Impallari gesetzt (SIL Open Font License 1.1).
+
 ## Farben
 
 Die Themen Latte, Frappé, Macchiato und Mocha nutzen die Catppuccin-Paletten (MIT-Lizenz).

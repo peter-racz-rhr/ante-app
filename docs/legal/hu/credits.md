@@ -6,6 +6,10 @@ Az Ante-t egyetlen ember készíti, mások szabad, nyílt munkájának segítsé
 
 Geist (felület): Vercel. Óra-betűtípusok: Bitcount (Petr van Blokland), Doto (Óliver Lalan), DotGothic16 (Fontworks), Handjet (Rosetta), Workbench és Sixtyfour (Jens Kutilek), Silkscreen (Jason Kottke), Pixelify Sans (Stefie Justprince), VT323 (Peter Hull). Mind SIL Open Font License 1.1 alatt.
 
+## Kézírás
+
+Péter levele a Támogatóknak Caveat betűvel készült, Pablo Impallari munkája (SIL Open Font License 1.1).
+
 ## Színek
 
 A Latte, Frappé, Macchiato és Mocha témák a Catppuccin palettáit használják (MIT licenc).

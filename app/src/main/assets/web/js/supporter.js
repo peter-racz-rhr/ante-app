@@ -6,11 +6,15 @@
   "use strict";
   const App = window.App, A = App.A, esc = App.esc, ui = App.ui;
 
-  /** {supporter, since, configured, kofi, email}. Apps before 0.10.0 answer differently or not at all. */
+  /** {supporter, verified, since, configured, kofi, email}. Only "verified" counts: it means the phone
+      holds a token signed for this email (Supporter.kt). Older apps answered "supporter: true" for
+      every debug build, so a bare "supporter" is never trusted. */
   let status = { supporter: false, configured: false, kofi: "https://ko-fi.com/peteracz", email: "" };
   let checking = false;
   function load() {
-    try { if (A.supporter) status = Object.assign({}, status, A.supporter()); } catch (e) { /* older app */ }
+    try {
+      if (A.supporter) { const r = A.supporter() || {}; status = Object.assign({}, status, r, { supporter: r.verified === true }); }
+    } catch (e) { /* older app */ }
     if (!status.kofi) status.kofi = "https://ko-fi.com/peteracz";
     return status;
   }
@@ -55,7 +59,8 @@
       ? item({ icon: "heart", tone: "#f5c542", title: "Ante Supporter", sub: "Thank you. Your badge is on your profile.", trail: `<span class="pill good"><i></i>Supporter</span>` })
       : item({ icon: "heart", tone: "#f472b6", title: "Ante Supporter", sub: "Donate on Ko-fi for the badge and gold ring", trail: `<button class="btn-sm" data-a="kofi">Donate</button>` });
     return group("Support Ante", `${head}
-      ${s.supporter ? "" : item({ icon: "check", tone: "#34d399", title: "Donated already?", sub: s.email ? `Ante checks ${esc(s.email)}` : "Sign in with Google first", trail: `<button class="btn-sm" data-a="supCheck" ${checking || !s.email ? "disabled" : ""}>${checking ? "…" : "Check"}</button>` })}`,
+      ${s.supporter ? item({ icon: "mail", tone: "#f5c542", title: "My letter to you", action: "letter" }) : item({ icon: "check", tone: "#34d399", title: "Donated already?", sub: s.email ? `Ante checks ${esc(s.email)}` : "Sign in with Google first", trail: `<button class="btn-sm" data-a="supCheck" ${checking || !s.email ? "disabled" : ""}>${checking ? "…" : "Check"}</button>` })
+        + item({ icon: "key", tone: "#a78bfa", title: "Have a Supporter code?", sub: "From Péter, if Ko-fi didn't match your email", action: "supCode" })}`,
       "Use the same email on Ko-fi as your Google sign-in. Ante only sends a one-way fingerprint of it to check.");
   };
 
@@ -63,6 +68,11 @@
   App.sheetViews = App.sheetViews || {};
   App.sheetViews.supporter = (sh, sheet, head) => {
     const s = load();
+    if (sh.code && !s.supporter) return sheet("", `${head("Supporter code", "sup-h")}
+      <p class="muted">Donated with another email? Write to Péter, and he sends you a code made for the email you're signed in with.</p>${s.email ? `<p class="fine">${esc(s.email)}</p>` : ""}
+      <textarea id="sup-code" class="sup-code" rows="3" maxlength="200" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="ANTE-…" aria-label="Supporter code"></textarea>
+      ${s.email ? "" : `<p class="fine">Sign in with Google in Settings first: a code only works for its own email.</p>`}
+      <div class="btn-row"><button class="btn quiet" data-a="supporter">Back</button><button class="btn primary" data-a="supRedeem" ${s.email ? "" : "disabled"}>Use code</button></div>`, "sup-h");
     const steps = s.supporter ? "" : `<ol class="sup-steps">
         <li>Donate any amount on Ko-fi, even once.</li>
         <li>${s.email ? `Use the email of your Google sign-in: <b>${esc(s.email)}</b>` : "Use the email of your Google sign-in."}</li>
@@ -73,6 +83,7 @@
       <div class="sup-perks" aria-hidden="true"><span class="sup-ring">${App.avatar("", "")}</span>
         <p class="sitem-sub">The Supporter badge and a gold ring round your photo. Everything else in Ante is free for everyone, always.</p></div>
       ${steps}
+      ${s.supporter ? `<button class="link" data-a="letter">${App.ICON.mail || ""}<span>Read my letter again</span>${App.ICON.chev}</button>` : `<button class="link" data-a="supCode">${App.ICON.key || ""}<span>Have a Supporter code?</span>${App.ICON.chev}</button>`}
       ${!s.email && !s.supporter ? `<p class="fine">Sign in with Google in Settings first, so Ante knows which email to look for.</p>` : ""}
       ${s.supporter ? `<button class="btn primary" data-a="closeSheet">Done</button>`
         : `<div class="sup-actions"><button class="btn primary" data-a="kofi">Donate on Ko-fi</button><button class="btn quiet" data-a="supCheck" ${checking || !s.email ? "disabled" : ""}>${checkLabel()}</button></div>`}`, "sup-h");
@@ -83,8 +94,8 @@
     let r; try { r = typeof raw === "string" ? JSON.parse(raw) : raw; } catch (e) { return; }
     const was = status.supporter;
     checking = false; load();
-    if (r.ok && r.supporter && !was) { App.toast("Thank you! You're an Ante Supporter."); App.haptic("win"); App.SFX.play("bigWin"); if (App.milestone) App.milestone("supporter"); }
-    else if (r.ok && r.supporter) { /* still a supporter */ }
+    if (r.ok && status.supporter && !was) welcome();
+    else if (r.ok && status.supporter) { /* still a supporter */ }
     else if (r.ok) App.toast("No donation found for this email yet. Ko-fi can take a minute.");
     else if (r.error === "signin") App.toast("Sign in with Google first, then check again.");
     else if (r.error === "setup") App.toast("The supporter check isn't set up yet.");
@@ -92,6 +103,14 @@
     if (ui.sheet && ui.sheet.type === "supporter" && r.ok && r.supporter) ui.sheet = { type: "supporter" };
     App.render(); App.paintOverlay();
   };
+
+  /** New Supporter: Péter's letter first, then the badge moment. */
+  function welcome() {
+    ui.sheet = null; App.render(); App.paintOverlay();
+    App.haptic("win");
+    const badge = () => { if (App.milestone) App.milestone("supporter"); };
+    if (App.showLetter) App.showLetter(badge); else { App.toast("Thank you! You're an Ante Supporter."); badge(); }
+  }
 
   const pick = (kind, key) => d => {
     App.P.set({ [key]: d.v }); App.SFX.play("tap"); App.render();
@@ -104,6 +123,16 @@
       if (!A.checkSupporter) { App.toast("Install the new app version (0.10.0) to check."); return; }
       checking = true; App.render(); App.paintOverlay(); A.checkSupporter();
     },
+    supCode() { load(); ui.sheet = { type: "supporter", code: true }; App.SFX.play("tap"); App.paintOverlay(); },
+    supRedeem() {
+      const el = document.getElementById("sup-code"); if (!el) return;
+      if (!A.redeemSupporter) { App.toast("Install the new app version (0.10.0) to use a code."); return; }
+      let r; try { r = JSON.parse(A.redeemSupporter(el.value)); } catch (e) { r = { ok: false }; }
+      const was = status.supporter; load();
+      if (r.ok && status.supporter) { if (!was) welcome(); return; }
+      App.toast(r.error === "signin" ? "Sign in with Google first, then use the code." : "That code doesn't match the email you're signed in with.");
+    },
+    letter() { if (App.showLetter) { ui.sheet = null; App.paintOverlay(); App.showLetter(); } },
     felt: pick("felt", "felt"),
     cardBack: pick("back", "back"),
   });

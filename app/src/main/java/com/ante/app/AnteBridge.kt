@@ -267,6 +267,10 @@ class AnteBridge(
         Supporter.check(ctx) { r -> activity.runOnUiThread { webView.evaluateJavascript("window.anteSupporter && window.anteSupporter(" + JSONObject.quote(r.toString()) + ")", null) } }
     }
 
+    /** A Supporter code from Péter: {ok, supporter} or {ok: false, error: "signin" | "code"}. */
+    @JavascriptInterface
+    fun redeemSupporter(code: String): String = Supporter.redeem(ctx, code.take(400)).toString()
+
     /* ---- Website filter (see WebFilter.kt and WebFilterService.kt) ---- */
 
     /** {available, on, adult, gambling, custom, lockUntil, nnnUntil, nnnDone, november, running, consented, strict}. */
@@ -361,6 +365,25 @@ class AnteBridge(
         activity.runOnUiThread {
             val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_SUBJECT, subject.take(120)).putExtra(Intent.EXTRA_TEXT, text)
             try { activity.startActivity(Intent.createChooser(send, subject.take(120))) } catch (e: Exception) { /* no app to share with */ }
+        }
+        return true
+    }
+
+    /**
+     * Feedback for Péter: opens the email app with his address, a subject and the message filled
+     * in, so the person sees exactly what is sent and sends it themselves. Falls back to the share sheet.
+     */
+    @JavascriptInterface
+    fun sendFeedback(subject: String, text: String): Boolean {
+        if (text.isBlank() || text.length > 5_000) return false
+        activity.runOnUiThread {
+            val mail = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:")).putExtra(Intent.EXTRA_EMAIL, arrayOf(FEEDBACK_EMAIL))
+                .putExtra(Intent.EXTRA_SUBJECT, subject.take(120)).putExtra(Intent.EXTRA_TEXT, text)
+            try { activity.startActivity(mail) } catch (e: Exception) {
+                val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_EMAIL, arrayOf(FEEDBACK_EMAIL))
+                    .putExtra(Intent.EXTRA_SUBJECT, subject.take(120)).putExtra(Intent.EXTRA_TEXT, text)
+                try { activity.startActivity(Intent.createChooser(send, subject.take(120))) } catch (e2: Exception) { /* no app to send with */ }
+            }
         }
         return true
     }
@@ -597,6 +620,7 @@ class AnteBridge(
         private const val UI_PREFS = "ante-ui"
         private const val BAD = "{\"ok\":false,\"error\":\"bet\"}"
         private const val DAY_MS = 24 * 60 * 60_000L
+        private const val FEEDBACK_EMAIL = "peter.racz.rhr@gmail.com"
         private val OUTSIDE_LINKS = setOf("https://ko-fi.com/peteracz", "mailto:peter.racz.rhr@gmail.com")
         private const val WAIT_MS = 30_000L
         private const val WAIT_VALID_MS = 10 * 60_000L

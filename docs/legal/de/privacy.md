@@ -46,6 +46,10 @@ Wenn du auf Ko-fi spendest, schickt Ko-fi Antes kleinem Supporter-Server (läuft
 
 Der Ko-fi-Link öffnet ko-fi.com in deinem Browser. Was du dort tust, verarbeitet Ko-fi nach seiner eigenen Datenschutzerklärung (ko-fi.com/home/privacy).
 
+## Feedback (freiwillig)
+
+„Feedback senden“ öffnet deine eigene E-Mail-App mit einer Nachricht an Péter, die du vor dem Senden lesen und ändern kannst. Lässt du das Häkchen gesetzt, werden App-Version, Sprache und Handymodell angehängt. Péter bewahrt Feedback-E-Mails nur so lange auf, wie es zum Antworten und Verbessern von Ante nötig ist. Rechtsgrundlage: deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO).
+
 ## Übermittlungen außerhalb der EU
 
 Google (Anmeldung, Drive-Backup), GitHub (Updates) und Cloudflare (Supporter-Prüfung) sind US-Unternehmen. Daten, die sie erreichen, werden auf Grundlage des EU-US Data Privacy Framework, nach dem alle drei zertifiziert sind, und ihrer Standardvertragsklauseln übermittelt.

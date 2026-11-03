@@ -63,7 +63,7 @@ const sheet = (p, s) => p.evaluate(s => { window.App.ui.sheet = s; window.App.pa
   for (const lang of ["en", "hu", "de"]) for (const width of [360, 412]) {
     const tag = `${lang} ${width}px`;
     const ctx = await browser.newContext({ viewport: { width, height: 860 }, deviceScaleFactor: 1 });
-    await ctx.addInitScript(() => { window.__anteNoBadgePop = true; });
+    await ctx.addInitScript(() => { window.__anteNoBadgePop = true; window.__anteNoLetter = true; });
     const p = await ctx.newPage(); const errors = [];
     p.on("pageerror", e => errors.push(e.message));
     await p.goto(INDEX + "?acc=1&reset=1"); await p.waitForSelector(".screen");
@@ -76,7 +76,7 @@ const sheet = (p, s) => p.evaluate(s => { window.App.ui.sheet = s; window.App.pa
     for (const g of ["coin", "roulette", "slots", "blackjack", "poker", "plinko", "crash", "baccarat", "keno", "dice"]) { await go(p, "game", { game: g, stakePkg: "com.instagram.android", stake: 300 }); await audit(p, `${tag} game ${g}`, lang); if (width === 412) await p.screenshot({ path: path.join(OUT, `${lang}-game-${g}.png`) }); }
     await go(p, "home");
     const sheets = [{ type: "pick", apps: [], q: "" }, { type: "edit", pkg: "com.instagram.android", label: "Instagram", limit: 1200 }, { type: "strict" }, { type: "consent" },
-      { type: "schedules" }, { type: "schedEdit", draft: { id: 0, label: "", days: 31, startMin: 540, endMin: 1020, on: true } }, { type: "recap" }, { type: "supporter" }, { type: "deleteData", drive: true }, { type: "terms" }, { type: "badge", id: "first" }, { type: "web" }, { type: "web", confirm: 0 }, { type: "web", confirm: 7 }, { type: "badge", id: "nnn" }, { type: "cat", id: "social", apps: [{ pkg: "com.instagram.android", label: "Instagram", cat: "social" }, { pkg: "com.zhiliaoapp.musically", label: "TikTok", cat: "social" }], members: ["com.instagram.android"], mode: "shared", limit: 3600, edit: false },
+      { type: "schedules" }, { type: "schedEdit", draft: { id: 0, label: "", days: 31, startMin: 540, endMin: 1020, on: true } }, { type: "recap" }, { type: "supporter" }, { type: "supporter", code: true }, { type: "feedback", stars: 4, topic: "Idea", text: "", info: true }, { type: "deleteData", drive: true }, { type: "terms" }, { type: "badge", id: "first" }, { type: "web" }, { type: "web", confirm: 0 }, { type: "web", confirm: 7 }, { type: "badge", id: "nnn" }, { type: "cat", id: "social", apps: [{ pkg: "com.instagram.android", label: "Instagram", cat: "social" }, { pkg: "com.zhiliaoapp.musically", label: "TikTok", cat: "social" }], members: ["com.instagram.android"], mode: "shared", limit: 3600, edit: false },
       { type: "wait", left: 30000, title: "End Focus early", body: "Wait 30 seconds. If you still want to stop after that, you can.", cta: "End Focus" }];
     for (const s of sheets) { await sheet(p, s); await audit(p, `${tag} sheet ${s.type}`, lang); if (width === 412) await p.screenshot({ path: path.join(OUT, `${lang}-sheet-${s.type}.png`) }); }
     for (const mode of ["strict", "focus"]) for (const step of [0, 1, 2]) { await sheet(p, { type: "explain", mode, step, pick: null }); await audit(p, `${tag} explain ${mode} ${step}`, lang); }

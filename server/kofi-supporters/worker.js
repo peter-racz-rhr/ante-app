@@ -2,10 +2,13 @@
 //
 //   POST /kofi        Ko-fi's webhook. Checks the verification token, then remembers the
 //                     donor as a SHA-256 fingerprint of their email (never the email itself).
-//   GET  /supporter?h=<64 hex>   Answers {supporter, since} for that fingerprint.
+//   GET  /supporter?h=<64 hex>   Answers {supporter, since, token} for that fingerprint. The token
+//                     is an ECDSA P-256 signature over "ante-supporter:v1:<fingerprint>"; the app
+//                     checks it with the public key, so only this server (or Péter) can make one.
 //
 // Secrets and bindings (see README.md): KOFI_TOKEN (Ko-fi → Settings → API → Webhooks →
-// Verification token) and the KV namespace SUPPORTERS.
+// Verification token), SIGNING_JWK (the private key from scripts/supporter-keys.mjs keygen) and
+// the KV namespace SUPPORTERS.
 
 const HEX64 = /^[0-9a-f]{64}$/;
 
@@ -13,6 +16,14 @@ async function fingerprint(email) {
   const data = new TextEncoder().encode(String(email).trim().toLowerCase());
   const hash = await crypto.subtle.digest("SHA-256", data);
   return [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+/** The signed token the app checks (base64url of r‖s). */
+async function token(env, h) {
+  if (!env.SIGNING_JWK) return "";
+  const key = await crypto.subtle.importKey("jwk", JSON.parse(env.SIGNING_JWK), { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]);
+  const sig = new Uint8Array(await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, key, new TextEncoder().encode("ante-supporter:v1:" + h)));
+  return btoa(String.fromCharCode(...sig)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
@@ -47,7 +58,7 @@ export default {
       const h = (url.searchParams.get("h") || "").toLowerCase();
       if (!HEX64.test(h)) return json({ supporter: false, error: "bad fingerprint" }, 400);
       const rec = JSON.parse((await env.SUPPORTERS.get(h)) || "null");
-      return json(rec ? { supporter: true, since: rec.since } : { supporter: false });
+      return json(rec ? { supporter: true, since: rec.since, token: await token(env, h) } : { supporter: false });
     }
 
     return json({ ok: false, error: "not found" }, 404);

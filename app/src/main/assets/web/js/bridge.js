@@ -38,6 +38,8 @@
       // Ko-fi supporter (0.10.0+): status, and a check that answers on window.anteSupporter.
       supporter: () => (has("supporter") ? parse(N.supporter(), { supporter: false, configured: false }) : { supporter: false, configured: false }),
       checkSupporter: has("checkSupporter") ? () => N.checkSupporter() : undefined,
+      sendFeedback: has("sendFeedback") ? (subject, text) => N.sendFeedback(String(subject), String(text)) : undefined,
+      redeemSupporter: has("redeemSupporter") ? code => N.redeemSupporter(String(code || "")) : undefined,
       // Website filter (0.10.0+).
       webFilter: has("webFilter") ? () => parse(N.webFilter(), null) : undefined,
       setWebFilter: (on, adult, gambling, custom) => (has("setWebFilter") ? N.setWebFilter(!!on, !!adult, !!gambling, String(custom)) : false),
@@ -364,7 +366,16 @@
     },
     // Ko-fi supporters in the demo: ?supporter=1 starts as one; "check" finds a donation for any
     // signed-in account (?kofi=0 finds none).
-    supporter: () => ({ supporter: SUP.on || q.get("supporter") === "1", since: SUP.on ? Date.now() : 0, configured: true, kofi: "https://ko-fi.com/peteracz", email: ACCT.email || "" }),
+    supporter: () => { const on = SUP.on || q.get("supporter") === "1"; return { supporter: on, verified: on, since: on ? Date.now() : 0, configured: true, kofi: "https://ko-fi.com/peteracz", email: ACCT.email || "" }; },
+    // Feedback in the demo: kept on the page instead of opening an email app.
+    sendFeedback(subject, text) { window.__lastFeedback = { subject, text }; return true; },
+    // A code in the demo: "ANTE-DEMO" works for any signed-in account.
+    redeemSupporter(code) {
+      if (!ACCT.signedIn) return JSON.stringify({ ok: false, error: "signin" });
+      if (String(code).replace(/\s+/g, "").toUpperCase() !== "ANTE-DEMO") return JSON.stringify({ ok: false, error: "code" });
+      SUP.on = true; try { localStorage.setItem("ante-mock-supporter", "1"); } catch (e) { /* private mode */ }
+      return JSON.stringify({ ok: true, supporter: true, via: "code" });
+    },
     checkSupporter() {
       setTimeout(() => {
         if (!ACCT.signedIn) return window.anteSupporter && window.anteSupporter(JSON.stringify({ ok: false, error: "signin" }));

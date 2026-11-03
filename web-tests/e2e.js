@@ -26,7 +26,7 @@ async function page(browser, query, opts = {}) {
   if (!opts.newTerms && !/onboard=1/.test(query)) await ctx.addInitScript(() => {
     try { const p = JSON.parse(localStorage.getItem("ante-prefs") || "{}"); if (!p.terms) { p.terms = { v: 99, at: 1 }; localStorage.setItem("ante-prefs", JSON.stringify(p)); } } catch (e) { /* storage blocked */ }
   });
-  await ctx.addInitScript(() => { window.__anteNoBadgePop = true; }); // badge moments are tested on their own
+  await ctx.addInitScript(() => { window.__anteNoBadgePop = true; window.__anteNoLetter = true; }); // tested on their own
   const p = await ctx.newPage();
   p.errors = [];
   p.on("pageerror", e => p.errors.push(e.message));
@@ -484,18 +484,27 @@ async function noOverflow(p, label) {
     await dt.goto(INDEX + "?acc=1"); await dt.waitForSelector(".screen");
     await tab(dt, "profile"); await dt.click('[data-a="openSettings"]'); await dt.waitForTimeout(250);
     check(await dt.isVisible("text=Never backed up"), "Settings shows the Drive backup, not yet made");
-    await dt.click('[data-a="driveBackup"]');
-    check(await dt.waitForSelector("text=Backed up just now", { timeout: 5000 }).then(() => true, () => false), "Back up saves to Google Drive");
+    let backedUp = false;
+    for (let k = 0; k < 3 && !backedUp; k++) { // a click can land while the row is being redrawn
+      await dt.click('[data-a="driveBackup"]');
+      backedUp = await dt.waitForSelector("text=Backed up just now", { timeout: 3000 }).then(() => true, () => false);
+    }
+    check(backedUp, "Back up saves to Google Drive");
     await shot(dt, "27a-your-data");
     // A "new phone": fresh data, restore from the backup.
     await dt.evaluate(() => { window.Ante.resetMock(); const S = JSON.parse(localStorage.getItem("ante-mock-v2")); S.limits = []; localStorage.setItem("ante-mock-v2", JSON.stringify(S)); window.AntePrefs.set({ theme: "latte" }); });
     const hasFile = () => dt.evaluate(() => { try { return !!JSON.parse(localStorage.getItem("ante-mock-drive")).file; } catch (e) { return false; } });
     for (let k = 0; k < 60 && !(await hasFile()); k++) { if (k === 30) await dt.evaluate(() => window.Ante.backupNow()); await dt.waitForTimeout(100); }
-    await dt.evaluate(() => { const d = JSON.parse(localStorage.getItem("ante-mock-drive")); d.file.prefs.theme = "mocha"; localStorage.setItem("ante-mock-drive", JSON.stringify(d)); });
+    // Change the backup's theme, and keep it changed if a late backup click rewrote the file.
+    for (let k = 0; k < 5; k++) {
+      await dt.evaluate(() => { const d = JSON.parse(localStorage.getItem("ante-mock-drive")); d.file.prefs.theme = "mocha"; localStorage.setItem("ante-mock-drive", JSON.stringify(d)); });
+      await dt.waitForTimeout(500);
+      if (await dt.evaluate(() => JSON.parse(localStorage.getItem("ante-mock-drive")).file.prefs.theme === "mocha")) break;
+    }
     await dt.goto(INDEX + "?acc=1"); await dt.waitForSelector(".screen");
     await tab(dt, "profile"); await dt.click('[data-a="openSettings"]'); await dt.waitForTimeout(250);
     await dt.click('[data-a="driveRestore"]');
-    for (let i = 0; i < 50 && (await dt.evaluate(() => window.Ante.state().limits.length)) !== 3; i++) await dt.waitForTimeout(100);
+    for (let i = 0; i < 50 && !(await dt.evaluate(() => window.Ante.state().limits.length === 3 && window.AntePrefs.get().theme === "mocha")); i++) await dt.waitForTimeout(100);
     await dt.waitForTimeout(200);
     check((await dt.evaluate(() => window.Ante.state().limits.length)) === 3, "restoring brings the limits back");
     check((await dt.evaluate(() => window.AntePrefs.get().theme)) === "mocha", "restoring brings the settings back");
@@ -581,6 +590,8 @@ async function noOverflow(p, label) {
     // Ko-fi: donating with the Google email, then "check" finds it (the demo finds one for any signed-in account).
     await pl2.evaluate(() => new Promise(res => { const was = window.anteAuth; window.anteAuth = r => { if (was) was(r); res(); }; window.App.A.signInWithGoogle(); }));
     await pl2.evaluate(() => { window.App.ui.sheet = { type: "supporter" }; window.App.paintOverlay(); }); await pl2.waitForTimeout(200);
+    check(await pl2.evaluate(() => JSON.parse(window.App.A.redeemSupporter("ANTE-made-up")).error) === "code", "a made-up Supporter code is refused");
+    await pl2.evaluate(() => { window.__anteNoLetter = false; });
     // Signing in already asks once; otherwise "I donated, check" asks.
     for (let k = 0; k < 20 && !(await pl2.evaluate(() => window.App.isSupporter())); k++) {
       const b = await pl2.$('.sheet [data-a="supCheck"]:not([disabled])'); if (b) { await b.click().catch(() => {}); break; } await pl2.waitForTimeout(100);
@@ -588,8 +599,12 @@ async function noOverflow(p, label) {
     for (let k = 0; k < 30 && !(await pl2.evaluate(() => window.App.isSupporter())); k++) await pl2.waitForTimeout(100);
     check(await pl2.evaluate(() => window.App.isSupporter()), "the Ko-fi check makes you a Supporter");
     check(await pl2.evaluate(() => window.App.hasBadge("supporter")), "and gives the Supporter badge");
-    await shot(pl2, "26g-supporter-done");
-    await pl2.click('.sheet [data-a="closeSheet"].btn'); await pl2.waitForTimeout(250);
+    await pl2.waitForSelector(".ltr.read", { timeout: 5000 }).catch(() => {});
+    check(await pl2.isVisible(".ltr-paper") && /Peter/.test(await pl2.textContent(".ltr-paper")), "a new Supporter gets Péter's letter");
+    await pl2.waitForTimeout(4400); await shot(pl2, "26g-supporter-letter");
+    await pl2.click('[data-ltr="close"]'); await pl2.waitForTimeout(500);
+    check(!(await pl2.$(".ltr")), "the letter closes");
+    await pl2.evaluate(() => { window.__anteNoLetter = true; window.App.ui.sheet = null; window.App.paintOverlay(); });
     check(await pl2.evaluate(() => window.App.views.profile().includes("me-photo gold")), "a Supporter gets the gold ring");
     // Language: Hungarian everywhere, English again on the way back.
     await pl2.click('[data-a="lang"][data-v="hu"]'); await pl2.waitForTimeout(300);
@@ -776,7 +791,19 @@ async function noOverflow(p, label) {
   await w.click('[data-a="badge"][data-v="category"]'); await w.waitForTimeout(300);
   await w.click('.sheet [data-a="badgeShow"]'); await w.waitForTimeout(300);
   check(await w.isVisible(".me-card .badge-row .badge-mini"), "a chosen badge shows under the name");
+  check((await w.$$(".mgrid .mbadge")).length === 12, "the badge box shows 12 badges at first, no inner scroll");
+  await w.click('[data-a="badgesMore"]'); await w.waitForTimeout(300);
+  check((await w.$$(".mgrid .mbadge")).length === 56, "Show all opens every badge");
   await shot(w, "28b-milestones");
+  await w.click('[data-a="badgesMore"]'); await w.waitForTimeout(300);
+  // Feedback: stars, a topic and a message go into the email.
+  await w.click('[data-a="feedback"]'); await w.waitForTimeout(300);
+  await w.click('.sheet [data-a="fbStar"][data-v="5"]'); await w.click('.sheet [data-a="fbTopic"][data-v="Idea"]');
+  await w.fill("#fb-text", "Add a dark felt for poker please"); await w.waitForTimeout(100);
+  await shot(w, "28d-feedback");
+  await w.click('.sheet [data-a="fbSend"]'); await w.waitForTimeout(300);
+  const fb = await w.evaluate(() => window.__lastFeedback || {});
+  check(/Idea/.test(fb.subject || "") && /★★★★★/.test(fb.text || "") && /dark felt for poker/.test(fb.text || ""), "feedback opens an email with the rating, topic and message");
   await w.evaluate(() => { window.__anteNoBadgePop = false; window.App.celebrateBadge("streak30"); });
   await w.waitForSelector(".bpop.in", { timeout: 3000 }).catch(() => {});
   await w.waitForTimeout(1300);
@@ -801,7 +828,9 @@ async function noOverflow(p, label) {
   await u.waitForSelector(".toast, [role=status]", { timeout: 4000 }).catch(() => {});
   await u.waitForTimeout(600);
   check(reloads.length === 1, "the update applies once the table is closed");
-  check(await u.isVisible("text=Ante just updated itself."), "after an update, a short note says so");
+  let noted = false;
+  for (let k = 0; k < 30 && !noted; k++) { noted = await u.isVisible("text=Ante just updated itself."); if (!noted) await u.waitForTimeout(100); }
+  check(noted, "after an update, a short note says so");
   await tab(u, "profile"); await u.waitForTimeout(200);
   await u.click('[data-a="openSettings"]'); await u.waitForTimeout(150);
   check(await u.isVisible("text=built-in UI") || await u.isVisible("text=web demo"), "profile shows which UI version runs");

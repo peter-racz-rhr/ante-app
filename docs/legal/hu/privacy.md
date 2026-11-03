@@ -46,6 +46,10 @@ Ha a Ko-fin támogatsz, a Ko-fi értesíti az Ante kis támogató-szerverét (Cl
 
 A Ko-fi hivatkozás a böngésződben nyitja meg a ko-fi.com oldalt. Amit ott teszel, azt a Ko-fi a saját adatvédelmi szabályai szerint kezeli (ko-fi.com/home/privacy).
 
+## Visszajelzés (nem kötelező)
+
+A Visszajelzés a saját e-mail-alkalmazásodat nyitja meg egy Péternek szóló üzenettel, amelyet küldés előtt elolvashatsz és módosíthatsz. Ha bejelölve hagyod, hozzáadja az app verzióját, a nyelvet és a telefonod típusát. Péter a visszajelzéseket csak addig őrzi, amíg a válaszhoz és az Ante fejlesztéséhez kell. Jogalap: a hozzájárulásod (GDPR 6. cikk (1) a)).
+
 ## Adattovábbítás az EU-n kívülre
 
 A Google (bejelentkezés, Drive-mentés), a GitHub (frissítések) és a Cloudflare (támogató-ellenőrzés) amerikai vállalat. A hozzájuk kerülő adatok továbbítása az EU–USA adatvédelmi keretrendszer alapján történik, amelynek mindhárom tagja, valamint az általános szerződési feltételeik alapján.

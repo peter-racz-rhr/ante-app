@@ -46,6 +46,10 @@ If you donate on Ko-fi, Ko-fi sends Ante's small supporter server (run on Cloudf
 
 The Ko-fi link opens ko-fi.com in your browser. Anything you do there is handled by Ko-fi under its own privacy policy (ko-fi.com/home/privacy).
 
+## Feedback (optional)
+
+Send feedback opens your own email app with a message to Péter that you can read and change before sending. If you leave the box ticked, it adds the app version, the language and your phone model. Péter keeps feedback emails only as long as needed to answer and improve Ante. Legal basis: your consent (GDPR Art. 6(1)(a)).
+
 ## Transfers outside the EU
 
 Google (sign-in, Drive backup), GitHub (updates) and Cloudflare (the supporter check) are US companies. Data that reaches them is transferred under the EU–US Data Privacy Framework, which all three are certified under, and their standard contractual clauses.

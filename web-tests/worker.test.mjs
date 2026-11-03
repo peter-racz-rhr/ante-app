@@ -35,3 +35,17 @@ test("repeat donations add up; bad fingerprints are rejected", async () => {
   const bad = await worker.fetch(new Request("https://x.dev/supporter?h=nothex"), e);
   assert.equal(bad.status, 400);
 });
+
+test("a supporter answer carries a token signed for that fingerprint only", async () => {
+  const kp = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"]);
+  const e = Object.assign(env(), { SIGNING_JWK: JSON.stringify(await crypto.subtle.exportKey("jwk", kp.privateKey)) });
+  await worker.fetch(hook({ verification_token: "secret-token", email: "fan@gmail.com", amount: "2", timestamp: "2026-11-03T10:00:00Z" }), e);
+  const h = await fp("fan@gmail.com"), r = await ask(e, h);
+  assert.equal(r.supporter, true);
+  const sig = Uint8Array.from(Buffer.from(r.token, "base64url"));
+  assert.equal(sig.length, 64);
+  const ok = m => crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, kp.publicKey, sig, new TextEncoder().encode("ante-supporter:v1:" + m));
+  assert.equal(await ok(h), true);
+  assert.equal(await ok(await fp("other@gmail.com")), false);
+  assert.equal((await ask(e, await fp("other@gmail.com"))).token, undefined, "no token for non-supporters");
+});

@@ -47,7 +47,7 @@
   }
 
   /** The native part (APK) is older than this UI needs for full screen and vibration. */
-  const NATIVE_WANTED = [0, 10, 0];
+  const NATIVE_WANTED = [0, 11, 0];
   function nativeOutdated() {
     if (!A.native) return false;
     const v = (A.versions && A.versions()) || {};
@@ -75,7 +75,7 @@
       <section class="update-note" role="status">
         <span class="sicon" style="--ic:var(--warn)" aria-hidden="true">${App.ICON.info}</span>
         <div><p class="sitem-title">Install the new app version once</p>
-        <p class="sitem-sub">This phone runs Ante ${esc((A.versions().app) || "")}. Categories and Ko-fi supporters need 0.10.0. Open the <b>ante-app</b> project in Android Studio and press Run.</p></div>
+        <p class="sitem-sub">This phone runs Ante ${esc((A.versions().app) || "")}. The Supporter check, categories and feedback need 0.11.0. Open the <b>ante-app</b> project in Android Studio and press Run.</p></div>
       </section>` : "";
   }
 
@@ -151,6 +151,7 @@
 
 ${App.milestonesCard()}
 ${App.supportCard()}
+${App.feedbackCard ? App.feedbackCard() : ""}
     </div>`;
   };
 
