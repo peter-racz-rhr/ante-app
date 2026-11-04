@@ -262,6 +262,9 @@
   // Short unit symbols (h, min) are standard German and keep big numbers on one line.
   /* ---------- 0.10.0: categories, Ko-fi supporters, milestones ---------- */
   Object.assign(DE, {
+    "All time": "Insgesamt",
+    "Your running total at the tables": "Dein Gesamtstand an den Tischen",
+    "Net minutes at the tables, all time": "Netto-Minuten an den Tischen, insgesamt",
     "Send feedback": "Feedback senden",
     "Write": "Schreiben",
     "Tell Péter what you like, what's broken or what you'd add. He reads every message.": "Sag Péter, was dir gefällt, was kaputt ist oder was du ergänzen würdest. Er liest jede Nachricht.",
@@ -429,6 +432,7 @@
   const units = s => s.replace(/\b(\d+)h\b/g, "$1 h").replace(/\b(\d+)m\b/g, "$1 min").replace(/\b(\d+) min\b/g, "$1 min").replace(/\b(\d+) h\b/g, "$1 h")
     .replace(/\b1 week\b/, "1 Woche").replace(/\b1 day\b/, "1 Tag").replace(/\b(\d+) days\b/, "$1 Tage");
   const PATTERNS = [
+    [/^Since (.+)$/, (m, d) => `Seit ${d}`],
     [/^(\d) of 5$/, (m, n) => `${n} von 5`],
     [/^Show all (\d+)$/, (m, n) => `Alle ${n} zeigen`],
     [/^Stay within your limits (\d+) days in a row\.$/, (m, n) => `Bleib ${n} Tage am Stück in deinen Limits.`],

@@ -21,6 +21,40 @@
     }
     return out;
   }
+  /**
+   * Every day with table results, ever: {day: [won, lost]} kept in prefs.tableLog. The phone keeps
+   * about six months of history, so each day is copied here while it's still there; two numbers
+   * a day, a few KB a year. Today comes from the live totals.
+   */
+  function tableLog() {
+    const p = App.P.get(), log = Object.assign({}, p.tableLog || {});
+    let changed = false;
+    (App.S.history || []).forEach(h => {
+      if (!(h.wonSec || h.lostSec)) return;
+      const v = [h.wonSec || 0, h.lostSec || 0], old = log[h.day];
+      if (!old || old[0] !== v[0] || old[1] !== v[1]) { log[h.day] = v; changed = true; }
+    });
+    if (changed) App.P.set({ tableLog: log });
+    const t = todayTotals(), today = App.localKey(new Date());
+    if (t.won || t.lost) log[today] = [t.won || 0, t.lost || 0];
+    return log;
+  }
+  /** All-time net per step from the first day with results to today (weekly steps after ~7 months). */
+  function allTime() {
+    const log = tableLog(), ok = v => Array.isArray(v) && v.length === 2 && v.every(x => Number.isFinite(x) && x >= 0);
+    const keys = Object.keys(log).filter(k => /^\d{4}-\d\d-\d\d$/.test(k) && ok(log[k])).sort();
+    if (!keys.length) return { since: null, values: [], won: 0, lost: 0 };
+    const start = new Date(keys[0] + "T00:00:00"), end = new Date(); end.setHours(0, 0, 0, 0);
+    const days = Math.round((end - start) / 86400000) + 1, step = days > 210 ? 7 : 1, values = [];
+    let won = 0, lost = 0, acc = 0, n = 0;
+    for (let i = 0; i < days; i++) {
+      const d = new Date(start); d.setDate(start.getDate() + i);
+      const k = App.localKey(d), v = ok(log[k]) ? log[k] : [0, 0];
+      won += v[0]; lost += v[1]; acc += v[0] - v[1];
+      if (++n === step || i === days - 1) { values.push(acc); acc = 0; n = 0; }
+    }
+    return { since: start, values, won, lost };
+  }
   function lastMonths(n) {
     const days = lastDays(186), out = [];
     for (let i = n - 1; i >= 0; i--) {
@@ -168,9 +202,10 @@
   };
 
   App.views.results = function () {
-    const days30 = lastDays(30);
-    const tr = App.CH.trend(days30.map(d => d.won - d.lost), { label: "Net minutes over the last 30 days" });
-    const won30 = days30.reduce((a, d) => a + d.won, 0), lost30 = days30.reduce((a, d) => a + d.lost, 0);
+    const all = allTime();
+    const tr = App.CH.trend(all.values, { label: "Net minutes at the tables, all time" });
+    const won30 = all.won, lost30 = all.lost;
+    const sinceText = all.since ? `Since ${all.since.toLocaleDateString(App.locale(), { day: "numeric", month: "long", year: "numeric" })}` : "Your running total at the tables";
     const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
     const recent = App.S.ledger.filter(b => b.atMs >= startOfDay.getTime()).slice(0, 12).map(b => {
       const t = new Date(b.atMs), g = App.G.GAMES.find(x => x.name === b.game);
@@ -182,7 +217,7 @@
     return `<div class="screen" id="screen">
       <header class="topbar">${App.backBtn("tab", "Back to Home").replace('data-a="tab"', 'data-a="tab" data-t="home"')}<div class="grow"><h1 class="h2">Table results</h1><p class="muted">Minutes won and lost</p></div></header>
       <section class="panel" aria-labelledby="h-net">
-        <div><h2 class="h3" id="h-net">Last 30 days</h2><p class="muted">Running total at the tables</p></div>
+        <div><h2 class="h3" id="h-net">All time</h2><p class="muted">${esc(sinceText)}</p></div>
         <p class="balance sm num ${tr.last > 0 ? "win" : tr.last < 0 ? "loss" : ""}">${signed(tr.last)}</p>
         ${tr.svg}
         <div class="ledger-box"><div class="lrow"><span>Won</span><span class="num">${signed(won30)}</span></div><div class="lrow"><span>Lost</span><span class="num">${lost30 ? signed(-lost30) : signed(0)}</span></div></div>

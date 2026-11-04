@@ -264,6 +264,9 @@
 
   /* ---------- 0.10.0: categories, Ko-fi supporters, milestones ---------- */
   Object.assign(HU, {
+    "All time": "Összesen",
+    "Your running total at the tables": "Az összesített egyenleged az asztaloknál",
+    "Net minutes at the tables, all time": "Nettó percek az asztaloknál, összesen",
     "Send feedback": "Visszajelzés",
     "Write": "Írok",
     "Tell Péter what you like, what's broken or what you'd add. He reads every message.": "Írd meg Péternek, mi tetszik, mi nem működik, vagy mit tennél hozzá. Minden üzenetet elolvas.",
@@ -433,6 +436,7 @@
     .replace(/\b1 week\b/, "1 hét").replace(/\b(\d+) days?\b/, "$1 nap").replace(/\b1 day\b/, "1 nap");
   const tr = s => HU[s] || s;
   const PATTERNS = [
+    [/^Since (.+)$/, (m, d) => `${d} óta`],
     [/^(\d) of 5$/, (m, n) => `${n} / 5`],
     [/^Show all (\d+)$/, (m, n) => `Mind a ${n}`],
     [/^Stay within your limits (\d+) days in a row\.$/, (m, n) => `Maradj a limiteken belül ${n} napig egymás után.`],
