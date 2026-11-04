@@ -236,7 +236,7 @@
       <div class="panel-head"><div class="fc-h"><span class="sicon" style="--ic:#f5c542" aria-hidden="true">${App.ICON.star || App.ICON.heart}</span><h2 class="h3" id="pm-h">Milestones</h2></div>
         <span class="streak"><span class="dotnum">${got}</span>/${BADGES.length}</span></div>
       <div class="mgrid-wrap${all ? " all" : ""}"><div class="mgrid" id="mgrid">${tiles}</div></div>
-      <button class="btn quiet mgrid-more" data-a="badgesMore" aria-expanded="${all}">${all ? "Show fewer" : `Show all ${BADGES.length}`}</button>
+      <button class="link mgrid-more" data-a="badgesMore" aria-expanded="${all}"><span>${all ? "Show fewer" : `Show all ${BADGES.length}`}</span>${App.ICON.chev}</button>
       <p class="sitem-sub">Tap a badge you've earned to show it under your name.</p></section>`;
   };
   App.afterMilestones = () => {};

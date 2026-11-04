@@ -257,7 +257,11 @@
 .mgrid-wrap:not(.all) .mgrid { -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent 98%); mask-image: linear-gradient(to bottom, #000 62%, transparent 98%); }
 .mgrid-wrap.all .mgrid { animation: mgrid-open .35s ease; }
 @keyframes mgrid-open { from { opacity: .6; } to { opacity: 1; } }
-.mgrid-more { width: 100%; margin-top: calc(-1 * var(--s3)); position: relative; }
+/* A small text link under the fading row, centred; the chevron turns to say open or closed. */
+.mgrid-more { display: flex; align-items: center; justify-content: center; gap: 4px; align-self: center; margin: calc(-1 * var(--s2)) auto 0; min-height: 36px; padding: 0 var(--s3);
+  font-size: var(--t-sm); font-weight: 600; color: var(--ivory-2); position: relative; }
+.mgrid-more svg { width: 16px; height: 16px; transform: rotate(90deg); transition: transform .25s var(--spring); }
+.mgrid-more[aria-expanded="true"] svg { transform: rotate(-90deg); }
 .mgrid-wrap.all + .mgrid-more { margin-top: 0; }
 /* Supporter sheet: what you get */
 .sup-perks { display: flex; align-items: center; gap: var(--s3); padding: var(--s3); border-radius: var(--r-in); background: var(--surface-2); }
