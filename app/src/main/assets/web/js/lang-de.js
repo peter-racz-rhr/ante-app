@@ -262,6 +262,7 @@
   // Short unit symbols (h, min) are standard German and keep big numbers on one line.
   /* ---------- 0.10.0: categories, Ko-fi supporters, milestones ---------- */
   Object.assign(DE, {
+    "Net, all time": "Netto, insgesamt",
     "All time": "Insgesamt",
     "Your running total at the tables": "Dein Gesamtstand an den Tischen",
     "Net minutes at the tables, all time": "Netto-Minuten an den Tischen, insgesamt",

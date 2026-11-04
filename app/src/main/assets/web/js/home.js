@@ -39,21 +39,47 @@
     if (t.won || t.lost) log[today] = [t.won || 0, t.lost || 0];
     return log;
   }
-  /** All-time net per step from the first day with results to today (weekly steps after ~7 months). */
+  /**
+   * Every bet ever, as [time, minutes] in prefs.tableBets. The phone's ledger only keeps the last
+   * 50 rounds, so each one is copied here when the app shows it (after every round). Capped at
+   * the newest 3000; older days still count through their daily totals in tableLog.
+   */
+  const BETS_MAX = 3000;
+  function betLog() {
+    const p = App.P.get(), have = Array.isArray(p.tableBets) ? p.tableBets.filter(b => Array.isArray(b) && b.length === 2 && Number.isFinite(b[0]) && Number.isFinite(b[1])) : [];
+    const seen = new Set(have.map(b => b[0] + ":" + b[1])), add = [];
+    (App.S.ledger || []).forEach(b => { const k = b.atMs + ":" + b.deltaSec; if (!seen.has(k)) { seen.add(k); add.push([b.atMs, b.deltaSec]); } });
+    if (!add.length) return have;
+    const all = have.concat(add).sort((x, y) => x[0] - y[0]).slice(-BETS_MAX);
+    App.P.set({ tableBets: all });
+    return all;
+  }
+  /** All-time running total: one step per bet where the bets are known, one per day before that. */
   function allTime() {
-    const log = tableLog(), ok = v => Array.isArray(v) && v.length === 2 && v.every(x => Number.isFinite(x) && x >= 0);
+    const log = tableLog(), bets = betLog(), ok = v => Array.isArray(v) && v.length === 2 && v.every(x => Number.isFinite(x) && x >= 0);
     const keys = Object.keys(log).filter(k => /^\d{4}-\d\d-\d\d$/.test(k) && ok(log[k])).sort();
-    if (!keys.length) return { since: null, values: [], won: 0, lost: 0 };
-    const start = new Date(keys[0] + "T00:00:00"), end = new Date(); end.setHours(0, 0, 0, 0);
-    const days = Math.round((end - start) / 86400000) + 1, step = days > 210 ? 7 : 1, values = [];
-    let won = 0, lost = 0, acc = 0, n = 0;
-    for (let i = 0; i < days; i++) {
-      const d = new Date(start); d.setDate(start.getDate() + i);
-      const k = App.localKey(d), v = ok(log[k]) ? log[k] : [0, 0];
-      won += v[0]; lost += v[1]; acc += v[0] - v[1];
-      if (++n === step || i === days - 1) { values.push(acc); acc = 0; n = 0; }
+    const byDay = new Map();
+    bets.forEach(b => { const k = App.localKey(new Date(b[0])); if (!byDay.has(k)) byDay.set(k, []); byDay.get(k).push(b[1]); });
+    const days = [...new Set(keys.concat([...byDay.keys()]))].sort();
+    if (!days.length) return { since: null, values: [], won: 0, lost: 0 };
+    let won = 0, lost = 0; const steps = [];
+    days.forEach(k => {
+      const v = ok(log[k]) ? log[k] : null, list = byDay.get(k) || [];
+      const bw = list.reduce((a, x) => a + Math.max(0, x), 0), bl = list.reduce((a, x) => a + Math.max(0, -x), 0);
+      const dw = v ? Math.max(v[0], bw) : bw, dl = v ? Math.max(v[1], bl) : bl;
+      won += dw; lost += dl;
+      // Rounds from before the bet log started that day go in as one step, then each bet.
+      const rest = (dw - bw) - (dl - bl);
+      if (rest) steps.push(rest);
+      list.forEach(x => steps.push(x));
+    });
+    // Long records: keep the shape, not every step (about 300 points).
+    let values = steps;
+    if (steps.length > 300) {
+      const k = Math.ceil(steps.length / 300); values = [];
+      for (let i = 0; i < steps.length; i += k) values.push(steps.slice(i, i + k).reduce((a, x) => a + x, 0));
     }
-    return { since: start, values, won, lost };
+    return { since: new Date(days[0] + "T00:00:00"), values, won, lost };
   }
   function lastMonths(n) {
     const days = lastDays(186), out = [];
@@ -220,7 +246,10 @@
         <div><h2 class="h3" id="h-net">All time</h2><p class="muted">${esc(sinceText)}</p></div>
         <p class="balance sm num ${tr.last > 0 ? "win" : tr.last < 0 ? "loss" : ""}">${signed(tr.last)}</p>
         ${tr.svg}
-        <div class="ledger-box"><div class="lrow"><span>Won</span><span class="num">${signed(won30)}</span></div><div class="lrow"><span>Lost</span><span class="num">${lost30 ? signed(-lost30) : signed(0)}</span></div></div>
+        <div class="ledger-box">
+          <div class="lrow"><span>Won at the tables</span><span class="num">${signed(won30)}</span></div>
+          <div class="lrow"><span>Lost at the tables</span><span class="num">${lost30 ? signed(-lost30) : signed(0)}</span></div>
+          <div class="lrow total"><span>Net, all time</span><span class="num">${signed(won30 - lost30)}</span></div></div>
       </section>
       ${App.tablesOn() ? `<section class="panel" aria-labelledby="h-bets">
         <div class="panel-head"><div><h2 class="h3" id="h-bets">Recent bets</h2><p class="muted">Today's rounds</p></div><button class="btn-sm" data-a="tab" data-t="tables">Play</button></div>

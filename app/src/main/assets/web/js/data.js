@@ -3,7 +3,7 @@
 (function () {
   "use strict";
   const App = window.App, A = App.A, esc = App.esc, ui = App.ui;
-  const RESTORABLE = ["theme", "accent", "clock", "name", "sound", "haptics", "lang", "tables", "felt", "back", "seenIntro", "earned", "badges", "stats", "tableLog"];
+  const RESTORABLE = ["theme", "accent", "clock", "name", "sound", "haptics", "lang", "tables", "felt", "back", "seenIntro", "earned", "badges", "stats", "tableLog", "tableBets"];
   let busy = null; // "backup" | "restore" | "delete" while waiting for Google
 
   /* The page's settings live in this browser's storage; hand a copy to the phone for backups. */

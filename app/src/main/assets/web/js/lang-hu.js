@@ -264,6 +264,7 @@
 
   /* ---------- 0.10.0: categories, Ko-fi supporters, milestones ---------- */
   Object.assign(HU, {
+    "Net, all time": "Nettó, összesen",
     "All time": "Összesen",
     "Your running total at the tables": "Az összesített egyenleged az asztaloknál",
     "Net minutes at the tables, all time": "Nettó percek az asztaloknál, összesen",
