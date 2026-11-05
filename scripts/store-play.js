@@ -70,7 +70,7 @@ const LOGO = `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10
 
 const page = (w, h, body) => `<!doctype html><html><head><meta charset="utf-8"><style>
 @font-face{font-family:Geist;font-weight:400 800;src:url(${FONT("Geist-latin.woff2")}) format('woff2')}
-@font-face{font-family:Bitcount;font-weight:100 900;src:url(${FONT("BitcountGridDouble-latin.woff2")}) format('woff2')}
+@font-face{font-family:Bitcount;font-weight:100 900;src:url(${FONT("BitcountSingle-latin.woff2")}) format('woff2')}
 *{box-sizing:border-box;margin:0}
 html,body{width:${w}px;height:${h}px;overflow:hidden}
 body{position:relative;font-family:Geist,sans-serif;color:#f4efe2;
@@ -81,7 +81,8 @@ body::after{content:"";position:absolute;inset:0;background:radial-gradient(120%
 .z{position:absolute;z-index:2}
 .brand{display:flex;align-items:center;gap:16px;font-weight:750;font-size:44px;letter-spacing:-.02em;color:#f4efe2}
 .brand svg{width:50px;height:50px;color:#e9c46a}
-.h{font-weight:780;letter-spacing:-.045em;line-height:.98;color:#fbf7ec;text-shadow:0 4px 30px rgba(0,0,0,.35)}
+/* Headlines in the app's own clock font, Bitcount Single, round dots */
+.h{font-family:Bitcount,monospace;font-weight:520;font-variation-settings:"ELSH" 0;letter-spacing:-.01em;line-height:1.02;color:#fbf7ec;text-shadow:0 4px 30px rgba(0,0,0,.35)}
 .h em{font-style:normal;background:${GOLD};-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 3px 0 rgba(60,35,0,.35))}
 .s{color:rgba(244,239,226,.78);font-weight:500;line-height:1.35;letter-spacing:-.01em}
 /* A gold rule like a table's inlay line */
@@ -90,19 +91,21 @@ body::after{content:"";position:absolute;inset:0;background:radial-gradient(120%
   font-weight:620;font-size:30px;white-space:nowrap;color:#f4efe2;backdrop-filter:blur(6px)}
 .pill i{width:12px;height:12px;border-radius:50%;background:${GOLD}}
 
-/* The phone: titanium band, black glass, punch-hole camera, side keys */
-.dev{position:absolute;aspect-ratio:${SCREEN_W + 30}/${SCREEN_H + STATUS + 30};border-radius:13.5%/6.4%;padding:2.3%;
-  background:linear-gradient(135deg,#8d8f94 0%,#3c3d41 14%,#5d5f64 30%,#1e1f22 52%,#4b4c50 72%,#2a2b2e 88%,#7d7f84 100%);
-  box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.35), inset 0 0 0 4px rgba(0,0,0,.6), 0 90px 140px -40px rgba(0,0,0,.75), 0 40px 60px -30px rgba(0,0,0,.6);z-index:3}
-.dev::before,.dev::after{content:"";position:absolute;width:1.1%;border-radius:3px;background:linear-gradient(90deg,#2a2b2e,#6d6f74,#2a2b2e)}
-.dev::before{right:-0.9%;top:20%;height:9%}
-.dev::after{left:-0.9%;top:16%;height:13%;box-shadow:0 calc(100% + 40px) 0 0 #3a3b3e}
-.glass{position:relative;width:100%;height:100%;border-radius:12.2%/5.8%;overflow:hidden;background:#0a0a0a;box-shadow:0 0 0 3px #050505}
-.glass .sb{height:${(STATUS / (SCREEN_H + STATUS)) * 100}%;display:flex;align-items:center;justify-content:space-between;padding:0 8%;font-weight:650;color:#fafafa;background:#0a0a0a}
-.glass .sb svg{height:42%}
-.glass .cam{position:absolute;left:50%;top:1.55%;width:3.3%;aspect-ratio:1;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle at 40% 35%,#2b3550,#05060a 60%);box-shadow:0 0 0 1px #1a1a1a}
-.glass img{display:block;width:100%}
-.glass::after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,.08),transparent 28%);pointer-events:none}
+/* The phone: a current flagship with a slim polished rim, a thin even black bezel and a
+   punch-hole camera (Android, not an iPhone: Play doesn't allow other platforms' devices). */
+.dev{position:absolute;aspect-ratio:${SCREEN_W + 16}/${SCREEN_H + STATUS + 16};border-radius:12.4%/5.9%;padding:.7%;z-index:3;
+  background:linear-gradient(145deg,#e6e7ea 0%,#9a9ca2 16%,#55575c 40%,#2c2d31 55%,#8f9197 78%,#dcdde1 100%);
+  box-shadow:0 0 0 1px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.35), 0 90px 140px -40px rgba(0,0,0,.75), 0 40px 60px -30px rgba(0,0,0,.55)}
+.dev::before,.dev::after{content:"";position:absolute;width:.55%;border-radius:2px;background:linear-gradient(90deg,#4a4c50,#c9cacf,#4a4c50)}
+.dev::before{right:-.45%;top:19%;height:7%}
+.dev::after{right:-.45%;top:28%;height:12%}
+.glass{position:relative;width:100%;height:100%;border-radius:11.8%/5.6%;background:#000;padding:1.6%;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+.scr{position:relative;width:100%;height:100%;border-radius:10.2%/4.8%;overflow:hidden;background:#0a0a0a}
+.scr .sb{height:${(STATUS / (SCREEN_H + STATUS)) * 100}%;display:flex;align-items:center;justify-content:space-between;padding:0 7.5%;font-weight:650;color:#fafafa;background:#0a0a0a}
+.scr .sb svg{height:40%}
+.scr .cam{position:absolute;left:50%;top:1.45%;width:2.7%;aspect-ratio:1;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle at 40% 35%,#26304a,#030407 62%);box-shadow:0 0 0 1px #151515}
+.scr img{display:block;width:100%}
+.scr::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.07),transparent 26%);pointer-events:none}
 
 /* Props: clay chips and cards, a few, mostly off the edges */
 .chip{position:absolute;border-radius:50%;z-index:1;box-shadow:0 18px 30px -8px rgba(0,0,0,.6), inset 0 -6px 0 rgba(0,0,0,.25)}
@@ -127,7 +130,7 @@ const STATUSBAR = `<div class="sb" style="font-size:var(--sbf)"><span>9:41</span
   <svg viewBox="0 0 26 12" fill="none"><rect x=".75" y=".75" width="21.5" height="10.5" rx="3" stroke="#fafafa" stroke-opacity=".5" stroke-width="1.5"/><rect x="2.5" y="2.5" width="15" height="7" rx="1.6" fill="#fafafa"/><rect x="23.5" y="4" width="1.8" height="4" rx=".9" fill="#fafafa" fill-opacity=".5"/></svg></span></div>`;
 /** A phone at (x, y), [w] wide, showing [src]. */
 const phone = (src, x, y, w, rot = 0, z = 3) => `<div class="dev" style="left:${x}px;top:${y}px;width:${w}px;transform:rotate(${rot}deg);z-index:${z};--sbf:${(w * 0.036).toFixed(1)}px">
-  <div class="glass">${STATUSBAR}<img src="${src}"><span class="cam"></span></div></div>`;
+  <div class="glass"><div class="scr">${STATUSBAR}<img src="${src}"><span class="cam"></span></div></div></div>`;
 const chip = (x, y, d, color, extra = "") => `<div class="chip ${extra}" style="left:${x}px;top:${y}px;width:${d}px;height:${d}px;background:radial-gradient(circle at 40% 35%, color-mix(in oklab, ${color} 80%, white), ${color} 55%, color-mix(in oklab, ${color} 70%, black))"></div>`;
 const card = (x, y, rank, suit, red, rot, extra = "") => `<div class="card ${red ? "red" : "blk"} ${extra}" style="left:${x}px;top:${y}px;transform:rotate(${rot}deg)">${rank}<br>${suit}<b>${suit}</b><span class="rv">${rank}<br>${suit}</span></div>`;
 
@@ -146,12 +149,12 @@ async function store(b, S) {
   // 1 + 2: one 2160 px panorama, the block-screen phone straddling the seam.
   const pano = page(W * 2, H, `
     <div class="z brand" style="left:90px;top:100px">${LOGO}Ante</div>
-    <p class="z h" style="left:90px;top:220px;font-size:136px;width:900px">Your feed never <em>ends.</em></p>
+    <p class="z h" style="left:90px;top:220px;font-size:112px;width:920px">Your feed never <em>ends.</em></p>
     <div class="z rule" style="left:94px;top:520px;width:120px"></div>
     <p class="z s" style="left:90px;top:560px;font-size:44px;width:820px">Give every app a daily budget of minutes.</p>
     ${phone(S.home, 150, 740, 640, -4)}
     ${phone(S.block, 860, 640, 640, 5, 4)}
-    <p class="z h" style="left:1220px;top:220px;font-size:136px;width:860px;text-align:right">Your day <em>does.</em></p>
+    <p class="z h" style="left:1220px;top:220px;font-size:112px;width:880px;text-align:right">Your day <em>does.</em></p>
     <div class="z rule" style="right:94px;top:520px;width:120px"></div>
     <p class="z s" style="left:1220px;top:560px;font-size:44px;width:850px;text-align:right">When the time is up, Ante covers the app.</p>
     <div class="z widget" style="right:110px;top:800px;width:440px;height:260px"><span class="dot" style="font-size:150px">1:09</span><small>left today</small></div>
@@ -173,7 +176,7 @@ async function store(b, S) {
 
   // 3: the tables
   await render(b, page(W, H, `
-    <p class="z h" style="left:80px;top:140px;font-size:124px;width:930px">Want more time? <em>Bet it.</em></p>
+    <p class="z h" style="left:80px;top:140px;font-size:100px;width:940px">Want more time? <em>Bet it.</em></p>
     <div class="z rule" style="left:84px;top:430px;width:120px"></div>
     <p class="z s" style="left:80px;top:470px;font-size:42px;width:900px">Ten tables: roulette, blackjack, plinko and more. The house keeps a small edge, so the more you play, the less you scroll.</p>
     ${phone(S.blackjack, 560, 860, 520, 8, 2)}
@@ -184,7 +187,7 @@ async function store(b, S) {
 
   // 4: Focus, schedules and the website filter
   await render(b, page(W, H, `
-    <p class="z h" style="left:80px;top:140px;font-size:124px;width:930px">Lock it in.<br><em>On schedule.</em></p>
+    <p class="z h" style="left:80px;top:140px;font-size:100px;width:940px">Lock it in.<br><em>On schedule.</em></p>
     <div class="z rule" style="left:84px;top:430px;width:120px"></div>
     <p class="z s" style="left:80px;top:470px;font-size:42px;width:900px">Focus for work hours and sleep, every week by itself. Block adult and gambling sites with one switch.</p>
     ${phone(S.web, 520, 760, 560, 5, 2)}
@@ -195,7 +198,7 @@ async function store(b, S) {
 
   // 5: hours back and the badges
   await render(b, page(W, H, `
-    <p class="z h" style="left:80px;top:140px;font-size:124px;width:930px">See the hours you <em>got back.</em></p>
+    <p class="z h" style="left:80px;top:140px;font-size:100px;width:940px">See the hours you <em>got back.</em></p>
     <div class="z rule" style="left:84px;top:430px;width:120px"></div>
     <p class="z s" style="left:80px;top:470px;font-size:42px;width:900px">A weekly card made for a screenshot, and 56 badges to earn on the way. Free, no ads, nothing leaves your phone.</p>
     ${phone(S.profile, 540, 800, 520, 7, 2)}
