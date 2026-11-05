@@ -208,12 +208,13 @@ async function store(b, S) {
 
   // Feature graphic (1024×500)
   await render(b, page(1024, 500, `
-    <div class="z brand" style="left:60px;top:70px;font-size:38px">${LOGO}Ante</div>
-    <p class="z h" style="left:60px;top:145px;font-size:80px;width:560px">Bet your <em>screen time.</em></p>
-    <p class="z s" style="left:60px;top:340px;font-size:24px;width:500px">App limits you can't scroll past, and tables where the house usually wins.</p>
-    ${phone(S.roulette, 650, 50, 270, -6, 3)}
-    ${phone(S.block, 810, 110, 250, 7, 2)}
-    ${chip(560, 380, 150, "#b3202a")}${chip(940, -40, 120, "#16161a", "blur")}`),
+    <div class="z" style="left:60px;top:0;bottom:0;width:560px;display:flex;flex-direction:column;justify-content:center;gap:22px">
+      <div class="brand" style="font-size:38px">${LOGO}Ante</div>
+      <p class="h" style="font-size:60px">Bet your<br><em>screen time.</em></p>
+      <p class="s" style="font-size:24px;width:480px">App limits you can't scroll past, and tables where the house usually wins.</p></div>
+    ${phone(S.home, 800, -110, 300, 9, 2)}
+    ${phone(S.roulette, 590, -150, 360, -7, 3)}
+    ${chip(540, 390, 150, "#b3202a")}${chip(960, 400, 120, "#16161a", "blur")}`),
   1024, 500, path.join(STORE, "feature-graphic.png"));
 
 }
